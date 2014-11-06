@@ -1,3 +1,4 @@
+# coding=utf-8
 from mongoengine import StringField, EmailField, BooleanField, \
     DateTimeField, IntField
 from flask.ext.login import UserMixin, AnonymousUserMixin

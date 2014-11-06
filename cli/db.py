@@ -1,3 +1,4 @@
+# coding=utf-8
 from click import echo
 from slug import slug
 from transliterate import translit

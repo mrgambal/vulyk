@@ -1,8 +1,9 @@
+# coding=utf-8
 from flask import g
 from flask.ext import login
-from social.apps.flask_me_app.routes import social_auth
-from social.apps.flask_me_app.models import init_social
-from social.apps.flask_me_app.template_filters import backends
+from social.apps.flask_app.routes import social_auth
+from social.apps.flask_app.me.models import init_social
+from social.apps.flask_app.template_filters import backends
 from models import User
 import datetime
 

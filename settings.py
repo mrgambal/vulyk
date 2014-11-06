@@ -1,4 +1,6 @@
+# coding=utf-8
 import os
+
 SECRET_KEY = 'random-secret-key'
 SESSION_COOKIE_NAME = 'unshred_session'
 DEBUG = True
@@ -15,6 +17,7 @@ MONGODB_SETTINGS = {
 DEBUG_TB_INTERCEPT_REDIRECTS = False
 SESSION_PROTECTION = 'strong'
 
+SOCIAL_AUTH_STORAGE = 'social.apps.flask_app.me.models.FlaskStorage'
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
 
 SOCIAL_AUTH_LOGIN_URL = '/'
