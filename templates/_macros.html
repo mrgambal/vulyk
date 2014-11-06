@@ -1,0 +1,22 @@
+{% macro render_dict_as_table(data) %}
+    <table class="sTable" width="100%">
+        <tbody>
+            {% for key, value in data.items()|sort %}
+            <tr>
+                <td><strong>{{ key }}</strong></td>
+                {% if value.__class__.__name__ == "dict" %}
+                <td>{{ render_dict_as_table(value) }}</td>
+                {% else %}
+                <td>{{ value }}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endmacro %}
+
+{% macro render_pagination(pagination, endpoint) %}
+    {% if pagination.has_next %}
+        <a href="{{ url_for(endpoint, page=pagination.next_num) }}" class="next-page">&raquo;</a>
+    {% endif %}
+{% endmacro %}

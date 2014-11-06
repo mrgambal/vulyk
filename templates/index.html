@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block nav %}
+    <li class="active">
+        <a href="#tag_hints" class="popup-with-zoom-anim">Инструкция (F1)</a>
+    </li>
+{% endblock %}
+{% block content %}
+    {% if config.SITE_IS_CLOSED and not user.is_admin() %}
+        {% include '_holding_page.html' %}
+    {% else %}
+        <div class="inner cover" id="current_shred">
+        {% block shred %}
+        {% endblock %}
+        </div>
+    {% endif %}
+
+    <div class="zoom-anim-dialog mfp-hide small-dialog" id="tag_hints">
+        <div class="dialog-content">
+            <h3>Инструкция по работе</h3>
+            <p>
+                Привет.
+            </p>
+        </div>
+        <button title="Close (Esc)" type="button" class="mfp-close">×</button>
+    </div>
+{% endblock %}

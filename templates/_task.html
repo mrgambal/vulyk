@@ -1,0 +1,16 @@
+{% if task %}
+<form method="POST" action="{{ url_for('next') }}">
+    <div class="shred-features">
+    {{ task.title }}
+    {{ task.description }}
+    </div>
+
+    <div class="clearfix"></div>
+</form>
+
+
+{% else %}
+<div>
+    <h2>Спасибо за помощь, сознательный гражданин!</h2>
+</div>
+{% endif %}

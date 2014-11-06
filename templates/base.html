@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Unshred tagging workplace</title>
+        {% assets "css_all" %}
+            <link rel="stylesheet" href="{{ ASSET_URL }}">
+        {% endassets %}
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        {% if user.is_anonymous() %}
+        <div class="site-wrapper">
+            <div class="site-wrapper-inner">
+                <div class="cover-container">
+                    {% if config.SITE_IS_CLOSED %}
+                        {% include '_holding_page.html' %}
+                    {% else %}
+                    <div id="public-homepage">
+                        <div id="warm-welcome" class="cover inner">
+                            <p>Привет. Если вы уже знаете, куда попали – заходите. Если нет, то давайте я вкратце расскажу.</p>
+                        </div>
+
+                        <ul id="signin">
+                            <li><a class="facebook" href="{{ url_for('social.auth', backend='facebook') }}" title="Facebook">Facebook</a></li>
+                            <li><a class="twitter" href="{{ url_for('social.auth', backend='twitter') }}" title="Twitter">Twitter</a></li>
+                            <li><a class="googleplus" href="{{ url_for('social.auth', backend='google-oauth2') }}" title="Google+/Gmail">Google+/Gmail</a></li>
+                            <li><a class="vkontakte" href="{{ url_for('social.auth', backend='vk-oauth2') }}" title="VK.com">VK.com</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="site-wrapper">
+            <div class="site-wrapper-inner">
+                <div class="cover-container">
+                    <div class="masthead clearfix">
+                        <div class="inner fixed-header clearfix">
+                            <img id="logo" src="/static/images/logo.png" alt="Канцелярская сотня представляет!" width="45" height="45" />
+                            <h3 class="masthead-brand">Собери 10 мешков и получи Курченко в подарок!</h3>
+                            <ul class="nav masthead-nav">
+                                {% block nav %}
+                                {% endblock %}
+                                {% if user.is_authenticated() %}
+                                <li><form action="{{ url_for('logout') }}" method="post"><input type="submit" value="Logout"></form></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            window.user = '{{ user.username }}';
+            window.urls = {
+                "next": "{{ url_for('next') }}"
+            }
+        </script>
+        {% endif %}
+
+        {% assets "js_all" %}
+            <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+        {% endassets %}
+    </body>
+</html>
