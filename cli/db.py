@@ -42,7 +42,8 @@ def _load_tasks_file(path):
             task = Task(**json.loads(l))
             _id = translit(task.title[0:25], "uk", reversed=True)
             task.id = slug(_id)
-            task.update(upsert=True)
+            task.structure = json.loads(task.structure)
+            task.save()
 
             i += 1
 
