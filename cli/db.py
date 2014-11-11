@@ -1,10 +1,8 @@
 # coding=utf-8
 from click import echo
-from slug import slug
-from transliterate import translit
 
 from app import db  # required for init db
-from models import Task
+from models.repositories import TaskRepository
 
 try:
     import ujson as json
@@ -33,18 +31,15 @@ def _load_tasks_file(path):
     i = 0
     bunch_size = 100
 
-    if path[-4:] != "json":
-        echo("Wrong file {0}".format(path))
+    if not path.endswith(u"json"):
+        echo(u"Wrong file {0}".format(path))
         return
+
+    repo = TaskRepository.get_instance()
 
     with open(path, "rb") as f:
         for l in f:
-            task = Task(**json.loads(l))
-            _id = translit(task.title[0:25], "uk", reversed=True)
-            task.id = slug(_id)
-            task.structure = json.loads(task.structure)
-            task.save()
-
+            repo.load_from_dict(json.loads(l))
             i += 1
 
             if i % bunch_size == 0:

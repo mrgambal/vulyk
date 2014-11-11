@@ -1,6 +1,8 @@
 # coding=utf-8
 import abc
 import random
+from slug import slug
+from transliterate import translit
 
 from ..tasks import Task, Report
 
@@ -8,6 +10,7 @@ from ..tasks import Task, Report
 class AbstractRepository(object):
     __metaclass__ = abc.ABCMeta
     _instance = None
+    _model = None
 
     @classmethod
     def get_instance(cls):
@@ -18,6 +21,23 @@ class AbstractRepository(object):
 
 
 class TaskRepository(AbstractRepository):
+    _model = Task
+
+    def load_from_dict(self, data):
+        """
+        Creates a new item using data coming from JSON
+
+        :param data: Data-dictionary from JSON
+        :return: ID of new task
+        :rtype str:
+        """
+
+        task = self._model(**data)
+        task.id = slug(translit(task.title[:25], "uk", reversed=True))
+        task.save()
+
+        return task.id
+
     def get_next_task(self, user, redundancy=2):
         """
         Find here Task that processed less than app.config.USERS_PER_TASK
@@ -27,7 +47,7 @@ class TaskRepository(AbstractRepository):
         :type redundancy: int
         :rtype: Task
         """
-        res = Task.objects(
+        res = self._model.objects(
             users_count__lt=redundancy,
             users_processed__ne=user
         ).no_dereference()
@@ -44,7 +64,7 @@ class TaskRepository(AbstractRepository):
         :type user: User
         :rtype: Task
         """
-        res = Task.objects.get_or_404(_id=data.get("pk", -1))
+        res = self._model.objects.get_or_404(_id=data.get("pk", -1))
         res.users_processed.push(user)
         res.users_count += 1
 
@@ -52,6 +72,8 @@ class TaskRepository(AbstractRepository):
 
 
 class ReportRepository(AbstractRepository):
+    _model = Report
+
     def create(self, task, user, mistakes):
         """
         Creates new report after user finished a task.
@@ -66,7 +88,7 @@ class ReportRepository(AbstractRepository):
         :return: True if successful
         :rtype : bool
         """
-        res = Report.objects.create(
+        res = self._model.objects.create(
             task=task,
             created_by=user,
             found_mistakes=mistakes)
