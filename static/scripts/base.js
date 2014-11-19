@@ -3,35 +3,60 @@
 
 var Nemesis = Nemesis || {
         State: {
-            current_task: null,
+            workplace: null,
+            task_init_state: null,
+            task_state: null,
+            task_wrapper: null,
             selected_terms: []
         },
         event_handlers: function () {
-            var context = Nemesis,
-                //replace to working area only if possible
-                workplace = $(document.body);
+            var ne = Nemesis;
 
-            workplace.on("click", "a#save-button", function (e) {
-                e.preventDefault();
-            });
+            ne.State.workplace
+                .on("click", "a#save-button", function (e) {
+                    e.preventDefault();
+                })
+                .on("click", ".mfp-close", function (e) {
+                    e.preventDefault();
+
+                    ne.load_next();
+                    ne.State.workplace.find(".mfp-hide").hide();
+                });
 
             // be able to call methods fluently
-            return context;
+            return ne;
         },
-        load_next: function (data) {
-            Nemesis.State.current_task.css("visibility", "visible").html(data);
-            Nemesis.State.init_task_stuff(Nemesis.State.current_task);
+        remap_text: function () {
+        },
+        load_next: function () {
+            var nes = Nemesis.State,
+                meta = null;
+
+            $.get(
+                "/next",
+                function (data) {
+                    nes.task_wrapper.html(data);
+
+                    meta = $.parseJSON(
+                        nes.task_wrapper
+                            .find("#task_meta")
+                            .attr('data-payload'));
+                    nes.task_init_state = meta;
+                    nes.task_state = meta;
+                },
+                "html");
+        },
+        save_report: function () {
         },
         /* http://xkcd.com/292/ */
-        init_task_stuff: function (task) {
-        },
         init: function () {
             var ne = this;
 
             $.ajaxSetup({traditional: true});
 
             $(function () {
-                ne.State.current_task = $("#current_shred");
+                ne.State.workplace = $(".site-wrapper");
+                ne.State.task_wrapper = ne.State.workplace.find("#current_task");
                 ne.event_handlers();
             });
         }

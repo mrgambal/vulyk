@@ -1,16 +1,16 @@
 {% if task %}
-<form method="POST" action="{{ url_for('next') }}">
-    <div class="shred-features">
-    {{ task.title }}
-    {{ task.description }}
-    </div>
+    <form method="POST" action="{{ url_for('report') }}">
+        <div>
+            <h2>{{ task.title }}</h2>
+            {{ task.text }}
+        </div>
+        <input type="hidden" id="task_meta"
+               data-payload="{{ task.structure | e }}"/>
 
-    <div class="clearfix"></div>
-</form>
-
-
+        <div class="clearfix"></div>
+    </form>
 {% else %}
-<div>
-    <h2>Спасибо за помощь, сознательный гражданин!</h2>
-</div>
+    <div>
+        <h2>Спасибо за помощь, сознательный гражданин!</h2>
+    </div>
 {% endif %}

@@ -49,8 +49,8 @@ class TaskRepository(AbstractRepository):
         """
         res = self._model.objects(
             users_count__lt=redundancy,
-            users_processed__ne=user
-        ).no_dereference()
+            users_processed__ne=user.id
+        )
         res = res[random.randint(0, res.count())]
 
         return res

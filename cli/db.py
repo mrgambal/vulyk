@@ -20,7 +20,7 @@ def load_tasks(path):
     count = len(path)
 
     for i, p in enumerate(path):
-        echo(u"Loading file {0:d} from {1:d}...".format(i, count))
+        echo(u"Loading file {0:d} from {1:d}...".format(i + 1, count))
         _load_tasks_file(p)
 
 

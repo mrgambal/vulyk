@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from flask import Flask, render_template, redirect, request, url_for, jsonify, g
+from flask import Flask, render_template, redirect, request, url_for, g
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
@@ -16,6 +16,11 @@ try:
     app.config.from_object('local_settings')
 except ImportError:
     pass
+
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 assets_init(app)
 db = MongoEngine(app)
@@ -34,15 +39,16 @@ def index():
     return render_template("index.html")
 
 
-@app.route('/next', methods=["POST"])
+@app.route('/next', methods=["GET"])
 @login.login_required
 def next():
-    redundancy = app.config.get('USERS_PER_TASK', 2)
+    redundancy = app.config.get("USERS_PER_TASK", 2)
     task = TaskRepository.get_instance().get_next_task(g.user, redundancy)
+    # TODO: shameful shit
+    task.structure = json.dumps({u"entities": task.structure})
+    template = request.is_xhr and "_task.html" or "task.html"
 
-    return (request.is_xhr
-            and jsonify({"task": task}), 200
-            or render_template("_task.html", task=task))
+    return render_template(template, task=task)
 
 
 @app.route('/report', methods=["POST"])
