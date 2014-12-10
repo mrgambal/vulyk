@@ -3,7 +3,7 @@ import datetime
 
 from mongoengine import (
     StringField, IntField, DateTimeField, ListField,
-    ReferenceField, DictField, CASCADE)
+    ReferenceField, BooleanField, DictField, CASCADE)
 from flask.ext.mongoengine import Document
 
 from .user import User
@@ -18,8 +18,14 @@ class Task(Document):
     title = StringField()
     text = StringField()
     structure = ListField(DictField())
+    locked = BooleanField()
 
     meta = {'collection': 'tasks'}
+
+    def as_dict(self):
+        return {"title": self.title,
+                "id": self.id,
+                "structure": self.structure}
 
     def __unicode__(self):
         return unicode(self.id)

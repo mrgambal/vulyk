@@ -13,6 +13,7 @@ Flask-Assets==0.10
 yuicompressor==2.4.8
 Flask-Login==0.2.11
 python-social-auth==0.2.1
+mongoengine==0.8.7
 flask-mongoengine==0.7.1
 click==3.3
 prettytable==0.7.2

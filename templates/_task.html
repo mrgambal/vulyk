@@ -5,7 +5,7 @@
             {{ task.text }}
         </div>
         <input type="hidden" id="task_meta"
-               data-payload="{{ task.structure | e }}"/>
+               data-payload="{{ task.as_dict()|tojson|forceescape }}"/>
 
         <div class="clearfix"></div>
     </form>

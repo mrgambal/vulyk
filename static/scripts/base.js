@@ -4,6 +4,8 @@
 var Nemesis = Nemesis || {
         State: {
             workplace: null,
+            task_title: "",
+            task_id: 0,
             task_init_state: null,
             task_state: null,
             task_wrapper: null,
@@ -41,8 +43,9 @@ var Nemesis = Nemesis || {
                         nes.task_wrapper
                             .find("#task_meta")
                             .attr('data-payload'));
-                    nes.task_init_state = meta;
-                    nes.task_state = meta;
+                    nes.task_id = meta.id;
+                    nes.task_title = meta.title;
+                    nes.task_init_state = nes.task_state = meta.structure;
                 },
                 "html");
         },

@@ -49,9 +49,10 @@ class TaskRepository(AbstractRepository):
         """
         res = self._model.objects(
             users_count__lt=redundancy,
-            users_processed__ne=user.id
-        )
+            users_processed__ne=user.id,
+            locked__ne=True)
         res = res[random.randint(0, res.count())]
+        self.switch_lock(res, True)
 
         return res
 
@@ -64,11 +65,24 @@ class TaskRepository(AbstractRepository):
         :type user: User
         :rtype: Task
         """
-        res = self._model.objects.get_or_404(_id=data.get("pk", -1))
+        res = self._model.objects.get_or_404(pk=data.get("id", -1))
         res.users_processed.push(user)
         res.users_count += 1
+        res.locked = False
 
         return res.save()
+
+    def switch_lock(self, task, lock=False):
+        """
+        Naive lock to prevent task from being sent to tens of
+        users simultaneously
+
+        :param task: Task to be locked
+        :type task: Task
+        :param lock: Locks task if True, otherwise - unlocks
+        :type lock: bool
+        """
+        return task.update(set__locked=lock)
 
 
 class ReportRepository(AbstractRepository):
