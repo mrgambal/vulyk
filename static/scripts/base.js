@@ -25,8 +25,6 @@ var Nemesis = Nemesis || {
                     ne.State.workplace.find(".mfp-hide").hide();
                 });
 
-            $(window).on('beforeunload', ne.save_report);
-
             // be able to call methods fluently
             return ne;
         },

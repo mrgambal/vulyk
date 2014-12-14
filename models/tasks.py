@@ -3,7 +3,7 @@ import datetime
 
 from mongoengine import (
     StringField, IntField, DateTimeField, ListField,
-    ReferenceField, BooleanField, DictField, CASCADE)
+    ReferenceField, DictField, CASCADE)
 from flask.ext.mongoengine import Document
 from slug import slug
 from transliterate import translit
@@ -22,7 +22,6 @@ class Task(Document):
     title = StringField()
     text = StringField()
     structure = ListField(DictField())
-    locked = BooleanField()
 
     meta = {'collection': 'tasks'}
 
