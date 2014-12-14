@@ -1,10 +1,8 @@
 # coding=utf-8
 import abc
 import random
-from slug import slug
-from transliterate import translit
 
-from ..tasks import Task, Report
+from models import Task, Report
 
 
 class AbstractRepository(object):
@@ -33,7 +31,7 @@ class TaskRepository(AbstractRepository):
         """
 
         task = self._model(**data)
-        task.id = slug(translit(task.title[:25], "uk", reversed=True))
+        task.set_id()
         task.save()
 
         return task.id
@@ -50,7 +48,7 @@ class TaskRepository(AbstractRepository):
         res = self._model.objects(
             users_count__lt=redundancy,
             users_processed__ne=user.id,
-            locked__ne=True)
+            locked=False)
         res = res[random.randint(0, res.count())]
         self.switch_lock(res, True)
 

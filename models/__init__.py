@@ -1,6 +1,7 @@
 # coding=utf-8
-from models.user import *
-from models.tasks import *
+from models.user import User
+from models.tasks import Task, Report
+from models.stats import EditSession
 
 from mongoengine.base.fields import ObjectIdField
 from bson import ObjectId

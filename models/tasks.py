@@ -5,12 +5,16 @@ from mongoengine import (
     StringField, IntField, DateTimeField, ListField,
     ReferenceField, BooleanField, DictField, CASCADE)
 from flask.ext.mongoengine import Document
+from slug import slug
+from transliterate import translit
 
-from .user import User
+from models import User
 
 
 class Task(Document):
     id = StringField(max_length=200, default='', primary_key=True)
+    # TODO: discuss appropriate levels of priority
+    priority = IntField(default=2, min_value=0, max_value=1)
     users_count = IntField(default=0, db_field='usersCount')
     users_processed = ListField(ReferenceField(User),
                                 db_field='usersProcessed')
@@ -26,6 +30,12 @@ class Task(Document):
         return {"title": self.title,
                 "id": self.id,
                 "structure": self.structure}
+
+    def set_id(self):
+        if not self.id:
+            self.id = slug(translit(self.title[:25], "uk", reversed=True))
+
+        return self.id
 
     def __unicode__(self):
         return unicode(self.id)

@@ -25,6 +25,8 @@ var Nemesis = Nemesis || {
                     ne.State.workplace.find(".mfp-hide").hide();
                 });
 
+            $(window).on('beforeunload', ne.save_report);
+
             // be able to call methods fluently
             return ne;
         },
@@ -50,6 +52,12 @@ var Nemesis = Nemesis || {
                 "html");
         },
         save_report: function () {
+            // TODO: Breathe the life into this barren method.
+            $.post(
+                "/report",
+                {},
+                function(data){},
+                "json");
         },
         /* http://xkcd.com/292/ */
         init: function () {
