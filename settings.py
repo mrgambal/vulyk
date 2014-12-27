@@ -61,8 +61,20 @@ CSS_ASSETS_OUTPUT = 'styles/packed.css'
 CSS_ASSETS_FILTERS = 'yui_css'
 
 
-# Redundancy level for shreds processing
+# Default redundancy level for processing
 USERS_PER_TASK = 2
 
 # Restrict an access to site to admins only
 SITE_IS_CLOSED = False
+
+
+TASK_TYPES = [
+    "tasks.dummy.DummyTaskType"
+    # Or alternatively:
+    # {
+    #     "task": "tasks.dummy.DummyTaskType",
+    #     "settings": {
+    #         "redundancy": 5
+    #     }
+    # }
+]
