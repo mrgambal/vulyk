@@ -4,6 +4,7 @@
 import click
 from cli import admin as _admin
 from cli import db as _db
+from app import TASKS_TYPES
 
 
 @click.group()
@@ -44,15 +45,16 @@ def db():
 
 
 @db.command("load")
+@click.argument('--task_type', type=click.Choice(TASKS_TYPES.keys()))
 @click.argument("name",
                 type=click.Path(exists=True,
                                 dir_okay=False,
                                 readable=True,
                                 resolve_path=True),
                 nargs=-1)
-def load(name):
+def load(__task_type, name):
     """Refills tasks collection from json."""
-    _db.load_tasks(name)
+    _db.load_tasks(TASKS_TYPES[__task_type], name)
 
 
 if __name__ == '__main__':

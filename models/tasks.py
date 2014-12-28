@@ -11,13 +11,17 @@ from models import User
 
 class AbstractTask(Document):
     id = StringField(max_length=200, default='', primary_key=True)
+    task_type = StringField(max_length=50, required=True)
     users_count = IntField(default=0, db_field='usersCount')
     users_processed = ListField(ReferenceField(User),
                                 db_field='usersProcessed')
 
     meta = {
         'collection': 'tasks',
-        'allow_inheritance': True
+        'allow_inheritance': True,
+        'indexes': [
+            'task_type'
+        ]
     }
 
     def as_dict(self):
