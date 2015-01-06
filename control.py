@@ -45,16 +45,16 @@ def db():
 
 
 @db.command("load")
-@click.argument('--task_type', type=click.Choice(TASKS_TYPES.keys()))
+@click.argument('task_type', type=click.Choice(TASKS_TYPES.keys()))
 @click.argument("name",
                 type=click.Path(exists=True,
                                 dir_okay=False,
                                 readable=True,
                                 resolve_path=True),
                 nargs=-1)
-def load(__task_type, name):
+def load(task_type, name):
     """Refills tasks collection from json."""
-    _db.load_tasks(TASKS_TYPES[__task_type], name)
+    _db.load_tasks(TASKS_TYPES[task_type], name)
 
 
 if __name__ == '__main__':

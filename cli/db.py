@@ -6,6 +6,8 @@ from app import db
 # from models.repositories import TaskRepository
 import bz2
 import gzip
+from utils import chunked
+from itertools import imap
 
 try:
     import ujson as json
@@ -43,21 +45,14 @@ def _load_tasks_file(task_type, path):
     i = 0
     bunch_size = 100
 
-    if not path.endswith(u"json"):
-        echo(u"Wrong file {0}".format(path))
-        return
-
-    # repo = TaskRepository.get_instance()
-
     with open_anything(path)(path, "rb") as f:
-        for i, l in enumerate(f):
-            # repo.load_from_dict(json.loads(l))
-            task_type.import_tasks([json.loads(l)])
+        try:
+            for chunk in chunked(imap(json.loads, f), bunch_size):
+                task_type.import_tasks(chunked)
 
-            i += 1
-            break
-
-            if i % bunch_size == 0 and i:
-                echo(u"{0:d} records processed".format(i))
-
-    echo(u"Finished loading {0:d} articles".format(i))
+                i += len(chunk)
+                echo(u"{0:d} tasks processed".format(i))
+        except:  # TODO: Except what?
+            # TODO: proper error message
+            echo("uhoh")
+    echo(u"Finished loading {0:d} tasks".format(i))

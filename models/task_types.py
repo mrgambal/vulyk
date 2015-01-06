@@ -37,8 +37,9 @@ class AbstractTaskType(object):
         """
 
         if qs is None:
-            raise NotImplementedError
-            qs = self.task_model.objects.filter()
+            # Not really tested yet
+            qs = self.task_model.objects.filter(
+                users_count__gte=self.redundancy)
 
         for task in qs:
             yield task.get_results()
