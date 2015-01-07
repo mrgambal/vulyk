@@ -4,7 +4,7 @@ from click import echo
 from app import db
 
 # from models.repositories import TaskRepository
-import bz2
+import bz2file as bz2
 import gzip
 from utils import chunked
 from itertools import imap

@@ -1,6 +1,7 @@
-from utils import import_string
+from werkzeug.utils import import_string
 
 
+# TODO: class?
 def init_tasks(app):
     task_types = {}
 

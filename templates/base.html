@@ -30,10 +30,18 @@
                         </div>
 
                         <ul id="signin">
+                            {% if config.SOCIAL_AUTH_FACEBOOK_KEY %}
                             <li><a class="facebook" href="{{ url_for('social.auth', backend='facebook') }}" title="Facebook">Facebook</a></li>
+                            {% endif %}
+                            {% if config.SOCIAL_AUTH_TWITTER_KEY %}
                             <li><a class="twitter" href="{{ url_for('social.auth', backend='twitter') }}" title="Twitter">Twitter</a></li>
+                            {% endif %}
+                            {% if config.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY %}
                             <li><a class="googleplus" href="{{ url_for('social.auth', backend='google-oauth2') }}" title="Google+/Gmail">Google+/Gmail</a></li>
+                            {% endif %}
+                            {% if config.SOCIAL_AUTH_VK_OAUTH2_KEY %}
                             <li><a class="vkontakte" href="{{ url_for('social.auth', backend='vk-oauth2') }}" title="VK.com">VK.com</a></li>
+                            {% endif %}
                         </ul>
                     </div>
                     {% endif %}

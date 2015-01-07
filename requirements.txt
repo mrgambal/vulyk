@@ -17,6 +17,5 @@ mongoengine==0.8.7
 flask-mongoengine==0.7.1
 click==3.3
 prettytable==0.7.2
-transliterate>=1.7.3
 ujson>=1.33
-slug>=1.0
+bz2file==0.98
