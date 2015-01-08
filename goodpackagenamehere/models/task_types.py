@@ -1,4 +1,6 @@
 from tasks import AbstractTask
+from hashlib import sha1
+import json
 
 
 class AbstractTaskType(object):
@@ -23,7 +25,12 @@ class AbstractTaskType(object):
         Raises:
             TaskImportError
         """
-        raise NotImplementedError()
+        for task in tasks:
+            self.task_model.objects.create(
+                _id=sha1(json.dumps(task)).hexdigest(),
+                task_type=self.type_name,
+                task_data=task
+            )
 
     def export_reports(self, qs=None):
         """Exports results

@@ -55,7 +55,3 @@ def db():
 def load(task_type, name):
     """Refills tasks collection from json."""
     _db.load_tasks(TASKS_TYPES[task_type], name)
-
-
-if __name__ == '__main__':
-    cli()

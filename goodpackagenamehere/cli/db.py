@@ -1,13 +1,13 @@
 # coding=utf-8
-from click import echo
-
-from app import db
-
-# from models.repositories import TaskRepository
-import bz2file as bz2
 import gzip
-from utils import chunked
 from itertools import imap
+
+from click import echo
+import bz2file as bz2
+from ..utils import chunked
+
+from ..app import db
+
 
 try:
     import ujson as json
@@ -48,11 +48,13 @@ def _load_tasks_file(task_type, path):
     with open_anything(path)(path, "rb") as f:
         try:
             for chunk in chunked(imap(json.loads, f), bunch_size):
-                task_type.import_tasks(chunked)
+                task_type.import_tasks(chunk)
 
                 i += len(chunk)
                 echo(u"{0:d} tasks processed".format(i))
-        except:  # TODO: Except what?
+        except Exception, e:  # TODO: Except what?
             # TODO: proper error message
             echo("uhoh")
+            echo(e)
+
     echo(u"Finished loading {0:d} tasks".format(i))

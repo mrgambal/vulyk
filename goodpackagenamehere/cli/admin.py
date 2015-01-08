@@ -1,6 +1,6 @@
 # coding=utf-8
-from app import db  # required for init db
-from models import User
+from ..app import db  # required for init db
+from ..models import User
 from click import echo
 
 

@@ -10,6 +10,3 @@ class DummyTaskType(AbstractTaskType):
     task_model = DummyTask
     type_name = "dummy_task"
     template = "dummy_template.html"
-
-    def import_tasks(self, tasks):
-        pass

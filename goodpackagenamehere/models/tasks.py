@@ -16,6 +16,8 @@ class AbstractTask(Document):
     users_processed = ListField(ReferenceField(User),
                                 db_field='usersProcessed')
 
+    task_data = DictField()
+
     meta = {
         'collection': 'tasks',
         'allow_inheritance': True,
