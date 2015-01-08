@@ -1,5 +1,5 @@
-from models.task_types import AbstractTaskType
-from models.tasks import AbstractTask
+from goodpackagenamehere.models.task_types import AbstractTaskType
+from goodpackagenamehere.models.tasks import AbstractTask
 
 
 class DummyTask(AbstractTask):

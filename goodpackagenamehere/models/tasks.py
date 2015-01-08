@@ -6,7 +6,7 @@ from mongoengine import (
     ReferenceField, DictField, CASCADE)
 from flask.ext.mongoengine import Document
 
-from models import User
+from . import User
 
 
 class AbstractTask(Document):

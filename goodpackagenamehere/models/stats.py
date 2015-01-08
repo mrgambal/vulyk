@@ -2,7 +2,7 @@
 from datetime import datetime
 from mongoengine import IntField, DateTimeField, ReferenceField, CASCADE
 from flask.ext.mongoengine import Document
-from models import User, AbstractTask  #, Report
+from . import User, AbstractTask
 
 
 class EditSession(Document):

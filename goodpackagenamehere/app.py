@@ -11,7 +11,7 @@ from utils import resolve_task_type
 from tasks import init_tasks
 
 app = Flask(__name__)
-app.config.from_object('settings')
+app.config.from_object('goodpackagenamehere.settings')
 
 try:
     app.config.from_object('local_settings')
