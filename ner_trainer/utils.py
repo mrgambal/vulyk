@@ -19,7 +19,7 @@ def handle_exception_as_json(exc=Exception):
             try:
                 fn(*args, **kwargs)
                 return jsonify({"result": True})
-            except Exception, e:
+            except Exception as e:
                 return jsonify({"result": False, "reason": unicode(e)})
         return wrapper
     return decorator
