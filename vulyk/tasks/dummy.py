@@ -1,5 +1,5 @@
-from ner_trainer.models.task_types import AbstractTaskType
-from ner_trainer.models.tasks import AbstractTask
+from vulyk.models.task_types import AbstractTaskType
+from vulyk.models.tasks import AbstractTask
 
 
 class DummyTask(AbstractTask):

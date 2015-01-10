@@ -36,7 +36,7 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-Net Trainer could always use more documentation, whether as part of the
+Vulyk could always use more documentation, whether as part of the
 official Net Trainer docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
@@ -55,7 +55,7 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `ner_trainer` for local development.
+Ready to contribute? Here's how to set up `vulyk` for local development.
 
 1. Fork the `ner_trainer` repo on GitHub.
 2. Clone your fork locally::
@@ -76,7 +76,7 @@ Ready to contribute? Here's how to set up `ner_trainer` for local development.
 
 5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
 
-    $ flake8 ner_trainer tests
+    $ flake8 vulyk tests
     $ python setup.py test
     $ tox
 
@@ -108,4 +108,4 @@ Tips
 
 To run a subset of tests::
 
-    $ python -m unittest tests.test_ner_trainer
+    $ python -m unittest tests.test_vulyk

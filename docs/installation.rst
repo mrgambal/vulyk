@@ -4,9 +4,9 @@ Installation
 
 At the command line::
 
-    $ easy_install ner_trainer
+    $ easy_install vulyk
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv ner_trainer
-    $ pip install ner_trainer
+    $ mkvirtualenv vulyk
+    $ pip install vulyk
