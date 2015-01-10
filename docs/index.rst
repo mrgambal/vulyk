@@ -1,9 +1,9 @@
-.. ner_trainer documentation master file, created by
+.. vulyk documentation master file, created by
    sphinx-quickstart on Tue Jul  9 22:26:36 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Net Trainer's documentation!
+Welcome to Vulyk's documentation!
 ======================================
 
 Contents:

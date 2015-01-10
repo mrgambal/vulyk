@@ -10,10 +10,10 @@ from utils import resolve_task_type
 from tasks import init_tasks
 
 app = Flask(__name__)
-app.config.from_object('ner_trainer.settings')
+app.config.from_object('vulyk.settings')
 
 try:
-    app.config.from_object('ner_trainer.local_settings')
+    app.config.from_object('vulyk.local_settings')
 except ImportError:
     pass
 

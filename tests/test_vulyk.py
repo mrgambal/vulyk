@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """
-test_ner_trainer
+test_vulyk
 ----------------------------------
 
-Tests for `ner_trainer` module.
+Tests for `vulyk` module.
 """
 
 import unittest
 
-from ner_trainer import *
+from vulyk import *
 
 
-class TestNer_trainer(unittest.TestCase):
+class TestVulyk(unittest.TestCase):
 
     def setUp(self):
         pass

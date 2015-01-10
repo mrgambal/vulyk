@@ -19,23 +19,22 @@ requirements = [str(ir.req) for ir in install_reqs]
 test_requirements = requirements
 
 setup(
-    name='ner_trainer',
+    name='vulyk',
     version='0.1.0',
     description='Crowdsourcing platform for NLP tasks',
     long_description=readme + '\n\n' + history,
-    author='Mr Gambal',
+    author='Dmytro Hambal',
     author_email='mr_gambal@outlook.com',
-    url='https://github.com/mrgambal/ner_trainer',
+    url='https://github.com/mrgambal/vulyk',
     packages=[
-        'ner_trainer',
+        'vulyk',
     ],
-    package_dir={'ner_trainer':
-                 'ner_trainer'},
+    package_dir={'vulyk': 'vulyk'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD",
     zip_safe=False,
-    keywords='ner_trainer',
+    keywords='vulyk',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

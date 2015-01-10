@@ -2,6 +2,6 @@
 Usage
 ========
 
-To use Net Trainer in a project::
+To use Vulyk in a project::
 
-    import ner_trainer
+    import vulyk

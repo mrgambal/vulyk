@@ -32,7 +32,7 @@ clean-test:
 	rm -fr htmlcov/
 
 lint:
-	flake8 ner_trainer tests
+	flake8 vulyk tests
 
 test:
 	python setup.py test
@@ -41,15 +41,15 @@ test-all:
 	tox
 
 coverage:
-	coverage run --source ner_trainer setup.py test
+	coverage run --source vulyk setup.py test
 	coverage report -m
 	coverage html
 	open htmlcov/index.html
 
 docs:
-	rm -f docs/ner_trainer.rst
+	rm -f docs/vulyk.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ ner_trainer
+	sphinx-apidoc -o docs/ vulyk
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	open docs/_build/html/index.html

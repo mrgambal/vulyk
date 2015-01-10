@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/mrgambal/ner_trainer/issues.
+Report bugs at https://github.com/mrgambal/vulyk/issues.
 
 If you are reporting a bug, please include:
 
@@ -36,14 +36,14 @@ is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-Net Trainer could always use more documentation, whether as part of the
-official Net Trainer docs, in docstrings, or even on the web in blog posts,
+Vulyk could always use more documentation, whether as part of the
+official Vulyk docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/mrgambal/ner_trainer/issues.
+The best way to send feedback is to file an issue at https://github.com/mrgambal/vulyk/issues.
 
 If you are proposing a feature:
 
@@ -55,17 +55,17 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `ner_trainer` for local development.
+Ready to contribute? Here's how to set up `vulyk` for local development.
 
-1. Fork the `ner_trainer` repo on GitHub.
+1. Fork the `vulyk` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/ner_trainer.git
+    $ git clone git@github.com:your_name_here/vulyk.git
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 
-    $ mkvirtualenv ner_trainer
-    $ cd ner_trainer/
+    $ mkvirtualenv vulyk
+    $ cd vulyk/
     $ python setup.py develop
 
 4. Create a branch for local development::
@@ -76,7 +76,7 @@ Ready to contribute? Here's how to set up `ner_trainer` for local development.
 
 5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
 
-    $ flake8 ner_trainer tests
+    $ flake8 vulyk tests
     $ python setup.py test
     $ tox
 
@@ -100,7 +100,7 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for Python 2.6, 2.7, 3.3, and 3.4, and for PyPy. Check
-   https://travis-ci.org/mrgambal/ner_trainer/pull_requests
+   https://travis-ci.org/mrgambal/vulyk/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 Tips
@@ -108,4 +108,4 @@ Tips
 
 To run a subset of tests::
 
-    $ python -m unittest tests.test_ner_trainer
+    $ python -m unittest tests.test_vulyk

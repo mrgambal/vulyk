@@ -1,4 +1,4 @@
-from ner_trainer.control import cli
+from vulyk.control import cli
 
 if __name__ == '__main__':
     cli()

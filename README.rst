@@ -1,20 +1,20 @@
 Crowdsourcing platform for NLP tasks
 ====================================
 
-.. image:: https://badge.fury.io/py/ner_trainer.png
-    :target: http://badge.fury.io/py/ner_trainer
+.. image:: https://badge.fury.io/py/vulyk.png
+    :target: http://badge.fury.io/py/vulyk
 
-.. image:: https://travis-ci.org/mrgambal/ner_trainer.png?branch=master
-        :target: https://travis-ci.org/mrgambal/ner_trainer
+.. image:: https://travis-ci.org/mrgambal/vulyk.png?branch=master
+        :target: https://travis-ci.org/mrgambal/vulyk
 
-.. image:: https://pypip.in/d/ner_trainer/badge.png
-        :target: https://pypi.python.org/pypi/ner_trainer
+.. image:: https://pypip.in/d/vulyk/badge.png
+        :target: https://pypi.python.org/pypi/vulyk
 
 License
 -------
 
 -  Free software: BSD license
--  Documentation: https://ner\_trainer.readthedocs.org.
+-  Documentation: https://vulyk.readthedocs.org.
 
 What is it?
 -----------
@@ -65,7 +65,7 @@ name it).
 How could I participate?
 ------------------------
 
-You just need to contact me mr_gambal@outlook.com or [@dchaplinsky] via
+You just need to contact me mr_gambal@outlook.com or `@dchaplinsky <http://github.com/dchaplinsky>`__ via
 chaplinsky.dmitry@gmail.com. One day we'll find one brave heart who'll
 create a list of issues so the process will besimplified. But not now...
 
@@ -73,7 +73,7 @@ Example data
 ------------
 
 To start developing you'll need a bootstrap data to work with. So...
-**`Here <http://goo.gl/fLxQef>`__** is it - 7zipped json files (circa 15
+`Here <http://goo.gl/fLxQef>`__ is it - 7zipped json files (circa 15
 MB).
 
 It must be loaded into your MongoDB using:
