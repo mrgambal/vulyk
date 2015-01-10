@@ -23,7 +23,7 @@ SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
 SOCIAL_AUTH_LOGIN_URL = '/'
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
 
-SOCIAL_AUTH_USER_MODEL = 'goodpackagenamehere.models.user.User'
+SOCIAL_AUTH_USER_MODEL = 'ner_trainer.models.user.User'
 SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
     'social.backends.google.GoogleOAuth2',
     'social.backends.twitter.TwitterOAuth',
@@ -69,7 +69,7 @@ SITE_IS_CLOSED = False
 
 
 TASK_TYPES = [
-    "goodpackagenamehere.tasks.dummy.DummyTaskType"
+    "ner_trainer.tasks.dummy.DummyTaskType"
     # Or alternatively:
     # {
     #     "task": "tasks.dummy.DummyTaskType",

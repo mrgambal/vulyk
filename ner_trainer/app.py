@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import (Flask, render_template, redirect, request, url_for, g,
-                   jsonify)
+from flask import Flask, render_template, redirect, url_for
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
@@ -11,10 +10,10 @@ from utils import resolve_task_type
 from tasks import init_tasks
 
 app = Flask(__name__)
-app.config.from_object('goodpackagenamehere.settings')
+app.config.from_object('ner_trainer.settings')
 
 try:
-    app.config.from_object('local_settings')
+    app.config.from_object('ner_trainer.local_settings')
 except ImportError:
     pass
 
