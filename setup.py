@@ -25,7 +25,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author='Mr Gambal',
     author_email='mr_gambal@outlook.com',
-    url='https://github.com/mrgambal/ner_trainer',
+    url='https://github.com/mrgambal/vulyk',
     packages=[
         'vulyk',
     ],

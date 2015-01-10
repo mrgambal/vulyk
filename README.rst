@@ -4,8 +4,8 @@ Crowdsourcing platform for NLP tasks
 .. image:: https://badge.fury.io/py/vulyk.png
     :target: http://badge.fury.io/py/vulyk
 
-.. image:: https://travis-ci.org/mrgambal/ner_trainer.png?branch=master
-        :target: https://travis-ci.org/mrgambal/ner_trainer
+.. image:: https://travis-ci.org/mrgambal/vulyk.png?branch=master
+        :target: https://travis-ci.org/mrgambal/vulyk
 
 .. image:: https://pypip.in/d/vulyk/badge.png
         :target: https://pypi.python.org/pypi/vulyk
@@ -14,7 +14,7 @@ License
 -------
 
 -  Free software: BSD license
--  Documentation: https://ner\_trainer.readthedocs.org.
+-  Documentation: https://vulyk.readthedocs.org.
 
 What is it?
 -----------

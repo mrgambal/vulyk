@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/mrgambal/ner_trainer/issues.
+Report bugs at https://github.com/mrgambal/vulyk/issues.
 
 If you are reporting a bug, please include:
 
@@ -43,7 +43,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/mrgambal/ner_trainer/issues.
+The best way to send feedback is to file an issue at https://github.com/mrgambal/vulyk/issues.
 
 If you are proposing a feature:
 
@@ -57,15 +57,15 @@ Get Started!
 
 Ready to contribute? Here's how to set up `vulyk` for local development.
 
-1. Fork the `ner_trainer` repo on GitHub.
+1. Fork the `vulyk` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/ner_trainer.git
+    $ git clone git@github.com:your_name_here/vulyk.git
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 
-    $ mkvirtualenv ner_trainer
-    $ cd ner_trainer/
+    $ mkvirtualenv vulyk
+    $ cd vulyk/
     $ python setup.py develop
 
 4. Create a branch for local development::
@@ -100,7 +100,7 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for Python 2.6, 2.7, 3.3, and 3.4, and for PyPy. Check
-   https://travis-ci.org/mrgambal/ner_trainer/pull_requests
+   https://travis-ci.org/mrgambal/vulyk/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 Tips
