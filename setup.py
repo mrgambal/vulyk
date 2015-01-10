@@ -23,7 +23,7 @@ setup(
     version='0.1.0',
     description='Crowdsourcing platform for NLP tasks',
     long_description=readme + '\n\n' + history,
-    author='Mr Gambal',
+    author='Dmytro Hambal',
     author_email='mr_gambal@outlook.com',
     url='https://github.com/mrgambal/vulyk',
     packages=[

@@ -37,7 +37,7 @@ Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
 Vulyk could always use more documentation, whether as part of the
-official Net Trainer docs, in docstrings, or even on the web in blog posts,
+official Vulyk docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback

@@ -56,7 +56,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Vulyk'
-copyright = u'2015, Mr Gambal'
+copyright = u'2015, Dmytro Hambal'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -210,7 +210,7 @@ latex_elements = {
 latex_documents = [
     ('index', 'vulyk.tex',
      u'Vulyk Documentation',
-     u'Mr Gambal', 'manual'),
+     u'Dmytro Hambal', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -241,7 +241,7 @@ latex_documents = [
 man_pages = [
     ('index', 'vulyk',
      u'Vulyk Documentation',
-     [u'Mr Gambal'], 1)
+     [u'Dmytro Hambal'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -256,7 +256,7 @@ man_pages = [
 texinfo_documents = [
     ('index', 'vulyk',
      u'Vulyk Documentation',
-     u'Mr Gambal',
+     u'Dmytro Hambal',
      'vulyk',
      'One line description of project.',
      'Miscellaneous'),
