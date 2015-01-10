@@ -5,7 +5,7 @@
 test_vulyk
 ----------------------------------
 
-Tests for `ner_trainer` module.
+Tests for `vulyk` module.
 """
 
 import unittest
