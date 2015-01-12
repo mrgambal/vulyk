@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, g
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
 from assets import init as assets_init
-# from models.repositories import TaskRepository, ReportRepository
 from users import init_social_login
 from utils import resolve_task_type
 from tasks import init_tasks
@@ -40,22 +39,38 @@ def logout():
 
 @app.route('/next', methods=["GET"], defaults={'task_type': None})
 @app.route('/type/<string:task_type>/next', methods=["GET"])
+@resolve_task_type
 @login.login_required
 def next(task_type):
-    # redundancy = app.config.get("USERS_PER_TASK", 2)
-    # task = TaskRepository.get_instance().get_next_task(g.user, redundancy)
-    # template = request.is_xhr and "_task.html" or "task.html"
+    """
+    Provides next available task for user.
 
+    :type task_type: AbstractTaskType
+    """
+    task = task_type.get_next(g.user)
+
+    # still not sure about necessity of rendering by *TaskType
+
+    # template = request.is_xhr and "_task.html" or "task.html"
     # return render_template(template, task=task)
     return "Hello world"
 
 
-# @app.route('/report', methods=["POST"])
-# @login.login_required
-# def report():
-#     res = TaskRepository.get_instance() \
-#         .save_on_success(request.values, g.user)
-#     res = ReportRepository.get_instance() \
-#         .create(res, g.user, request.values.get("mistakes", {}))
+@app.route('/skip/<string:task_id>', methods=["GET"],
+           defaults={'task_type': None})
+@app.route('/type/<string:task_type>/skip/<string:task_id>', methods=["GET"])
+@resolve_task_type
+@login.login_required
+def skip(task_type, task_id):
+    """
+    This action adds the task to 'skipped' list of current user.
 
-#     return jsonify({"ok": res}), res and 200 or 500
+    :type task_type: AbstractTaskType
+    :type task_id: str | unicode
+    """
+    task_type.skip_task(g.user,
+                        task_type.task_model.objects.get_or_404(id=task_id))
+
+    redirect(url_for('next'))
+
+# Decorator Hell is coming.

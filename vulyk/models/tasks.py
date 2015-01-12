@@ -15,6 +15,8 @@ class AbstractTask(Document):
     users_count = IntField(default=0, db_field='usersCount')
     users_processed = ListField(ReferenceField(User),
                                 db_field='usersProcessed')
+    users_skipped = ListField(ReferenceField(User),
+                              db_field='usersSkipped')
 
     task_data = DictField()
 
