@@ -12,3 +12,7 @@ class TaskSaveError(Exception):
 
 class TaskValidationError(Exception):
     pass
+
+
+class TaskPermissionError(Exception):
+    pass

@@ -2,7 +2,7 @@ import ujson as json
 from hashlib import sha1
 from mongoengine.errors import OperationError, NotUniqueError
 
-from .exc import TaskSkipError
+from .exc import TaskSkipError, TaskImportError
 from .tasks import AbstractTask
 
 
@@ -28,12 +28,16 @@ class AbstractTaskType(object):
         Raises:
             TaskImportError
         """
-        for task in tasks:
-            self.task_model.objects.create(
-                _id=sha1(json.dumps(task)).hexdigest()[:20],
-                task_type=self.type_name,
-                task_data=task
-            )
+        try:
+            for task in tasks:
+                self.task_model.objects.create(
+                    _id=sha1(json.dumps(task)).hexdigest()[:20],
+                    task_type=self.type_name,
+                    task_data=task
+                )
+        except (AttributeError, TypeError, OperationError) as e:
+            # TODO: review list of exceptions, any fallback actions if needed
+            raise TaskImportError(u"Can't load task: {0}".format(e))
 
     def export_reports(self, qs=None):
         """Exports results
@@ -62,6 +66,9 @@ class AbstractTaskType(object):
             user: an instance of User model
         Returns:
             rendered self.template with task or None
+
+        Raises:
+            TaskPermissionError
         """
 
         raise NotImplementedError
