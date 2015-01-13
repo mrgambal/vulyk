@@ -1,6 +1,9 @@
-from tasks import AbstractTask
+import ujson as json
 from hashlib import sha1
-import json
+from mongoengine.errors import OperationError, NotUniqueError
+
+from .exc import TaskSkipError, TaskImportError
+from .tasks import AbstractTask
 
 
 class AbstractTaskType(object):
@@ -25,12 +28,16 @@ class AbstractTaskType(object):
         Raises:
             TaskImportError
         """
-        for task in tasks:
-            self.task_model.objects.create(
-                _id=sha1(json.dumps(task)).hexdigest(),
-                task_type=self.type_name,
-                task_data=task
-            )
+        try:
+            for task in tasks:
+                self.task_model.objects.create(
+                    _id=sha1(json.dumps(task)).hexdigest()[:20],
+                    task_type=self.type_name,
+                    task_data=task
+                )
+        except (AttributeError, TypeError, OperationError) as e:
+            # TODO: review list of exceptions, any fallback actions if needed
+            raise TaskImportError(u"Can't load task: {0}".format(e))
 
     def export_reports(self, qs=None):
         """Exports results
@@ -59,6 +66,9 @@ class AbstractTaskType(object):
             user: an instance of User model
         Returns:
             rendered self.template with task or None
+
+        Raises:
+            TaskPermissionError
         """
 
         raise NotImplementedError
@@ -89,8 +99,14 @@ class AbstractTaskType(object):
         Raises:
             TaskSkipError
         """
-
-        raise NotImplementedError
+        try:
+            self.task_model \
+                .objects(id=task.id) \
+                .update_one(push__users_skipped=user)
+        except NotUniqueError as err:
+            raise TaskSkipError(unicode(err))
+        except OperationError as err:
+            raise TaskSkipError(u"Can not skip the task: {0}".format(err))
 
     def save_task_result(self, user, task, answer):
         """Saves user's answers for a given task
@@ -102,7 +118,7 @@ class AbstractTaskType(object):
             task: an instance of self.task_model model
             answer: QueryDict with answers
         Returns:
-            None
+            True if succeed, otherwise - False
 
         Raises:
             TaskSaveError - in case of general problems

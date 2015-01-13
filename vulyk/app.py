@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, g
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
 from assets import init as assets_init
-# from models.repositories import TaskRepository, ReportRepository
 from users import init_social_login
 from utils import resolve_task_type
 from tasks import init_tasks
@@ -24,10 +23,17 @@ init_social_login(app, db)
 TASKS_TYPES = init_tasks(app)
 
 
-@app.route('/', methods=["GET"], defaults={'task_type': None})
-@app.route('/type/<string:task_type>/', methods=["GET"])
-@resolve_task_type
-def index(task_type):
+@app.route('/', methods=["GET"], defaults={'type_name': None})
+@app.route('/type/<string:type_name>/', methods=["GET"])
+def index(type_name):
+    """
+    Main site view
+
+    :param type_name: Task type name
+    :type type_name: basestring
+    """
+    task_type = resolve_task_type(type_name)
+
     return render_template("index.html", task_type=task_type)
 
 
@@ -38,24 +44,42 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/next', methods=["GET"], defaults={'task_type': None})
-@app.route('/type/<string:task_type>/next', methods=["GET"])
+@app.route('/next', methods=["GET"], defaults={'type_name': None})
+@app.route('/type/<string:type_name>/next', methods=["GET"])
 @login.login_required
-def next(task_type):
-    # redundancy = app.config.get("USERS_PER_TASK", 2)
-    # task = TaskRepository.get_instance().get_next_task(g.user, redundancy)
-    # template = request.is_xhr and "_task.html" or "task.html"
+def next(type_name):
+    """
+    Provides next available task for user.
+    If user isn't eligible for that type of tasks - an exception
+    should be thrown.
 
-    # return render_template(template, task=task)
-    return "Hello world"
+    :param type_name: Task type name
+    :type type_name: basestring
+    """
+    task_type = resolve_task_type(type_name)
+    # TODO: we ought to consider permissions system
+    # User groups and 'excluded' lists in settings.TASK_TYPES ?
+    task = task_type.get_next(g.user)
+
+    return render_template(task_type.template, task=task)
 
 
-# @app.route('/report', methods=["POST"])
-# @login.login_required
-# def report():
-#     res = TaskRepository.get_instance() \
-#         .save_on_success(request.values, g.user)
-#     res = ReportRepository.get_instance() \
-#         .create(res, g.user, request.values.get("mistakes", {}))
+@app.route('/skip/<string:task_id>', methods=["GET"],
+           defaults={'type_name': None})
+@app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["GET"])
+@login.login_required
+def skip(type_name, task_id):
+    """
+    This action adds the task to the 'skipped' list of current user.
 
-#     return jsonify({"ok": res}), res and 200 or 500
+    :param type_name: Task type name
+    :type type_name: basestring
+    :param task_id: Task ID
+    :type task_id: basestring
+    """
+    task_type = resolve_task_type(type_name)
+    task = task_type.task_model.objects.get_or_404(id=task_id)
+
+    task_type.skip_task(user=g.user, task=task)
+
+    return redirect(url_for('next'))

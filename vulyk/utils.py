@@ -1,3 +1,4 @@
+import httplib
 from flask import jsonify, abort
 from functools import wraps
 from itertools import islice
@@ -13,36 +14,39 @@ def unique(a):
 
 
 def handle_exception_as_json(exc=Exception):
+    if isinstance(exc, Exception):
+        exc = Exception
+
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
             try:
                 fn(*args, **kwargs)
                 return jsonify({"result": True})
-            except Exception as e:
+            except exc as e:
                 return jsonify({"result": False, "reason": unicode(e)})
         return wrapper
     return decorator
 
 
-def resolve_task_type(func):
-    @wraps(func)
-    def decorated_view(*args, **kwargs):
-        from app import TASKS_TYPES
+def resolve_task_type(task_type_name):
+    """
+    Looks for `task_type_name` in TASK_TYPES list
 
-        if "task_type" not in kwargs:
-            abort(404)
+    :type task_type_name: str | basestring
+    :rtype: AbstractTaskType
+    """
+    from app import TASKS_TYPES
 
-        if kwargs["task_type"]:
-            if kwargs["task_type"] not in TASKS_TYPES:
-                abort(404)
-            else:
-                kwargs["task_type"] = TASKS_TYPES[kwargs["task_type"]]
+    task_type = None
+
+    if task_type_name:
+        if task_type_name not in TASKS_TYPES:
+            abort(httplib.NOT_FOUND)
         else:
-            kwargs["task_type"] = None
+            task_type = TASKS_TYPES[task_type_name]
 
-        return func(*args, **kwargs)
-    return decorated_view
+    return task_type
 
 
 # Borrowed from elasticutils

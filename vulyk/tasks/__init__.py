@@ -1,8 +1,16 @@
 from werkzeug.utils import import_string
 
 
-# TODO: class?
 def init_tasks(app):
+    """
+    Extracts modules (task types) from global configuration
+
+    :param app: Current Flask application instance
+    :type app: Flask
+
+    :return: Dictionary with instantiated *TaskType objects
+    :rtype: dict
+    """
     task_types = {}
 
     for tt in app.config.get("TASK_TYPES", []):
