@@ -10,7 +10,7 @@ Crowdsourcing platform for NLP tasks
 .. image:: https://pypip.in/d/vulyk/badge.png
         :target: https://pypi.python.org/pypi/vulyk
 
-.. images:: https://readthedocs.org/projects/vulyk/?badge=latest
+.. image:: https://readthedocs.org/projects/vulyk/?badge=latest
         :target: http://vulyk.readthedocs.org/en/latest/
 
 License
