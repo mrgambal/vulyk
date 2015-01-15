@@ -13,6 +13,7 @@ Crowdsourcing platform for NLP tasks
 .. image:: https://readthedocs.org/projects/vulyk/badge/?version=latest
         :target: https://vulyk.readthedocs.org/en/latest/
 
+
 License
 -------
 
