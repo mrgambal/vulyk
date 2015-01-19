@@ -29,22 +29,25 @@ def handle_exception_as_json(exc=Exception):
     return decorator
 
 
-def resolve_task_type(task_type_name):
+def resolve_task_type(type_name, user):
     """
     Looks for `task_type_name` in TASK_TYPES list
 
-    :type task_type_name: str | basestring
+    :type type_name: str | basestring
+    :type user: models.User
+
     :rtype: AbstractTaskType
     """
-    from app import TASKS_TYPES
+    from app import TASKS_TYPES as T
 
     task_type = None
 
-    if task_type_name:
-        if task_type_name not in TASKS_TYPES:
-            abort(httplib.NOT_FOUND)
-        else:
-            task_type = TASKS_TYPES[task_type_name]
+    if not (type_name and type_name in T):
+        abort(httplib.NOT_FOUND)
+    elif not T[type_name].is_eligible_for(user.group.id):
+        abort(httplib.FORBIDDEN)
+    else:
+        task_type = T[type_name]
 
     return task_type
 

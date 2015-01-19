@@ -23,14 +23,16 @@ TASKS_TYPES = init_tasks(app)
 def index(type_name):
     """
     Main site view
+    Task type selection (not implemented)
 
     :param type_name: Task type name
     :type type_name: basestring
     """
-    task_type = resolve_task_type(type_name)
+    if type_name:
+        task_type = resolve_task_type(type_name, g.user)
 
-    if task_type is not None:
-        return redirect(url_for('next', type_name=type_name))
+        if task_type is not None:
+            return redirect(url_for('next', type_name=type_name))
     else:
         return render_template("index.html", type_name=type_name)
 
@@ -64,9 +66,8 @@ def next(type_name):
     :param type_name: Task type name
     :type type_name: basestring
     """
-    task_type = resolve_task_type(type_name)
-    # TODO: we ought to consider permissions system
-    # User groups and 'excluded' lists in settings.TASK_TYPES ?
+    task_type = resolve_task_type(type_name, g.user)
+
     if task_type is not None:
         task = task_type.get_next(g.user)
 
@@ -89,7 +90,7 @@ def skip(type_name, task_id):
     :param task_id: Task ID
     :type task_id: basestring
     """
-    task_type = resolve_task_type(type_name)
+    task_type = resolve_task_type(type_name, g.user)
 
     if task_type is not None:
         task = task_type.task_model.objects.get_or_404(id=task_id)

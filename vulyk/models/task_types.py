@@ -8,6 +8,10 @@ from .tasks import AbstractTask
 
 
 class AbstractTaskType(object):
+    task_model = None
+    redundancy = 2
+    excluded_groups = []
+
     def __init__(self, redundancy):
         self.redundancy = redundancy
 
@@ -16,6 +20,10 @@ class AbstractTaskType(object):
 
         assert self.type_name, "You should define type_name (underscore)"
         assert self.template, "You should define template"
+
+    @classmethod
+    def is_eligible_for(cls, group):
+        return group not in cls.excluded_groups
 
     def import_tasks(self, tasks):
         """Imports tasks from an iterable over dicts

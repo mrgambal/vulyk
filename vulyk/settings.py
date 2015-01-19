@@ -75,6 +75,7 @@ TASK_TYPES = [
     #     "task": "tasks.dummy.DummyTaskType",
     #     "settings": {
     #         "redundancy": 5
-    #     }
+    #     },
+    #     "excluded_groups": ["oligarchs"]
     # }
 ]

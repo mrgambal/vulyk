@@ -2,8 +2,7 @@
 # coding=utf-8
 
 import click
-from cli import admin as _admin
-from cli import db as _db
+from cli import admin as _admin, db as _db
 from app import TASKS_TYPES
 
 

@@ -1,9 +1,17 @@
 # coding=utf-8
 from mongoengine import StringField, EmailField, BooleanField, \
-    DateTimeField, IntField
+    DateTimeField, IntField, ReferenceField, NULLIFY
 from flask.ext.login import UserMixin, AnonymousUserMixin
 from flask.ext.mongoengine import Document
 import datetime
+
+
+class Group(Document):
+    """
+    Class was introduced to serve the permissions purpose
+    """
+    id = StringField(max_length=100, primary_key=True)
+    description = StringField(max_length=200)
 
 
 class User(Document, UserMixin):
@@ -13,6 +21,7 @@ class User(Document, UserMixin):
     email = EmailField()
     active = BooleanField(default=True)
     admin = BooleanField(default=False)
+    group = ReferenceField(Group, reverse_delete_rule=NULLIFY, default=None)
     last_login = DateTimeField(default=datetime.datetime.now)
     processed = IntField(default=0)
 
