@@ -1,9 +1,8 @@
 # coding=utf-8
-import datetime
-
+from datetime import datetime
 from mongoengine import (
-    StringField, IntField, DateTimeField, ListField,
-    ReferenceField, DictField, CASCADE)
+    StringField, IntField, DateTimeField, ListField, ReferenceField, DictField,
+    CASCADE)
 from flask.ext.mongoengine import Document
 
 from . import User
@@ -11,14 +10,15 @@ from . import User
 
 class AbstractTask(Document):
     id = StringField(max_length=200, default='', primary_key=True)
-    task_type = StringField(max_length=50, required=True)
+    title = StringField(max_length=200, required=True)
+    task_type = StringField(max_length=50, required=True, db_field='taskType')
     users_count = IntField(default=0, db_field='usersCount')
     users_processed = ListField(ReferenceField(User),
                                 db_field='usersProcessed')
     users_skipped = ListField(ReferenceField(User),
                               db_field='usersSkipped')
 
-    task_data = DictField()
+    task_data = DictField(required=True)
 
     meta = {
         'collection': 'tasks',
@@ -29,8 +29,16 @@ class AbstractTask(Document):
     }
 
     def as_dict(self):
-        return {"title": self.title,
-                "id": self.id}
+        """
+        Converts the model-instance into a safe and lightweight dictionary.
+
+        :rtype : dict
+        """
+        return {
+            "id": self.id,
+            "title": self.title,
+            "data": self.task_data
+        }
 
     def __unicode__(self):
         return unicode(self.id)
@@ -42,23 +50,30 @@ class AbstractTask(Document):
         return unicode(self.title)
 
 
-# Not sure about this one as well
-# class Report(Document):
-#     task = ReferenceField(Task, reverse_delete_rule=CASCADE)
+# class AbstractReport(Document):
+#     task = ReferenceField(AbstractTask, reverse_delete_rule=CASCADE)
 #     created_by = ReferenceField(User, reverse_delete_rule=CASCADE,
 #                                 db_field="createdBy")
 #     created_at = DateTimeField(default=datetime.datetime.now,
 #                                db_field="createdAt")
 #     # not sure - could be extended
-#     found_mistakes = ListField(DictField(), db_field="foundMistakes")
-
-#     meta = {'collection': 'reports'}
-
+#     result = ListField(DictField())
+#
+#     meta = {
+#         'collection': 'reports',
+#         'allow_inheritance': True,
+#         'indexes': [
+#             'task',
+#             'created_by',
+#             'created_at'
+#         ]
+#     }
+#
 #     def __unicode__(self):
 #         return unicode(self.pk)
-
+#
 #     def __str__(self):
 #         return self.__unicode__()
-
+#
 #     def __repr__(self):
 #         return u"Report [%s by %s]".format(self.created_by, self.task)

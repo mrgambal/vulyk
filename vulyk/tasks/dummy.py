@@ -33,18 +33,7 @@ class DummyTaskType(AbstractTaskType):
         Returns:
             empty string
         """
-        return self._render_task(self.task_model())
-
-    def _render_task(self, task):
-        """Returns rendered self.template with values from task inserted
-        Stub for DummyTaskType
-
-        Args:
-            task: an instance of self.task_model model
-        Returns:
-            empty string
-        """
-        return ""
+        return self.task_model().as_dict()
 
     def save_task_result(self, user, task, answer):
         """Saves user's answers for a given task

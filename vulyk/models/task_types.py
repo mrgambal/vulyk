@@ -1,3 +1,4 @@
+import random
 import ujson as json
 from hashlib import sha1
 from mongoengine.errors import OperationError, NotUniqueError
@@ -65,26 +66,20 @@ class AbstractTaskType(object):
         Args:
             user: an instance of User model
         Returns:
-            rendered self.template with task or None
+            Prepared dictionary or model, or None
 
         Raises:
             TaskPermissionError
         """
 
-        raise NotImplementedError
+        res = self.task_model.objects(
+            task_type=self.type_name,
+            users_count__lt=self.redundancy,
+            users_processed__ne=user.id,
+            users_skipped__ne=user.id)
+        res = res[random.randint(0, res.count())]
 
-    def _render_task(self, task):
-        """Returns rendered self.template with values from task inserted
-        Takes burden to prepare task data for Jinja template if this cannot
-        be covered by jinja itself
-
-        Args:
-            task: an instance of self.task_model model
-        Returns:
-            rendered self.template with task
-        """
-
-        raise NotImplementedError
+        return res.as_dict()
 
     def skip_task(self, user, task):
         """Marks given task as a skipped by a given user
@@ -125,6 +120,9 @@ class AbstractTaskType(object):
             TaskValidationError - in case of validation problems
         """
 
+        user.update(inc__processed=1)
+        task.update(inc__users_count=1, push__users_processed=user)
+        # TODO: Gotta think more.
         raise NotImplementedError
 
     # Still in doubts about these methods:
