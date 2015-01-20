@@ -2,8 +2,13 @@
 # coding=utf-8
 
 import click
-from cli import admin as _admin, db as _db
+from cli import admin as _admin, db as _db, groups as _groups
 from app import TASKS_TYPES
+
+
+def abort_if_false(ctx, param, value):
+    if not value:
+        ctx.abort()
 
 
 @click.group()
@@ -54,3 +59,40 @@ def db():
 def load(task_type, name):
     """Refills tasks collection from json."""
     _db.load_tasks(TASKS_TYPES[task_type], name)
+
+
+@cli.group("group")
+def group():
+    """Groups management section"""
+    pass
+
+
+@group.command("add")
+@click.option("--gid",
+              prompt="Specify string code (letters, numbers, underscores)",
+              callback=_groups.validate_id)
+@click.option("--description",
+              prompt="Provide a short description (up to 200 symbols)")
+def group_add(gid, description):
+    _groups.new_group(gid, description)
+
+
+@group.command("del")
+@click.option("--gid",
+              prompt="Specify the group you want to remove",
+              type=click.Choice(_groups.get_groups_ids()))
+@click.option('--yes', is_flag=True, callback=abort_if_false,
+              expose_value=False,
+              prompt='Are you sure you want to remove the group?')
+def group_remove(gid):
+    _groups.remove_group(gid)
+
+
+@group.command("assign")
+@click.option("--user",
+              prompt="Provide a username")
+@click.option("--gid",
+              prompt="Specify the group you want to assign",
+              type=click.Choice(_groups.get_groups_ids()))
+def group_assign_to(username, gid):
+    _groups.assign_to(username, gid)

@@ -1,6 +1,6 @@
 # coding=utf-8
 from mongoengine import StringField, EmailField, BooleanField, \
-    DateTimeField, IntField, ReferenceField, NULLIFY
+    DateTimeField, IntField, ReferenceField, PULL
 from flask.ext.login import UserMixin, AnonymousUserMixin
 from flask.ext.mongoengine import Document
 import datetime
@@ -21,7 +21,7 @@ class User(Document, UserMixin):
     email = EmailField()
     active = BooleanField(default=True)
     admin = BooleanField(default=False)
-    group = ReferenceField(Group, reverse_delete_rule=NULLIFY, default=None)
+    group = ReferenceField(Group, reverse_delete_rule=PULL, default=None)
     last_login = DateTimeField(default=datetime.datetime.now)
     processed = IntField(default=0)
 
