@@ -67,6 +67,12 @@ def group():
     pass
 
 
+@group.command("list")
+def group_show():
+    for g in _groups.list_groups():
+        click.echo(g)
+
+
 @group.command("add")
 @click.option("--gid",
               prompt="Specify string code (letters, numbers, underscores)",
@@ -89,10 +95,40 @@ def group_remove(gid):
 
 
 @group.command("assign")
-@click.option("--user",
-              prompt="Provide a username")
+@click.option("--username",
+              prompt="Provide the username")
 @click.option("--gid",
               prompt="Specify the group you want to assign",
               type=click.Choice(_groups.get_groups_ids()))
 def group_assign_to(username, gid):
     _groups.assign_to(username, gid)
+
+
+@group.command("resign")
+@click.option("--username",
+              prompt="Provide the username")
+@click.option("--gid",
+              prompt="Specify the group you want to resign the user from",
+              type=click.Choice(_groups.get_groups_ids()))
+def group_assign_to(username, gid):
+    _groups.resign(username, gid)
+
+
+@click.option("--gid",
+              prompt="Specify group's id",
+              type=click.Choice(_groups.get_groups_ids()))
+@group.command("addtype")
+@click.option("--task_type",
+              prompt="Provide the task type name")
+def group_addtype(gid, task_type):
+    _groups.add_task_type(gid, task_type=task_type)
+
+
+@click.option("--gid",
+              prompt="Specify group's id",
+              type=click.Choice(_groups.get_groups_ids()))
+@group.command("deltype")
+@click.option("--task_type",
+              prompt="Provide the task type name")
+def group_deltype(gid, task_type):
+    _groups.remove_task_type(gid, task_type=task_type)

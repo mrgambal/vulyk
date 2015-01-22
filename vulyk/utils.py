@@ -34,7 +34,7 @@ def resolve_task_type(type_name, user):
     Looks for `task_type_name` in TASK_TYPES list
 
     :type type_name: str | basestring
-    :type user: models.User
+    :type user: vulyk.models.User
 
     :rtype: AbstractTaskType
     """
@@ -44,7 +44,7 @@ def resolve_task_type(type_name, user):
 
     if not (type_name and type_name in T):
         abort(httplib.NOT_FOUND)
-    elif not T[type_name].is_eligible_for(user.group.id):
+    elif not user.is_eligible_for(T[type_name]):
         abort(httplib.FORBIDDEN)
     else:
         task_type = T[type_name]
