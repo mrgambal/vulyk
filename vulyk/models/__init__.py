@@ -1,5 +1,5 @@
 # coding=utf-8
-from .user import User
+from .user import User, Group
 from .tasks import AbstractTask
 from .stats import EditSession
 

@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, redirect, url_for, g
+import httplib
+from flask import Flask, render_template, redirect, url_for, g, abort
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
-from assets import init as assets_init
-from users import init_social_login
-from utils import resolve_task_type
-from tasks import init_tasks
+from .assets import init as assets_init
+from .users import init_social_login
+from .utils import resolve_task_type
+from .tasks import init_tasks
 
 app = Flask(__name__)
 app.config.from_object('vulyk.settings')
-
-try:
-    app.config.from_object('vulyk.local_settings')
-except ImportError:
-    pass
-
 
 assets_init(app)
 db = MongoEngine(app)
@@ -24,17 +19,32 @@ TASKS_TYPES = init_tasks(app)
 
 
 @app.route('/', methods=["GET"], defaults={'type_name': None})
-@app.route('/type/<string:type_name>/', methods=["GET"])
+@app.route('/type/<string:type_name>', methods=["GET"])
 def index(type_name):
     """
     Main site view
+    Task type selection (not implemented)
 
     :param type_name: Task type name
     :type type_name: basestring
     """
-    task_type = resolve_task_type(type_name)
+    if type_name:
+        task_type = resolve_task_type(type_name, g.user)
 
-    return render_template("index.html", task_type=task_type)
+        if task_type is not None:
+            return redirect(url_for('next', type_name=type_name))
+    else:
+        return render_template("index.html", type_name=type_name)
+
+
+@app.route('/type', methods=['GET'])
+def types():
+    """
+    Produces a selectable list of available tasks which are appropriate
+    for current user.
+    """
+    # TODO: need a template
+    return render_template('types.html', types=TASKS_TYPES.keys())
 
 
 @app.route('/logout', methods=['POST'])
@@ -56,12 +66,15 @@ def next(type_name):
     :param type_name: Task type name
     :type type_name: basestring
     """
-    task_type = resolve_task_type(type_name)
-    # TODO: we ought to consider permissions system
-    # User groups and 'excluded' lists in settings.TASK_TYPES ?
-    task = task_type.get_next(g.user)
+    task_type = resolve_task_type(type_name, g.user)
 
-    return render_template(task_type.template, task=task)
+    if task_type is not None:
+        task = task_type.get_next(g.user)
+
+        return render_template(task_type.template, task=task)
+    else:
+        # http://goo.gl/LhxvJd
+        return redirect(url_for('index', type_name=type_name))
 
 
 @app.route('/skip/<string:task_id>', methods=["GET"],
@@ -77,9 +90,12 @@ def skip(type_name, task_id):
     :param task_id: Task ID
     :type task_id: basestring
     """
-    task_type = resolve_task_type(type_name)
-    task = task_type.task_model.objects.get_or_404(id=task_id)
+    task_type = resolve_task_type(type_name, g.user)
 
-    task_type.skip_task(user=g.user, task=task)
+    if task_type is not None:
+        task = task_type.task_model.objects.get_or_404(id=task_id)
+        task_type.skip_task(user=g.user, task=task)
 
-    return redirect(url_for('next'))
+        return redirect(url_for('next', type_name=type_name))
+    else:
+        abort(httplib.NOT_FOUND)

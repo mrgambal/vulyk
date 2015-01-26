@@ -52,7 +52,7 @@ def _load_tasks_file(task_type, path):
 
                 i += len(chunk)
                 echo(u"{0:d} tasks processed".format(i))
-        except Exception, e:  # TODO: Except what?
+        except Exception as e:  # TODO: Except what?
             # TODO: proper error message
             echo("uhoh")
             echo(e)

@@ -26,7 +26,7 @@ def init_social_login(app, db):
                 user.save()
             return user
         except (TypeError, ValueError, User.DoesNotExist):
-            pass
+            return None
 
     @app.before_request
     def global_user():

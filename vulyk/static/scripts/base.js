@@ -1,7 +1,7 @@
 ;
 "use strict";
 
-var Nemesis = Nemesis || {
+var Vulyk = Vulyk || {
         State: {
             workplace: null,
             task_title: "",
@@ -12,7 +12,7 @@ var Nemesis = Nemesis || {
             selected_terms: []
         },
         event_handlers: function () {
-            var ne = Nemesis;
+            var ne = Vulyk;
 
             ne.State.workplace
                 .on("click", "a#save-button", function (e) {
@@ -21,7 +21,7 @@ var Nemesis = Nemesis || {
                 .on("click", ".mfp-close", function (e) {
                     e.preventDefault();
 
-                    ne.load_next();
+                    ne.show_types_selector();
                     ne.State.workplace.find(".mfp-hide").hide();
                 });
 
@@ -31,7 +31,7 @@ var Nemesis = Nemesis || {
         remap_text: function () {
         },
         load_next: function () {
-            var nes = Nemesis.State,
+            var nes = Vulyk.State,
                 meta = null;
 
             $.get(
@@ -46,6 +46,16 @@ var Nemesis = Nemesis || {
                     nes.task_id = meta.id;
                     nes.task_title = meta.title;
                     nes.task_init_state = nes.task_state = meta.structure;
+                },
+                "html");
+        },
+        show_types_selector: function () {
+            var nes = Vulyk.State;
+
+            $.get(
+                "/type",
+                function (data) {
+                    nes.task_wrapper.html(data);
                 },
                 "html");
         },
@@ -71,4 +81,4 @@ var Nemesis = Nemesis || {
         }
     };
 
-Nemesis.init();
+Vulyk.init();
