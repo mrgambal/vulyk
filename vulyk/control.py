@@ -13,7 +13,7 @@ def abort_if_false(ctx, param, value):
 
 @click.group()
 def cli():
-    """Pullenti UA management CLI"""
+    """Vulyk UA management CLI"""
 
 
 @cli.group('admin')

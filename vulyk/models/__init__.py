@@ -1,10 +1,10 @@
 # coding=utf-8
-from .user import User, Group
-from .tasks import AbstractTask
-from .stats import EditSession
-
 from mongoengine.base.fields import ObjectIdField
 from bson import ObjectId
+
+from .user import User, Group
+from .tasks import AbstractTask, AbstractCloseableTask, AbstractAnswer
+from .stats import EditSession
 
 
 # Monkey Patch for allowing queryset with unicode objects instead ObjectId

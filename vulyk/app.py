@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import httplib
-from flask import Flask, render_template, redirect, url_for, g, abort
+from flask import Flask, render_template, redirect, url_for, g, abort, request
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
@@ -93,8 +93,31 @@ def skip(type_name, task_id):
     task_type = resolve_task_type(type_name, g.user)
 
     if task_type is not None:
-        task = task_type.task_model.objects.get_or_404(id=task_id)
-        task_type.skip_task(user=g.user, task=task)
+        task_type.skip_task(user=g.user, task_id=task_id)
+
+        return redirect(url_for('next', type_name=type_name))
+    else:
+        abort(httplib.NOT_FOUND)
+
+
+@app.route('/done/<string:task_id>', methods=["POST"],
+           defaults={'type_name': None})
+@app.route('/type/<string:type_name>/done/<string:task_id>', methods=["POST"])
+@login.login_required
+def done(type_name, task_id):
+    """
+    This action adds the task to the 'skipped' list of current user.
+
+    :param type_name: Task type name
+    :type type_name: basestring
+    :param task_id: Task ID
+    :type task_id: basestring
+    """
+    task_type = resolve_task_type(type_name, g.user)
+
+    if task_type is not None:
+        task_type.save_task_result(g.user, task_id, request.form.get("result"))
+        g.user.update(inc__processed=1)
 
         return redirect(url_for('next', type_name=type_name))
     else:

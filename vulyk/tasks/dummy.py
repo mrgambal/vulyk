@@ -35,19 +35,18 @@ class DummyTaskType(AbstractTaskType):
         """
         return self.task_model().as_dict()
 
-    def save_task_result(self, user, task, answer):
+    def save_task_result(self, user, task_id, result):
         """Saves user's answers for a given task
         Stub for DummyTaskType
 
-        Args:
-            user: an instance of User model who provided an answer
-            task: an instance of self.task_model model
-            answer: QueryDict with answers
-        Returns:
-            always True
+        :param user: an instance of User model who provided an answer
+        :type user: models.User
+        :param task_id: Given task ID
+        :type task_id: basestring
+        :param result: Task solving result
+        :type result: dict
 
-        Raises:
-            TaskSaveError - in case of general problems
-            TaskValidationError - in case of validation problems
+        :raises: TaskSaveError - in case of general problems
+        :raises: TaskValidationError - in case of validation problems
         """
         return True
