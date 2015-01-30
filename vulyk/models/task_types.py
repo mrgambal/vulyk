@@ -5,16 +5,17 @@ from hashlib import sha1
 from mongoengine.errors import OperationError, NotUniqueError
 
 from .exc import TaskSkipError, TaskImportError
-from .tasks import AbstractTask, AbstractCloseableTask, AbstractAnswer
+from .tasks import AbstractTask, AbstractAnswer
 
 
 class AbstractTaskType(object):
-    auto_closeable = False
     answer_model = None
     task_model = None
+
     template = ""
     type_name = ""
-    redundancy = 2
+
+    redundancy = 3
 
     def __init__(self, redundancy):
         self.redundancy = redundancy
@@ -24,11 +25,7 @@ class AbstractTaskType(object):
         # I'm too exhausted to understand why it doesn't work =(
         #
         # assert issubclass(self.answer_model, AbstractAnswer), \
-        #     "You should define answer_model property"
-
-        if self.auto_closeable:
-            assert issubclass(self.task_model, AbstractCloseableTask), \
-                "You should derive your task from AbstractCloseableTask"
+        # "You should define answer_model property"
 
         assert self.type_name, "You should define type_name (underscore)"
         assert self.template, "You should define template"
@@ -87,13 +84,11 @@ class AbstractTaskType(object):
         Raises:
             TaskPermissionError
         """
-
         res = self.task_model.objects(
             task_type=self.type_name,
-            users_count__lt=self.redundancy,
             users_processed__ne=user.id,
             users_skipped__ne=user.id,
-            closed__ne=self.redundancy)
+            closed__ne=True)
         res = res[random.randint(0, res.count())]
 
         return res.as_dict()
@@ -119,7 +114,7 @@ class AbstractTaskType(object):
         except OperationError as err:
             raise TaskSkipError(u"Can not skip the task: {0}".format(err))
 
-    def save_task_result(self, user, task_id, result):
+    def on_task_done(self, user, task_id, result):
         """
         Saves user's answers for a given task
         Assumes that user is eligible for this kind of tasks
@@ -135,24 +130,23 @@ class AbstractTaskType(object):
         :raises: TaskSaveError - in case of general problems
         :raises: TaskValidationError - in case of validation problems
         """
-        task = self.task_model.objects.get_or_404(id=task_id)
-        result = self.answer_model.objects.create(task=task,
-                                                  created_by=user,
-                                                  result=result)
+        # create new answer or modify existing one
+        task = self.task_model \
+            .objects \
+            .get_or_404(id=task_id)
+        answer = self.answer_model \
+            .objects \
+            .get_or_create(task=task, created_by=user) \
+            .update(set__result=result)
+        # update task
+        self._update_task_on_answer(task, answer, user)
+        # update user
+        user.update(inc__processed=1)
 
-        if self.auto_closeable:
-            same = self._get_same_answers_count(task, result)
-
-            if same == self.redundancy:
-                task_id.closed = True
-
-        task.users_count += 1
-        task.users_processed.append(user)
-        task.save()
-
-    def _get_same_answers_count(self, task, answer):
+    def _is_ready_for_autoclose(self, answer, task):
         """
-        Returns count of the same answers for autocloseable tasks
+        Checks if task could be closed before it
+        Should be overridden if you need more complex logic.
 
         :param task: an instance of self.task_model model
         :type task: AbstractTask
@@ -160,9 +154,30 @@ class AbstractTaskType(object):
         :type answer: AbstractAnswer
 
         :returns: How many identical answers we got
-        :rtype: int
+        :rtype: bool
         """
-        return len(self.answer_model.objects(task=task, result=answer.result))
+        raise NotImplementedError()
+
+    def _update_task_on_answer(self, task, answer, user):
+        """
+        Sets flag 'closed' to True if task's goal has been reached
+
+        :param task: an instance of self.task_model model
+        :type task: AbstractTask
+        :param answer: Task solving result
+        :type answer: AbstractAnswer
+        :param user: an instance of User model who provided an answer
+        :type user: models.User
+        """
+        task.users_count += 1
+        task.users_processed.append(user)
+
+        if self._is_ready_for_autoclose(answer, task):
+            task.closed = True
+        else:
+            task.closed = task.users_count == self.redundancy
+
+        task.save()
 
         # get_help that returns help text or template with help. Might be a
         # property too

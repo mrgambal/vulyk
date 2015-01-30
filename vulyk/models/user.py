@@ -63,7 +63,7 @@ class User(Document, UserMixin):
 
         :return: True if user is eligible
 
-        :raises AssertionError: if no `task_type` specified
+        :raises: AssertionError - if no `task_type` specified
         """
         assert task_type, "Empty parameter `task_type` passed"
 

@@ -8,6 +8,7 @@ class DummyTask(AbstractTask):
 
 class DummyTaskType(AbstractTaskType):
     task_model = DummyTask
+
     type_name = "dummy_task"
     template = "dummy_template.html"
 
@@ -35,7 +36,7 @@ class DummyTaskType(AbstractTaskType):
         """
         return self.task_model().as_dict()
 
-    def save_task_result(self, user, task_id, result):
+    def on_task_done(self, user, task_id, result):
         """Saves user's answers for a given task
         Stub for DummyTaskType
 
@@ -49,4 +50,25 @@ class DummyTaskType(AbstractTaskType):
         :raises: TaskSaveError - in case of general problems
         :raises: TaskValidationError - in case of validation problems
         """
-        return True
+        pass
+
+    def _is_ready_for_autoclose(self, answer, task):
+        """
+        Returns count of the same answers for autocloseable tasks.
+
+        Example implementation
+
+        :param task: an instance of self.task_model model
+        :type task: AbstractTask
+        :param answer: Task solving result
+        :type answer: AbstractAnswer
+
+        :returns: How many identical answers we got
+        :rtype: int
+        """
+        auto_close_redundancy = 2
+
+        rs = self.answer_model.objects(task=task)
+        identical = len([x for x in rs if x == answer])
+
+        return identical == auto_close_redundancy

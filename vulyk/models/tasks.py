@@ -12,12 +12,14 @@ class AbstractTask(Document):
     id = StringField(max_length=200, default='', primary_key=True)
     title = StringField(max_length=200, required=True)
     task_type = StringField(max_length=50, required=True, db_field='taskType')
+
     users_count = IntField(default=0, db_field='usersCount')
     users_processed = ListField(ReferenceField(User),
                                 db_field='usersProcessed')
     users_skipped = ListField(ReferenceField(User),
                               db_field='usersSkipped')
 
+    closed = BooleanField(default=False)
     task_data = DictField(required=True)
 
     meta = {
@@ -37,6 +39,7 @@ class AbstractTask(Document):
         return {
             "id": self.id,
             "title": self.title,
+            "closed": self.closed,
             "data": self.task_data
         }
 
@@ -48,16 +51,6 @@ class AbstractTask(Document):
 
     def __repr__(self):
         return unicode(self.title)
-
-
-class AbstractCloseableTask(AbstractTask):
-    closed = BooleanField()
-
-    def as_dict(self):
-        d = super(AbstractCloseableTask, self).as_dict()
-        d["closed"] = self.closed
-
-        return d
 
 
 class AbstractAnswer(Document):

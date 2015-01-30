@@ -18,7 +18,6 @@ init_social_login(app, db)
 TASKS_TYPES = init_tasks(app)
 
 
-@app.route('/', methods=["GET"], defaults={'type_name': None})
 @app.route('/type/<string:type_name>', methods=["GET"])
 def index(type_name):
     """
@@ -54,7 +53,6 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/next', methods=["GET"], defaults={'type_name': None})
 @app.route('/type/<string:type_name>/next', methods=["GET"])
 @login.login_required
 def next(type_name):
@@ -77,8 +75,6 @@ def next(type_name):
         return redirect(url_for('index', type_name=type_name))
 
 
-@app.route('/skip/<string:task_id>', methods=["GET"],
-           defaults={'type_name': None})
 @app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["GET"])
 @login.login_required
 def skip(type_name, task_id):
@@ -100,8 +96,6 @@ def skip(type_name, task_id):
         abort(httplib.NOT_FOUND)
 
 
-@app.route('/done/<string:task_id>', methods=["POST"],
-           defaults={'type_name': None})
 @app.route('/type/<string:type_name>/done/<string:task_id>', methods=["POST"])
 @login.login_required
 def done(type_name, task_id):
@@ -116,8 +110,7 @@ def done(type_name, task_id):
     task_type = resolve_task_type(type_name, g.user)
 
     if task_type is not None:
-        task_type.save_task_result(g.user, task_id, request.form.get("result"))
-        g.user.update(inc__processed=1)
+        task_type.on_task_done(g.user, task_id, request.form.get("result"))
 
         return redirect(url_for('next', type_name=type_name))
     else:
