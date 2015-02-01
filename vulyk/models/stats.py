@@ -2,16 +2,24 @@
 from datetime import datetime
 from mongoengine import IntField, DateTimeField, ReferenceField, CASCADE
 from flask.ext.mongoengine import Document
-from . import User, AbstractTask
+
+from . import User, AbstractTask, AbstractAnswer
 
 
-class EditSession(Document):
-    # TODO: add creation on /next and modification on /report
+class WorkSession(Document):
     user = ReferenceField(User, reverse_delete_rule=CASCADE, required=True)
-    task = ReferenceField(
-        AbstractTask, reverse_delete_rule=CASCADE, required=True)
-    # report = ReferenceField(Report, reverse_delete_rule=CASCADE)
+    task = ReferenceField(AbstractTask, reverse_delete_rule=CASCADE,
+                          required=True)
+    answer = ReferenceField(AbstractAnswer, reverse_delete_rule=CASCADE)
 
     start_time = DateTimeField(required=True, default=datetime.now())
-    end_time = DateTimeField(required=True, default=datetime.now())
+    end_time = DateTimeField(required=True)
     corrections = IntField()
+
+    meta = {
+        'collection': 'work_sessions',
+        'indexes': [
+            ('user', 'task'),
+            'task'
+        ]
+    }

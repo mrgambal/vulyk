@@ -3,8 +3,8 @@ from mongoengine.base.fields import ObjectIdField
 from bson import ObjectId
 
 from .user import User, Group
-from .tasks import AbstractTask, AbstractCloseableTask, AbstractAnswer
-from .stats import EditSession
+from .tasks import AbstractTask, AbstractAnswer
+from .stats import WorkSession
 
 
 # Monkey Patch for allowing queryset with unicode objects instead ObjectId

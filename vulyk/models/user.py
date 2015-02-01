@@ -1,10 +1,11 @@
 # coding=utf-8
+import datetime
+
+from flask.ext.login import UserMixin, AnonymousUserMixin
+from flask.ext.mongoengine import Document
 from itertools import chain
 from mongoengine import StringField, EmailField, BooleanField, \
     DateTimeField, IntField, ReferenceField, PULL, ListField
-from flask.ext.login import UserMixin, AnonymousUserMixin
-from flask.ext.mongoengine import Document
-import datetime
 
 
 class Group(Document):

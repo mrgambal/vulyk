@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding=utf-8
-
 import click
 from cli import admin as _admin, db as _db, groups as _groups
 from app import TASKS_TYPES

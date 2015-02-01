@@ -10,7 +10,6 @@ from . import User
 
 class AbstractTask(Document):
     id = StringField(max_length=200, default='', primary_key=True)
-    title = StringField(max_length=200, required=True)
     task_type = StringField(max_length=50, required=True, db_field='taskType')
 
     users_count = IntField(default=0, db_field='usersCount')
@@ -38,7 +37,6 @@ class AbstractTask(Document):
         """
         return {
             "id": self.id,
-            "title": self.title,
             "closed": self.closed,
             "data": self.task_data
         }
@@ -50,7 +48,7 @@ class AbstractTask(Document):
         return self.__unicode__()
 
     def __repr__(self):
-        return unicode(self.title)
+        return unicode(self.id)
 
 
 class AbstractAnswer(Document):
@@ -71,6 +69,25 @@ class AbstractAnswer(Document):
             'created_at'
         ]
     }
+
+    @property
+    def corrections(self):
+        """
+        Returns whole amount of actions/corrections given by user in this
+        particular answer.
+
+        :return: Count of corrections in this answer
+        :rtype: int
+        """
+        raise NotImplementedError
+
+    @corrections.setter
+    def corrections(self, value):
+        pass
+
+    @corrections.deleter
+    def corrections(self):
+        pass
 
     def __unicode__(self):
         return unicode(self.pk)

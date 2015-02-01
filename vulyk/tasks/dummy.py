@@ -1,3 +1,4 @@
+# coding=utf-8
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractTask
 
