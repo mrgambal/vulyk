@@ -1,7 +1,8 @@
 # coding=utf-8
-from ..app import db  # required for init db
-from ..models import User
 from click import echo
+
+from vulyk.app import db  # required for init db
+from vulyk.models import User
 
 
 def list_admin():

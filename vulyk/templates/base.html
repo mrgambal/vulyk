@@ -73,7 +73,7 @@
         <script type="text/javascript">
             window.user = '{{ user.username }}';
             window.urls = {
-                "next": "{{ url_for('next') }}"
+                "next": "{{ url_for('next', type_name='dummy') }}"
             }
         </script>
         {% endif %}

@@ -2,9 +2,9 @@
 from mongoengine.base.fields import ObjectIdField
 from bson import ObjectId
 
-from .user import User, Group
-from .tasks import AbstractTask, AbstractAnswer
-from .stats import WorkSession
+from vulyk.models.user import User, Group
+from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.models.stats import WorkSession
 
 
 # Monkey Patch for allowing queryset with unicode objects instead ObjectId

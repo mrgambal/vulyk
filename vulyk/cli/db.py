@@ -4,9 +4,9 @@ from itertools import imap
 
 from click import echo
 import bz2file as bz2
-from ..utils import chunked
 
-from ..app import db
+from vulyk.utils import chunked
+from vulyk.app import db
 
 
 try:

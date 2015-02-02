@@ -3,7 +3,7 @@ from datetime import datetime
 from mongoengine import IntField, DateTimeField, ReferenceField, CASCADE
 from flask.ext.mongoengine import Document
 
-from . import User, AbstractTask, AbstractAnswer
+from vulyk.models import User, AbstractTask, AbstractAnswer
 
 
 class WorkSession(Document):

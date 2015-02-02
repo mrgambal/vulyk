@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import httplib
 import ujson as json
-from flask import Flask, render_template, redirect, url_for, g, abort, request, \
-    Response
+from flask import (Flask, render_template, redirect, url_for, g, request,
+                   Response)
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
-from .assets import init as assets_init
-from .users import init_social_login
-from .utils import resolve_task_type
-from .tasks import init_tasks
+from vulyk.assets import init as assets_init
+from vulyk.users import init_social_login
+from vulyk.utils import resolve_task_type
+from vulyk.tasks import init_tasks
 
 app = Flask(__name__)
 app.config.from_object('vulyk.settings')
@@ -20,33 +20,23 @@ init_social_login(app, db)
 TASKS_TYPES = init_tasks(app)
 
 
-@app.route('/type/<string:type_name>', methods=["GET"])
-def index(type_name):
+@app.route('/', methods=["GET"])
+def index():
     """
     Main site view
-    Task type selection (not implemented)
-
-    :param type_name: Task type name
-    :type type_name: basestring
     """
-    if type_name:
-        task_type = resolve_task_type(type_name, g.user)
-
-        if task_type is not None:
-            return redirect(url_for('next', type_name=type_name))
-    else:
-        return render_template("index.html", type_name=type_name)
+    return render_template("index.html")
 
 
-@app.route('/type', methods=['GET'])
+@app.route('/types', methods=['GET'])
 def types():
     """
-    Produces a selectable list of available tasks which are appropriate
+    Produces a list of available tasks types which are appropriate
     for current user.
     """
-    # TODO: need a template
+    res = [t for t in TASKS_TYPES.keys() if g.user.is_eligible_for(t)]
     data = json.dumps({
-        "result": {"types": TASKS_TYPES.keys()},
+        "result": {"types": res},
         "template": "",
         "errors": []})
 

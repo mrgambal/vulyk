@@ -1,14 +1,20 @@
 # coding=utf-8
 from vulyk.models.task_types import AbstractTaskType
-from vulyk.models.tasks import AbstractTask
+from vulyk.models.tasks import AbstractTask, AbstractAnswer
 
 
 class DummyTask(AbstractTask):
     pass
 
 
+class DummyAnswer(AbstractAnswer):
+    def corrections(self):
+        return 0
+
+
 class DummyTaskType(AbstractTaskType):
     task_model = DummyTask
+    answer_model = DummyAnswer
 
     type_name = "dummy_task"
     template = "dummy_template.html"

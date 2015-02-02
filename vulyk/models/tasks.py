@@ -5,7 +5,7 @@ from mongoengine import (
     BooleanField, CASCADE)
 from flask.ext.mongoengine import Document
 
-from . import User
+from vulyk.models import User
 
 
 class AbstractTask(Document):

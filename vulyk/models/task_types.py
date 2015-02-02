@@ -6,10 +6,11 @@ from hashlib import sha1
 from mongoengine.errors import (OperationError, NotUniqueError, LookUpError,
                                 ValidationError, InvalidQueryError)
 
-from . import AbstractTask, AbstractAnswer, WorkSession
-from .exc import (TaskSkipError, TaskImportError, TaskValidationError,
-                  TaskSaveError, WorkSessionLookUpError)
-from ..utils import get_tb
+from vulyk.models import AbstractTask, AbstractAnswer, WorkSession
+from vulyk.models.exc import (
+    TaskSkipError, TaskImportError, TaskValidationError, TaskSaveError,
+    WorkSessionLookUpError)
+from vulyk.utils import get_tb
 
 
 class AbstractTaskType(object):
@@ -26,10 +27,9 @@ class AbstractTaskType(object):
 
         assert issubclass(self.task_model, AbstractTask), \
             "You should define task_model property"
-        # I'm too exhausted to understand why it doesn't work =(
-        #
-        # assert issubclass(self.answer_model, AbstractAnswer), \
-        # "You should define answer_model property"
+
+        assert issubclass(self.answer_model, AbstractAnswer), \
+            "You should define answer_model property"
 
         assert self.type_name, "You should define type_name (underscore)"
         assert self.template, "You should define template"
