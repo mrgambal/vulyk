@@ -113,7 +113,7 @@ class AbstractTaskType(object):
             closed__ne=True)
 
         if rs.count() > 0:
-            task = rs[random.randint(0, rs.count())]
+            task = random.choice(rs)
 
         return task
 

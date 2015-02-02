@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import httplib
-from flask import Flask, render_template, redirect, url_for, g, abort, request
+import ujson as json
+from flask import Flask, render_template, redirect, url_for, g, abort, request, \
+    Response
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
@@ -43,7 +45,12 @@ def types():
     for current user.
     """
     # TODO: need a template
-    return render_template('types.html', types=TASKS_TYPES.keys())
+    data = json.dumps({
+        "result": {"types": TASKS_TYPES.keys()},
+        "template": "",
+        "errors": []})
+
+    return Response(data, httplib.OK)
 
 
 @app.route('/logout', methods=['POST'])
@@ -68,11 +75,19 @@ def next(type_name):
 
     if task_type is not None:
         task = task_type.get_next(g.user)
+        data = json.dumps({
+            "result": {"task": task},
+            "template": task_type.template,
+            "errors": [] if task else ["There is no task for you"]})
 
-        return render_template(task_type.template, task=task)
+        return Response(data, httplib.OK)
     else:
-        # http://goo.gl/LhxvJd
-        return redirect(url_for('index', type_name=type_name))
+        data = json.dumps({
+            "result": {},
+            "template": "",
+            "errors": ["There is no task having type like this"]})
+
+        return Response(data, httplib.NOT_FOUND)
 
 
 @app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["GET"])
@@ -91,9 +106,19 @@ def skip(type_name, task_id):
     if task_type is not None:
         task_type.skip_task(user=g.user, task_id=task_id)
 
-        return redirect(url_for('next', type_name=type_name))
+        data = json.dumps({
+            "result": {"done": True},
+            "template": "",
+            "errors": []})
+
+        return Response(data, httplib.OK)
     else:
-        abort(httplib.NOT_FOUND)
+        data = json.dumps({
+            "result": {},
+            "template": "",
+            "errors": ["There is no task having type like this"]})
+
+        return Response(data, httplib.NOT_FOUND)
 
 
 @app.route('/type/<string:type_name>/done/<string:task_id>', methods=["POST"])
@@ -112,6 +137,16 @@ def done(type_name, task_id):
     if task_type is not None:
         task_type.on_task_done(g.user, task_id, request.form.get("result"))
 
-        return redirect(url_for('next', type_name=type_name))
+        data = json.dumps({
+            "result": {"done": True},
+            "template": "",
+            "errors": []})
+
+        return Response(data, httplib.OK)
     else:
-        abort(httplib.NOT_FOUND)
+        data = json.dumps({
+            "result": {},
+            "template": "",
+            "errors": ["There is no task having type like this"]})
+
+        return Response(data, httplib.NOT_FOUND)
