@@ -4,6 +4,7 @@
 var Vulyk = Vulyk || {
         State: {
             workplace: null,
+            task_type: "",
             task_title: "",
             task_id: 0,
             task_init_state: null,
@@ -12,71 +13,81 @@ var Vulyk = Vulyk || {
             selected_terms: []
         },
         event_handlers: function () {
-            var ne = Vulyk;
+            var vu = Vulyk;
 
-            ne.State.workplace
+            vu.State.workplace
                 .on("click", "a#save-button", function (e) {
                     e.preventDefault();
                 })
                 .on("click", ".mfp-close", function (e) {
                     e.preventDefault();
 
-                    ne.show_types_selector();
-                    ne.State.workplace.find(".mfp-hide").hide();
+                    vu.show_types_selector();
+                    vu.State.workplace.find(".mfp-hide").hide();
                 });
 
             // be able to call methods fluently
-            return ne;
+            return vu;
         },
         remap_text: function () {
         },
         load_next: function () {
-            var nes = Vulyk.State,
+            var vus = Vulyk.State,
                 meta = null;
 
             $.get(
-                "/next",
+                "/type/" + vus.task_type + "/next",
                 function (data) {
-                    nes.task_wrapper.html(data);
+                    vus.task_wrapper.html(data);
 
                     meta = $.parseJSON(
-                        nes.task_wrapper
+                        vus.task_wrapper
                             .find("#task_meta")
                             .attr('data-payload'));
-                    nes.task_id = meta.id;
-                    nes.task_title = meta.title;
-                    nes.task_init_state = nes.task_state = meta.structure;
+                    vus.task_id = meta.id;
+                    vus.task_title = meta.title;
+                    vus.task_init_state = vus.task_state = meta.structure;
                 },
                 "html");
         },
         show_types_selector: function () {
-            var nes = Vulyk.State;
+            var vus = Vulyk.State;
 
             $.get(
-                "/type",
+                "/types",
                 function (data) {
-                    nes.task_wrapper.html(data);
+                    vus.task_wrapper.html(data);
                 },
                 "html");
         },
+        skip_task: function () {
+            var vus = Vulyk.State;
+
+            $.post(
+                "/type/" + vus.task_type + "/skip" + vus.task_id,
+                {},
+                function(data){},
+                "json");
+        },
         save_report: function () {
+            var vus = Vulyk.State;
             // TODO: Breathe the life into this barren method.
             $.post(
-                "/report",
+                "/type/" + vus.task_type + "/done" + vus.task_id,
                 {},
                 function(data){},
                 "json");
         },
         /* http://xkcd.com/292/ */
         init: function () {
-            var ne = this;
+            var vu = this;
 
             $.ajaxSetup({traditional: true});
 
             $(function () {
-                ne.State.workplace = $(".site-wrapper");
-                ne.State.task_wrapper = ne.State.workplace.find("#current_task");
-                ne.event_handlers();
+                vu.State.workplace = $(".site-wrapper");
+                vu.State.task_wrapper = vu.State.workplace.find("#current_task");
+                vu.event_handlers();
             });
         }
     };

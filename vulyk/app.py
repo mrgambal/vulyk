@@ -20,6 +20,37 @@ init_social_login(app, db)
 TASKS_TYPES = init_tasks(app)
 
 
+def _json_response(result, template="", errors=None, status=httplib.OK):
+    """
+    Handy helper to prepare unified responses
+
+    :param result: Data to be sent
+    :type result: dict
+    :param template: Template name or id
+    :type template: str | unicode
+    :param errors: List of errors
+    :type errors: list | set| tuple | dict
+    :param status: Response http-status
+    :type status: int
+
+    :returns: Jsonified response
+    :rtype: Response
+    """
+    if not errors:
+        errors = []
+
+    data = json.dumps({
+        "result": result,
+        "template": template,
+        "errors": errors})
+
+    return Response(data, status)
+
+_no_tasks = _json_response({}, "",
+                           ["There is no task having type like this"],
+                           httplib.NOT_FOUND)
+
+
 @app.route('/', methods=["GET"])
 def index():
     """
@@ -35,12 +66,8 @@ def types():
     for current user.
     """
     res = [t for t in TASKS_TYPES.keys() if g.user.is_eligible_for(t)]
-    data = json.dumps({
-        "result": {"types": res},
-        "template": "",
-        "errors": []})
 
-    return Response(data, httplib.OK)
+    return _json_response({"types": res})
 
 
 @app.route('/logout', methods=['POST'])
@@ -65,22 +92,17 @@ def next(type_name):
 
     if task_type is not None:
         task = task_type.get_next(g.user)
-        data = json.dumps({
-            "result": {"task": task},
-            "template": task_type.template,
-            "errors": [] if task else ["There is no task for you"]})
 
-        return Response(data, httplib.OK)
+        return _json_response(
+            {"task": task},
+            task_type.template,
+            [] if task else ["There is no task for you"])
     else:
-        data = json.dumps({
-            "result": {},
-            "template": "",
-            "errors": ["There is no task having type like this"]})
-
-        return Response(data, httplib.NOT_FOUND)
+        return _no_tasks
 
 
-@app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["GET"])
+@app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["GET"],
+           defaults={'type_name': None})
 @login.login_required
 def skip(type_name, task_id):
     """
@@ -96,22 +118,13 @@ def skip(type_name, task_id):
     if task_type is not None:
         task_type.skip_task(user=g.user, task_id=task_id)
 
-        data = json.dumps({
-            "result": {"done": True},
-            "template": "",
-            "errors": []})
-
-        return Response(data, httplib.OK)
+        return _json_response({"done": True})
     else:
-        data = json.dumps({
-            "result": {},
-            "template": "",
-            "errors": ["There is no task having type like this"]})
-
-        return Response(data, httplib.NOT_FOUND)
+        return _no_tasks
 
 
-@app.route('/type/<string:type_name>/done/<string:task_id>', methods=["POST"])
+@app.route('/type/<string:type_name>/done/<string:task_id>', methods=["POST"],
+           defaults={'type_name': None})
 @login.login_required
 def done(type_name, task_id):
     """
@@ -127,16 +140,6 @@ def done(type_name, task_id):
     if task_type is not None:
         task_type.on_task_done(g.user, task_id, request.form.get("result"))
 
-        data = json.dumps({
-            "result": {"done": True},
-            "template": "",
-            "errors": []})
-
-        return Response(data, httplib.OK)
+        return _json_response({"done": True})
     else:
-        data = json.dumps({
-            "result": {},
-            "template": "",
-            "errors": ["There is no task having type like this"]})
-
-        return Response(data, httplib.NOT_FOUND)
+        return _no_tasks

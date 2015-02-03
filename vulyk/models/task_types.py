@@ -130,7 +130,8 @@ class AbstractTaskType(object):
         :raises: TaskSkipError
         """
         try:
-            task = self.task_model.objects.get_or_404(id=task_id)
+            task = self.task_model.objects.get_or_404(id=task_id,
+                                                      type=self.type_name)
             task.update(push__users_skipped=user)
             self._del_work_session(task, user)
         except NotUniqueError as err:
@@ -158,7 +159,7 @@ class AbstractTaskType(object):
             # create new answer or modify existing one
             task = self.task_model \
                 .objects \
-                .get_or_404(id=task_id)
+                .get_or_404(id=task_id, type=self.type_name)
             answer = self.answer_model \
                 .objects \
                 .get_or_create(task=task, created_by=user) \
