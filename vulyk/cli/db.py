@@ -4,9 +4,9 @@ from itertools import imap
 
 from click import echo
 import bz2file as bz2
-from ..utils import chunked
 
-from ..app import db
+from vulyk.utils import chunked
+from vulyk.app import db
 
 
 try:
@@ -26,7 +26,7 @@ def open_anything(filename):
 
 def load_tasks(task_type, path):
     """
-    :type path: str | basestring
+    :type path: str | unicode
     """
     if isinstance(path, basestring):
         path = (path,)
@@ -40,7 +40,7 @@ def load_tasks(task_type, path):
 
 def _load_tasks_file(task_type, path):
     """
-    :type path: str | basestring
+    :type path: str | unicode
     """
     i = 0
     bunch_size = 100

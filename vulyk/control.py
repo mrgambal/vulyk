@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding=utf-8
-
 import click
 from cli import admin as _admin, db as _db, groups as _groups
 from app import TASKS_TYPES
@@ -13,7 +12,7 @@ def abort_if_false(ctx, param, value):
 
 @click.group()
 def cli():
-    """Pullenti UA management CLI"""
+    """Vulyk UA management CLI"""
 
 
 @cli.group('admin')

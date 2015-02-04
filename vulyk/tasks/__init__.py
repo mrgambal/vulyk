@@ -1,3 +1,4 @@
+# coding=utf-8
 from werkzeug.utils import import_string
 
 

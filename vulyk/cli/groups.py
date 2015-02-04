@@ -2,8 +2,8 @@
 import click
 import re
 
-from ..app import db
-from ..models import Group, User
+from vulyk.app import db
+from vulyk.models import Group, User
 
 
 def get_groups_ids():

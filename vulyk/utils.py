@@ -1,4 +1,6 @@
+# coding=utf-8
 import httplib
+import sys
 from flask import jsonify, abort
 from functools import wraps
 from itertools import islice
@@ -72,3 +74,12 @@ def chunked(iterable, n):
             yield t
         else:
             return
+
+
+def get_tb():
+    """
+    Returns traceback of the latest exception caught in 'except' block
+
+    :return: traceback of the most recent exception
+    """
+    return sys.exc_info()[2]

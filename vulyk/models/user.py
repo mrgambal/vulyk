@@ -1,10 +1,11 @@
 # coding=utf-8
+import datetime
+
+from flask.ext.login import UserMixin, AnonymousUserMixin
+from flask.ext.mongoengine import Document
 from itertools import chain
 from mongoengine import StringField, EmailField, BooleanField, \
     DateTimeField, IntField, ReferenceField, PULL, ListField
-from flask.ext.login import UserMixin, AnonymousUserMixin
-from flask.ext.mongoengine import Document
-import datetime
 
 
 class Group(Document):
@@ -63,7 +64,7 @@ class User(Document, UserMixin):
 
         :return: True if user is eligible
 
-        :raises AssertionError: if no `task_type` specified
+        :raises: AssertionError - if no `task_type` specified
         """
         assert task_type, "Empty parameter `task_type` passed"
 

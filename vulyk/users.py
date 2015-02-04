@@ -1,11 +1,12 @@
 # coding=utf-8
+import datetime
 from flask import g
 from flask.ext import login
 from social.apps.flask_app.routes import social_auth
 from social.apps.flask_app.me.models import init_social
 from social.apps.flask_app.template_filters import backends
-from models import User
-import datetime
+
+from vulyk.models import User
 
 
 def init_social_login(app, db):

@@ -1,5 +1,5 @@
 {% if task %}
-    <form method="POST" action="{{ url_for('report') }}">
+    <form method="POST" action="{{ url_for('done', type_name='dummy') }}">
         <div>
             <h2>{{ task.title }}</h2>
             {{ task.text }}

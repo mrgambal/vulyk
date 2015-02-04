@@ -1,13 +1,21 @@
+# coding=utf-8
 from vulyk.models.task_types import AbstractTaskType
-from vulyk.models.tasks import AbstractTask
+from vulyk.models.tasks import AbstractTask, AbstractAnswer
 
 
 class DummyTask(AbstractTask):
     pass
 
 
+class DummyAnswer(AbstractAnswer):
+    def corrections(self):
+        return 0
+
+
 class DummyTaskType(AbstractTaskType):
     task_model = DummyTask
+    answer_model = DummyAnswer
+
     type_name = "dummy_task"
     template = "dummy_template.html"
 
@@ -35,19 +43,39 @@ class DummyTaskType(AbstractTaskType):
         """
         return self.task_model().as_dict()
 
-    def save_task_result(self, user, task, answer):
+    def on_task_done(self, user, task_id, result):
         """Saves user's answers for a given task
         Stub for DummyTaskType
 
-        Args:
-            user: an instance of User model who provided an answer
-            task: an instance of self.task_model model
-            answer: QueryDict with answers
-        Returns:
-            always True
+        :param user: an instance of User model who provided an answer
+        :type user: models.User
+        :param task_id: Given task ID
+        :type task_id: basestring
+        :param result: Task solving result
+        :type result: dict
 
-        Raises:
-            TaskSaveError - in case of general problems
-            TaskValidationError - in case of validation problems
+        :raises: TaskSaveError - in case of general problems
+        :raises: TaskValidationError - in case of validation problems
         """
-        return True
+        pass
+
+    def _is_ready_for_autoclose(self, answer, task):
+        """
+        Returns count of the same answers for autocloseable tasks.
+
+        Example implementation
+
+        :param task: an instance of self.task_model model
+        :type task: AbstractTask
+        :param answer: Task solving result
+        :type answer: AbstractAnswer
+
+        :returns: How many identical answers we got
+        :rtype: int
+        """
+        auto_close_redundancy = 2
+
+        rs = self.answer_model.objects(task=task)
+        identical = len([x for x in rs if x == answer])
+
+        return identical == auto_close_redundancy
