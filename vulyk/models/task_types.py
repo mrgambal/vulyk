@@ -1,15 +1,30 @@
-# coding=utf-8
-import random
-import ujson as json
+# -*- coding: utf-8 -*-
+
 from datetime import datetime
 from hashlib import sha1
-from mongoengine.errors import (OperationError, NotUniqueError, LookUpError,
-                                ValidationError, InvalidQueryError)
+import random
 
-from vulyk.models import AbstractTask, AbstractAnswer, WorkSession
+import six
+import ujson as json
+
+from mongoengine.errors import (
+    InvalidQueryError,
+    LookUpError,
+    NotUniqueError,
+    OperationError,
+    ValidationError,
+)
+
+
+from vulyk.models.tasks import AbstractTask, AbstractAnswer
 from vulyk.models.exc import (
-    TaskSkipError, TaskImportError, TaskValidationError, TaskSaveError,
-    WorkSessionLookUpError)
+    TaskImportError,
+    TaskSaveError,
+    TaskSkipError,
+    TaskValidationError,
+    WorkSessionLookUpError
+)
+from vulyk.models.stats import WorkSession
 from vulyk.utils import get_tb
 
 
@@ -135,7 +150,7 @@ class AbstractTaskType(object):
             task.update(push__users_skipped=user)
             self._del_work_session(task, user)
         except NotUniqueError as err:
-            raise TaskSkipError(unicode(err))
+            raise TaskSkipError(six.text_type(err))
         except OperationError as err:
             raise TaskSkipError(u"Can not skip the task: {0}".format(err))
 
@@ -214,8 +229,10 @@ class AbstractTaskType(object):
         # get_help that returns help text or template with help. Might be a
         # property too
         #
-        # edit, that will return qs or a paginated list of tasks that was already
-        # complete by a given user or None if editing is prohibited for this task
+        # edit, that will return qs or a paginated list of tasks that was
+        # already
+        # complete by a given user or None if editing is prohibited for
+        # this task
         # type
 
     # TODO: make up something prettier than that mess
@@ -247,8 +264,7 @@ class AbstractTaskType(object):
         rs = WorkSession.objects(user=user, task=task).order_by('-start_time')
 
         if rs.count() > 0:
-            rs.first() \
-                .update(
+            rs.first().update(
                 set__end_time=datetime.now(),
                 set__answer=answer,
                 set__corrections=answer.corrections)

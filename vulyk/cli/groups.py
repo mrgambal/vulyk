@@ -3,7 +3,7 @@ import click
 import re
 
 from vulyk.app import db
-from vulyk.models import Group, User
+from vulyk.models.user import Group, User
 
 
 def get_groups_ids():

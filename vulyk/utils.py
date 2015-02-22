@@ -1,9 +1,14 @@
-# coding=utf-8
-import httplib
-import sys
-from flask import jsonify, abort
+# -*- coding=utf-8 -*-
+
 from functools import wraps
 from itertools import islice
+
+import httplib
+import sys
+
+import six
+
+from flask import jsonify, abort
 
 
 # Soooo lame
@@ -26,7 +31,7 @@ def handle_exception_as_json(exc=Exception):
                 fn(*args, **kwargs)
                 return jsonify({"result": True})
             except exc as e:
-                return jsonify({"result": False, "reason": unicode(e)})
+                return jsonify({"result": False, "reason": six.text_type(e)})
         return wrapper
     return decorator
 

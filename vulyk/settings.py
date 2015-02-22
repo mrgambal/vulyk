@@ -1,4 +1,5 @@
-# coding=utf-8
+# -*- coding=utf-8 -*-
+
 import os
 
 SECRET_KEY = 'random-secret-key'
@@ -68,13 +69,6 @@ USERS_PER_TASK = 2
 SITE_IS_CLOSED = False
 
 
-TASK_TYPES = [
-    "vulyk.tasks.dummy.DummyTaskType"
-    # Or alternatively:
-    # {
-    #     "task": "tasks.dummy.DummyTaskType",
-    #     "settings": {
-    #         "redundancy": 5
-    #     }
-    # }
-]
+ENABLED_TASKS = {
+    'vulyk.plugins.dummy': 'DummyTaskType',
+}

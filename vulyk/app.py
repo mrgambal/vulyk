@@ -7,9 +7,9 @@ from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
 from vulyk.assets import init as assets_init
+from vulyk.tasks import init_tasks
 from vulyk.users import init_social_login
 from vulyk.utils import resolve_task_type
-from vulyk.tasks import init_tasks
 
 app = Flask(__name__)
 app.config.from_object('vulyk.settings')

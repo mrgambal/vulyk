@@ -1,14 +1,28 @@
-# coding=utf-8
+# -*- coding=utf-8 -*-
+
 from datetime import datetime
+
+import six
 from mongoengine import (
-    StringField, IntField, DateTimeField, ListField, ReferenceField, DictField,
-    BooleanField, CASCADE)
+    BooleanField,
+    CASCADE,
+    DateTimeField,
+    DictField,
+    IntField,
+    ListField,
+    ReferenceField,
+    StringField,
+)
 from flask.ext.mongoengine import Document
 
-from vulyk.models import User
+from vulyk.models.user import User
 
 
 class AbstractTask(Document):
+    """
+    This is AbstractTask model.
+    You need to inherit it in your model
+    """
     id = StringField(max_length=200, default='', primary_key=True)
     task_type = StringField(max_length=50, required=True, db_field='taskType')
 
@@ -42,16 +56,21 @@ class AbstractTask(Document):
         }
 
     def __unicode__(self):
-        return unicode(self.id)
+        return six.text_type(self.id)
 
     def __str__(self):
         return self.__unicode__()
 
     def __repr__(self):
-        return unicode(self.id)
+        return self.__unicode__()
 
 
 class AbstractAnswer(Document):
+    """
+    This is AbstractTask model.
+    You need to inherit it in your model
+    """
+    id = StringField(max_length=200, default='', primary_key=True)
     task = ReferenceField(AbstractTask, reverse_delete_rule=CASCADE)
     created_by = ReferenceField(User, reverse_delete_rule=CASCADE,
                                 db_field="createdBy")
@@ -90,7 +109,7 @@ class AbstractAnswer(Document):
         pass
 
     def __unicode__(self):
-        return unicode(self.pk)
+        return six.text_type(self.pk)
 
     def __str__(self):
         return self.__unicode__()
