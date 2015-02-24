@@ -70,7 +70,6 @@ class AbstractAnswer(Document):
     This is AbstractTask model.
     You need to inherit it in your model
     """
-    id = StringField(max_length=200, default='', primary_key=True)
     task = ReferenceField(AbstractTask, reverse_delete_rule=CASCADE)
     created_by = ReferenceField(User, reverse_delete_rule=CASCADE,
                                 db_field="createdBy")
