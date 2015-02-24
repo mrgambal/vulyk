@@ -8,25 +8,12 @@ class DummyTask(AbstractTask):
     Sample Dummy Task to work with Vulyk.
     """
 
-    meta = {
-        'collection': 'dummy_tasks',
-        'allow_inheritance': True,
-        'indexes': [
-            'task_type'
-        ]
-    }
+    pass
 
 
 class DummyAnswer(AbstractAnswer):
     """
     Sample Dummy Answer to work with Vulyk
     """
-    meta = {
-        'collection': 'dummy_answers',
-        'allow_inheritance': True,
-        'indexes': [
-            'task',
-            'created_by',
-            'created_at'
-        ]
-    }
+
+    pass

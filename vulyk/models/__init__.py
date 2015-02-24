@@ -2,7 +2,6 @@
 
 from bson import ObjectId
 from mongoengine.base.fields import ObjectIdField
-
 import six
 
 

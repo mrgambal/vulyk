@@ -16,15 +16,12 @@ def init_tasks(app):
     task_types = {}
     enabled_tasks = app.config.get("ENABLED_TASKS", {})
     for plugin, task in enabled_tasks.iteritems():
-        settings = {
-            "redundancy": app.config["USERS_PER_TASK"]
-        }
+        settings = {}
         task_settings = import_string(
             "{plugin_name}.settings".format(plugin_name=plugin)
         )
         for settings_key in dir(task_settings):
-            if not settings_key.startswith('_'):
-                settings[settings_key] = getattr(task_settings, settings_key)
+            settings[settings_key] = getattr(task_settings, settings_key)
 
         task_types[task] = settings
 
