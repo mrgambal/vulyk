@@ -14,14 +14,17 @@ def get_task(request):
 def configure(self_settings):
     """
     Getting plugin's default settings, overwriting them with settings
-    from local_settings.py, returns list of settings
+    from local_settings.py, returns dict of settings
     """
+    settings = {}
     try:
         local_settings = import_string('vulyk.local_settings')
+        for attr in dir(self_settings):
+            settings[attr] = getattr(self_settings, attr)
         for attr in dir(local_settings):
             if attr in dir(self_settings):
-                self_settings[attr] = getattr(local_settings, attr)
+                settings[attr] = getattr(local_settings, attr)
     except Exception as e:
         logger.warning(e)
 
-    return self_settings
+    return settings
