@@ -1,6 +1,10 @@
 import json
+import logging
 
 from werkzeug.utils import import_string
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_task(request):
@@ -17,7 +21,7 @@ def configure(self_settings):
         for attr in dir(local_settings):
             if attr in dir(self_settings):
                 self_settings[attr] = getattr(local_settings, attr)
-    except:
-        pass
+    except Exception as e:
+        logger.warning(e)
 
     return self_settings

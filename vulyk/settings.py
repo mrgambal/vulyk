@@ -1,7 +1,9 @@
 # -*- coding=utf-8 -*-
 
+import logging
 import os
 
+logger = logging.getLogger(__name__)
 ENV = os.environ.get
 
 SECRET_KEY = ENV('SECRET_KEY', 'random-secret-key')
@@ -84,5 +86,5 @@ try:
     local_settings = import_string('vulyk.local_settings')
     for attr in dir(local_settings):
         locals()[attr] = getattr(local_settings, attr)
-except:
-    pass
+except Exception as e:
+    logger.error(e)
