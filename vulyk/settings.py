@@ -7,11 +7,11 @@ logger = logging.getLogger(__name__)
 ENV = os.environ.get
 
 SECRET_KEY = ENV('SECRET_KEY', 'random-secret-key')
-SESSION_COOKIE_NAME = ENV('SESSION_COOKIE_NAME', 'unshred_session')
+SESSION_COOKIE_NAME = ENV('SESSION_COOKIE_NAME', 'vulyk_session')
 DEBUG = ENV('DEBUG', True)
 
 MONGODB_SETTINGS = {
-    'DB': ENV("mongodb_db", "pullenti"),
+    'DB': ENV("mongodb_db", "vulyk"),
     'HOST': ENV("mongodb_host", "localhost"),
     'USERNAME': ENV("mongodb_username", None),
     'PASSWORD': ENV("mongodb_password", None),
