@@ -1,4 +1,5 @@
-# coding=utf-8
+# -*- coding=utf-8 -*-
+
 from werkzeug.utils import import_string
 
 
@@ -13,17 +14,14 @@ def init_tasks(app):
     :rtype: dict
     """
     task_types = {}
+    enabled_tasks = app.config.get("ENABLED_TASKS", {})
+    for plugin, task in enabled_tasks.iteritems():
+        task_settings = import_string(
+            "{plugin_name}.settings".format(plugin_name=plugin)
+        )
+        plugin = import_string("{plugin_name}".format(plugin_name=plugin))
+        settings = plugin.configure(task_settings)
 
-    for tt in app.config.get("TASK_TYPES", []):
-        settings = {
-            "redundancy": app.config["USERS_PER_TASK"]
-        }
-
-        if isinstance(tt, dict):
-            tt = tt["task"]
-            settings.update(tt.get("settings", {}))
-
-        task_type = import_string(tt)(**settings)
-        task_types[task_type.type_name] = task_type
+        task_types[task] = settings
 
     return task_types

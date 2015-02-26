@@ -8,6 +8,7 @@ Subpackages
 
     vulyk.cli
     vulyk.models
+    vulyk.plugins
     vulyk.tasks
 
 Submodules

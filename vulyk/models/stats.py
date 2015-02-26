@@ -1,9 +1,11 @@
-# coding=utf-8
+# -*- coding=utf-8 -*-
+
 from datetime import datetime
 from mongoengine import IntField, DateTimeField, ReferenceField, CASCADE
 from flask.ext.mongoengine import Document
 
-from vulyk.models import User, AbstractTask, AbstractAnswer
+from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.models.user import User
 
 
 class WorkSession(Document):

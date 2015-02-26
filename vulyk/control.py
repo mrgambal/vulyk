@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-# coding=utf-8
-import click
-from cli import admin as _admin, db as _db, groups as _groups
+# -*- coding=utf-8 -*-
+
 from app import TASKS_TYPES
+from cli import admin as _admin, db as _db, groups as _groups
+import click
 
 
 def abort_if_false(ctx, param, value):
@@ -13,6 +14,7 @@ def abort_if_false(ctx, param, value):
 @click.group()
 def cli():
     """Vulyk UA management CLI"""
+    pass
 
 
 @cli.group('admin')
@@ -109,7 +111,7 @@ def group_assign_to(username, gid):
 @click.option("--gid",
               prompt="Specify the group you want to resign the user from",
               type=click.Choice(_groups.get_groups_ids()))
-def group_assign_to(username, gid):
+def group_resign_to(username, gid):
     _groups.resign(username, gid)
 
 

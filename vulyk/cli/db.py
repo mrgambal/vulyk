@@ -1,9 +1,10 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import gzip
 from itertools import imap
 
 from click import echo
 import bz2file as bz2
+import six
 
 from vulyk.utils import chunked
 from vulyk.app import db
@@ -28,7 +29,7 @@ def load_tasks(task_type, path):
     """
     :type path: str | unicode
     """
-    if isinstance(path, basestring):
+    if isinstance(path, six.string_types):
         path = (path,)
 
     count = len(path)

@@ -1,9 +1,13 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+
 from flask.ext.assets import Environment, Bundle
 
 
 def init(app):
+    """ Bundle projects assets """
+
     assets = Environment(app)
+
     js = Bundle(*app.config['JS_ASSETS'],
                 output=app.config['JS_ASSETS_OUTPUT'],
                 filters=app.config['JS_ASSETS_FILTERS'])

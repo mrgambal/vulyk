@@ -14,6 +14,7 @@ prettytable==0.7.2
 pymongo==2.7.2
 python-social-auth==0.2.1
 requests==2.4.3
+six==1.8.0
 ujson>=1.33
 webassets==0.10.1
 Werkzeug==0.9.6
