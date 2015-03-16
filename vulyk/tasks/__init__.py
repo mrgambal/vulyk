@@ -19,9 +19,14 @@ def init_tasks(app):
         task_settings = import_string(
             "{plugin_name}.settings".format(plugin_name=plugin)
         )
-        plugin = import_string("{plugin_name}".format(plugin_name=plugin))
-        settings = plugin.configure(task_settings)
+        plugin_instance = import_string(
+            "{plugin_name}".format(plugin_name=plugin))
+        settings = plugin_instance.configure(task_settings)
 
-        task_types[task] = settings
+        task_instance = import_string(
+            "{plugin_name}.models.tasks.{task}".format(
+                plugin_name=plugin, task=task)
+        )
+        task_types[task] = task_instance(settings=settings)
 
     return task_types
