@@ -22,3 +22,5 @@ Werkzeug==0.10.1
 wheel==0.24.0
 wsgiref==0.1.2
 yuicompressor==2.4.8
+
+-e git+https://github.com/hotsyk/vulyk-tagging.git@master#egg=vulyk-tagging
