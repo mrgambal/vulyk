@@ -83,7 +83,7 @@ ENABLED_TASKS = ENV('ENABLED_TASKS', {
 
 try:
     from werkzeug.utils import import_string
-    local_settings = import_string('vulyk.local_settings')
+    local_settings = import_string('local_settings')
     for attr in dir(local_settings):
         locals()[attr] = getattr(local_settings, attr)
 except Exception as e:

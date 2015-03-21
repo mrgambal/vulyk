@@ -1,6 +1,6 @@
 # -*- coding=utf-8 -*-
 
-from flask.ext.assets import Environment, Bundle
+from flask.ext.assets import Bundle
 from werkzeug.utils import import_string
 
 
@@ -14,7 +14,6 @@ def init_tasks(app):
     :return: Dictionary with instantiated *TaskType objects
     :rtype: dict
     """
-    assets = Environment(app)
     task_types = {}
     enabled_tasks = app.config.get("ENABLED_TASKS", {})
 
@@ -30,18 +29,20 @@ def init_tasks(app):
             "{plugin_name}.models.tasks.{task}".format(
                 plugin_name=plugin, task=task)
         )
-        js = Bundle(*settings['JS_ASSETS'],
-                    output=settings['JS_ASSETS_OUTPUT'],
-                    filters=settings['JS_ASSETS_FILTERS'])
 
-        css = Bundle(*settings['CSS_ASSETS'],
-                     output=settings['CSS_ASSETS_OUTPUT'],
-                     filters=settings['CSS_ASSETS_FILTERS'])
+        js_name = 'js_{plugin}_{task}'.format(plugin=plugin, task=task)
+        css_name = 'css_{plugin}_{task}'.format(plugin=plugin, task=task)
 
-        assets.register(
-            'js_{plugin}_{task}'.format(plugin=plugin, task=task), js)
-        assets.register(
-            'css_{plugin}_{task}'.format(plugin=plugin, task=task), css)
+        js = Bundle(*task_instance.JS_ASSETS,
+                    output="scripts/{name}.js".format(name=js_name),
+                    filters=app.config.get('JS_ASSETS_FILTERS', ''))
+
+        css = Bundle(*task_instance.CSS_ASSETS,
+                     output="styles/{name}.css".format(name=css_name),
+                     filters=app.config.get('CSS_ASSETS_FILTERS', ''))
+
+        app.assets.register(js_name, js)
+        app.assets.register(css_name, css)
         settings['js'] = js
         settings['css'] = css
         task_types[task] = task_instance(settings=settings)
