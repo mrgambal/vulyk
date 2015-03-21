@@ -30,8 +30,10 @@ def init_tasks(app):
                 plugin_name=plugin, task=task)
         )
 
-        js_name = 'js_{plugin}_{task}'.format(plugin=plugin, task=task)
-        css_name = 'css_{plugin}_{task}'.format(plugin=plugin, task=task)
+        js_name = 'js_{plugin}_{task}'.format(
+            plugin=plugin, task=task_instance.type_name)
+        css_name = 'css_{plugin}_{task}'.format(
+            plugin=plugin, task=task_instance.type_name)
 
         js = Bundle(*task_instance.JS_ASSETS,
                     output="scripts/{name}.js".format(name=js_name),
@@ -45,6 +47,6 @@ def init_tasks(app):
         app.assets.register(css_name, css)
         settings['js'] = js
         settings['css'] = css
-        task_types[task] = task_instance(settings=settings)
+        task_types[task_instance.type_name] = task_instance(settings=settings)
 
     return task_types

@@ -79,7 +79,7 @@ def group_show():
               prompt="Specify string code (letters, numbers, underscores)",
               callback=_groups.validate_id)
 @click.option("--description",
-              prompt="Provide a short description (up to 200 symbols)")
+              prompt="Provide a short description (up to 200 characters)")
 def group_add(gid, description):
     _groups.new_group(gid, description)
 
