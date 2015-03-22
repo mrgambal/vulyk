@@ -22,7 +22,6 @@ var Vulyk = Vulyk || {
                 .on("click", ".mfp-close", function (e) {
                     e.preventDefault();
 
-                    vu.show_types_selector();
                     vu.State.workplace.find(".mfp-hide").hide();
                 });
 
@@ -51,6 +50,7 @@ var Vulyk = Vulyk || {
                 "html");
         },
         show_types_selector: function () {
+            // Born to die
             var vus = Vulyk.State;
 
             $.get(
@@ -96,6 +96,20 @@ var Vulyk = Vulyk || {
                 vu.State.workplace = $(".site-wrapper");
                 vu.State.task_wrapper = vu.State.workplace.find("#current_task");
                 vu.event_handlers();
+
+                $('.popup-with-zoom-anim').magnificPopup({
+                    type: 'inline',
+
+                    fixedContentPos: false,
+                    fixedBgPos: true,
+                    overflowY: 'auto',
+                    closeBtnInside: true,
+                    preloader: false,
+
+                    midClick: true,
+                    removalDelay: 100,
+                    mainClass: 'my-mfp-zoom-in'
+                });
             });
         }
     };

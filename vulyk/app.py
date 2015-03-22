@@ -52,15 +52,17 @@ _no_tasks = _json_response({}, "",
 
 
 @app.route('/', methods=["GET"])
-@login.login_required
 def index():
     """
     Main site view
     """
-    return render_template("index.html")
+
+    task_types = [t for t in TASKS_TYPES.keys() if g.user.is_eligible_for(t)]
+    return render_template("index.html", task_types=task_types)
 
 
 @app.route('/types', methods=['GET'])
+@login.login_required
 def types():
     """
     Produces a list of available tasks types which are appropriate

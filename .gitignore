@@ -35,6 +35,8 @@ nosetests.xml
 output/*.html
 output/*/index.html
 packed.css
+plugin_css*.css
+plugin_js*.js
 packed.js
 parts/
 pip-delete-this-directory.txt

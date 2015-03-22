@@ -59,12 +59,14 @@ JS_ASSETS = ['vendor/jquery/jquery.js',
              'vendor/jquery.cookie/jquery.cookie.js',
              'vendor/bootstrap/bootstrap.js',
              'vendor/jquery.hotkeys/jquery.hotkeys.js',
+             'vendor/jquery.magnific-popup/jquery.magnific-popup.js',
              'scripts/base.js']
 JS_ASSETS_OUTPUT = ENV('JS_ASSETS_OUTPUT', 'scripts/packed.js')
 
 JS_ASSETS_FILTERS = ENV('JS_ASSETS_FILTERS', 'yui_js')
 
 CSS_ASSETS = ['vendor/bootstrap/bootstrap.css',
+              'vendor/jquery.magnific-popup/jquery.magnific-popup.css',
               'styles/style.css']
 CSS_ASSETS_OUTPUT = ENV('CSS_ASSETS_OUTPUT', 'styles/packed.css')
 CSS_ASSETS_FILTERS = ENV('CSS_ASSETS_FILTERS', 'yui_css')

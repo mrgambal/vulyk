@@ -6,8 +6,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Unshred tagging workplace</title>
         {% assets "css_all" %}
-            <link rel="stylesheet" href="{{ ASSET_URL }}">
+            <link rel="stylesheet" href="{{ ASSET_URL }}" />
         {% endassets %}
+        {% block extra_css %}
+        {% endblock %}
 
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -81,5 +83,7 @@
         {% assets "js_all" %}
             <script type="text/javascript" src="{{ ASSET_URL }}"></script>
         {% endassets %}
+        {% block extra_js %}
+        {% endblock %}
     </body>
 </html>

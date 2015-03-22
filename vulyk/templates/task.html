@@ -2,3 +2,16 @@
 {% block task %}
     {% include task_type.type_name + "/" + task_type.template %}
 {% endblock task %}
+
+
+{% block extra_js %}
+    {% assets "plugin_js_" + task_type.type_name %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+{% endblock %}
+
+{% block extra_css %}
+    {% assets "plugin_css_" + task_type.type_name %}
+        <link rel="stylesheet" href="{{ ASSET_URL }}" />
+    {% endassets %}
+{% endblock %}
