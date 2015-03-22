@@ -1,1 +1,1 @@
-web: gunicorn -b 0.0.0.0:${PORT:-5000} -b [::1]:${PORT:-5000} -t ${GUNICORN_TIMEOUT:-60} --graceful-timeout ${GUNICORN_TIMEOUT:-60} --keep-alive ${GUNICORN_KEEP_ALIVE:-4} -w ${GUNICORN_WORKERS:-8} --log-file=- $GUNICORN_ARGS vulyk.app:app
+web: PYTHONPATH=. gunicorn -b 0.0.0.0:${PORT:-5000} -b [::1]:${PORT:-5000} -t ${GUNICORN_TIMEOUT:-60} --graceful-timeout ${GUNICORN_TIMEOUT:-60} --keep-alive ${GUNICORN_KEEP_ALIVE:-4} -w ${GUNICORN_WORKERS:-8} --log-file=- $GUNICORN_ARGS --chdir vulyk app:app
