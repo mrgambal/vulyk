@@ -41,11 +41,13 @@ var Vulyk = Vulyk || {
                     vus.body.trigger("vulyk.next", data);
                 }
             ).fail(function() {
-                alert("error");
+                // TODO: no more tasks to do
+                alert("Error occurred or no unassigned tasks left");
             });
         },
         skip_task: function () {
-            var vus = Vulyk.State;
+            var vu = this,
+                vus = vu.State;
 
             $.post(
                 "/type/" + vus.task_type + "/skip/" + vus.task_id,
