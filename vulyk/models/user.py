@@ -68,7 +68,7 @@ class User(Document, UserMixin):
         """
         assert task_type, "Empty parameter `task_type` passed"
 
-        return task_type in set(chain((g.allowed_types for g in self.groups)))
+        return task_type in chain(*(g.allowed_types for g in self.groups))
 
 
 class Anonymous(AnonymousUserMixin):

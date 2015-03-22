@@ -43,10 +43,6 @@ class AbstractTask(Document):
         ]
     }
 
-    def __init__(self, settings=None):
-        self.settings = settings
-        super(AbstractTask, self).__init__()
-
     def as_dict(self):
         """
         Converts the model-instance into a safe and lightweight dictionary.

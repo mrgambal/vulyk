@@ -18,3 +18,5 @@ def init(app):
 
     assets.register('js_all', js)
     assets.register('css_all', css)
+
+    app.assets = assets

@@ -36,10 +36,10 @@ class AbstractTaskType(object):
     type_name = ""
 
     redundancy = 3
+    JS_ASSETS = []
+    CSS_ASSETS = []
 
-    def __init__(self, redundancy):
-        self.redundancy = redundancy
-
+    def __init__(self, settings):
         assert issubclass(self.task_model, AbstractTask), \
             "You should define task_model property"
 

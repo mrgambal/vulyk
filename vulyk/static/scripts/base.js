@@ -22,7 +22,6 @@ var Vulyk = Vulyk || {
                 .on("click", ".mfp-close", function (e) {
                     e.preventDefault();
 
-                    vu.show_types_selector();
                     vu.State.workplace.find(".mfp-hide").hide();
                 });
 
@@ -51,14 +50,23 @@ var Vulyk = Vulyk || {
                 "html");
         },
         show_types_selector: function () {
+            // Born to die
             var vus = Vulyk.State;
 
             $.get(
                 "/types",
                 function (data) {
-                    vus.task_wrapper.html(data);
-                },
-                "html");
+                    var task_list = vus.task_wrapper.empty().append(
+                            $('<ul class="tasklist">')),
+                        task_type;
+
+                    for (var i=0; i < data.result.types.length; i++) {
+                        task_type = data.result.types[i];
+                        task_list.append(
+                            $('<li><a href="/type/' + task_type + '/">' + task_type + '</a></li>'))
+                    }
+
+                }, "json");
         },
         skip_task: function () {
             var vus = Vulyk.State;
@@ -88,6 +96,20 @@ var Vulyk = Vulyk || {
                 vu.State.workplace = $(".site-wrapper");
                 vu.State.task_wrapper = vu.State.workplace.find("#current_task");
                 vu.event_handlers();
+
+                $('.popup-with-zoom-anim').magnificPopup({
+                    type: 'inline',
+
+                    fixedContentPos: false,
+                    fixedBgPos: true,
+                    overflowY: 'auto',
+                    closeBtnInside: true,
+                    preloader: false,
+
+                    midClick: true,
+                    removalDelay: 100,
+                    mainClass: 'my-mfp-zoom-in'
+                });
             });
         }
     };
