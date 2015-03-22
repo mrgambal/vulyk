@@ -106,7 +106,9 @@ def next(type_name):
 
     return _json_response(
         {"task": task},
-        task_type.template)
+        # doubtful that we need it.
+        task_type.template
+    )
 
 
 @app.route('/type/<string:type_name>/', methods=["GET"])

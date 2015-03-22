@@ -8,7 +8,7 @@
     {% if config.SITE_IS_CLOSED and not user.is_admin() %}
         {% include '_holding_page.html' %}
     {% else %}
-        <div class="inner cover" id="current_task">
+        <div class="inner cover">
             {% block task %}
             <ul id="task-list">
                 {% for t in task_types %}
@@ -21,6 +21,7 @@
 
     <div class="zoom-anim-dialog mfp-hide small-dialog" id="tag_hints">
         <div class="dialog-content">
+            {% block helptext %}
             <h3>Инструкция по работе</h3>
 
             <p>
@@ -52,6 +53,7 @@
                 браття миле, Нумо братися за діло! Гей-гей пора встати, Пора
                 волю добувати!
             </p>
+            {% endblock %}
         </div>
         <button title="Close (Esc)" type="button" class="mfp-close">×</button>
     </div>

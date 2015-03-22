@@ -15,7 +15,7 @@ class WorkSession(Document):
     answer = ReferenceField(AbstractAnswer, reverse_delete_rule=CASCADE)
 
     start_time = DateTimeField(required=True, default=datetime.now())
-    end_time = DateTimeField(required=True)
+    end_time = DateTimeField(required=False)
     corrections = IntField()
 
     meta = {

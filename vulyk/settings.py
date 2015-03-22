@@ -83,6 +83,9 @@ ENABLED_TASKS = ENV('ENABLED_TASKS', {
     'vulyk.plugins.dummy': 'DummyTaskType',
 })
 
+SITE_NAME = "Vulyk workspace"
+SITE_MOTTO = "Vulyk: crowdsourcing platfworm"
+
 try:
     from werkzeug.utils import import_string
     local_settings = import_string('local_settings')

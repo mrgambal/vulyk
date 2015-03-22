@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Unshred tagging workplace</title>
+        <title>{{ config.SITE_NAME }}</title>
         {% assets "css_all" %}
             <link rel="stylesheet" href="{{ ASSET_URL }}" />
         {% endassets %}
@@ -57,7 +57,7 @@
                     <div class="masthead clearfix">
                         <div class="inner fixed-header clearfix">
                             <img id="logo" src="/static/images/logo.png" alt="Канцелярская сотня представляет!" width="45" height="45" />
-                            <h3 class="masthead-brand">Разметь 1000 текстов и получи говорящего Азірова!</h3>
+                            <h3 class="masthead-brand">{{ config.SITE_MOTTO }}</h3>
                             <ul class="nav masthead-nav">
                                 {% block nav %}
                                 {% endblock %}

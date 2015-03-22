@@ -1,6 +1,11 @@
 {% extends "index.html" %}
 {% block task %}
-    {% include task_type.type_name + "/" + task_type.template %}
+    <div id="current_task" data-type="{{ task_type.type_name }}">
+        {% include task_type.type_name + "/" + task_type.template %}
+
+        <a class="btn btn-lg btn-default" id="save-button" href="#">Сохранить <small>(alt+enter)</small></a>
+        <a class="btn" id="skip-button" href="#">Пропустить <small>(esc)</small></a>
+    </div>
 {% endblock task %}
 
 
@@ -14,4 +19,13 @@
     {% assets "plugin_css_" + task_type.type_name %}
         <link rel="stylesheet" href="{{ ASSET_URL }}" />
     {% endassets %}
+{% endblock %}
+
+
+{% block helptext %}
+    {% if task_type.helptext_template %}
+        {% include task_type.type_name + "/" + task_type.helptext_template %}
+    {% else %}
+        {{ super() }}
+    {% endif %}
 {% endblock %}
