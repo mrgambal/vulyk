@@ -2,7 +2,7 @@
 import httplib
 import ujson as json
 from flask import (Flask, render_template, redirect, url_for, g, request,
-                   Response)
+                   Response, abort)
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
@@ -44,7 +44,7 @@ def _json_response(result, template="", errors=None, status=httplib.OK):
         "template": template,
         "errors": errors})
 
-    return Response(data, status)
+    return Response(data, status, mimetype='application/json')
 
 _no_tasks = _json_response({}, "",
                            ["There is no task having type like this"],
@@ -52,6 +52,7 @@ _no_tasks = _json_response({}, "",
 
 
 @app.route('/', methods=["GET"])
+@login.login_required
 def index():
     """
     Main site view
@@ -90,15 +91,32 @@ def next(type_name):
     """
     task_type = resolve_task_type(type_name, g.user)
 
-    if task_type is not None:
-        task = task_type.get_next(g.user)
-
-        return _json_response(
-            {"task": task},
-            task_type.template,
-            [] if task else ["There is no task for you"])
-    else:
+    if task_type is None:
         return _no_tasks
+
+    task = task_type.get_next(g.user)
+
+    if not task:
+        return _no_tasks
+
+    return _json_response(
+        {"task": task},
+        task_type.template)
+
+
+@app.route('/type/<string:type_name>/', methods=["GET"])
+@login.login_required
+def task_home(type_name):
+    """
+    :param type_name: Task type name
+    :type type_name: basestring
+    """
+    task_type = resolve_task_type(type_name, g.user)
+
+    if task_type is None:
+        abort(404)
+
+    return render_template("task.html", task_type=task_type)
 
 
 @app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["GET"],
@@ -115,12 +133,11 @@ def skip(type_name, task_id):
     """
     task_type = resolve_task_type(type_name, g.user)
 
-    if task_type is not None:
-        task_type.skip_task(user=g.user, task_id=task_id)
-
-        return _json_response({"done": True})
-    else:
+    if task_type is None:
         return _no_tasks
+
+    task_type.skip_task(user=g.user, task_id=task_id)
+    return _json_response({"done": True})
 
 
 @app.route('/type/<string:type_name>/done/<string:task_id>', methods=["POST"],
@@ -137,9 +154,9 @@ def done(type_name, task_id):
     """
     task_type = resolve_task_type(type_name, g.user)
 
-    if task_type is not None:
-        task_type.on_task_done(g.user, task_id, request.form.get("result"))
-
-        return _json_response({"done": True})
-    else:
+    if task_type is None:
         return _no_tasks
+
+    task_type.on_task_done(g.user, task_id, request.form.get("result"))
+
+    return _json_response({"done": True})

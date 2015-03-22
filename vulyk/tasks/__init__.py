@@ -1,7 +1,9 @@
 # -*- coding=utf-8 -*-
 
-from flask.ext.assets import Bundle
+import jinja2
 from werkzeug.utils import import_string
+
+from flask.ext.assets import Bundle
 
 
 def init_tasks(app):
@@ -15,6 +17,7 @@ def init_tasks(app):
     :rtype: dict
     """
     task_types = {}
+    loaders = {}
     enabled_tasks = app.config.get("ENABLED_TASKS", {})
 
     for plugin, task in enabled_tasks.iteritems():
@@ -47,6 +50,12 @@ def init_tasks(app):
         app.assets.register(css_name, css)
         settings['js'] = js
         settings['css'] = css
+        loaders[task_instance.type_name] = jinja2.PackageLoader(plugin)
+
         task_types[task_instance.type_name] = task_instance(settings=settings)
+
+    app.jinja_loader = jinja2.ChoiceLoader([
+        app.jinja_loader,
+        jinja2.PrefixLoader(loaders)])
 
     return task_types

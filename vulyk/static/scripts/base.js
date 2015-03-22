@@ -56,9 +56,17 @@ var Vulyk = Vulyk || {
             $.get(
                 "/types",
                 function (data) {
-                    vus.task_wrapper.html(data);
-                },
-                "html");
+                    var task_list = vus.task_wrapper.empty().append(
+                            $('<ul class="tasklist">')),
+                        task_type;
+
+                    for (var i=0; i < data.result.types.length; i++) {
+                        task_type = data.result.types[i];
+                        task_list.append(
+                            $('<li><a href="/type/' + task_type + '/">' + task_type + '</a></li>'))
+                    }
+
+                }, "json");
         },
         skip_task: function () {
             var vus = Vulyk.State;

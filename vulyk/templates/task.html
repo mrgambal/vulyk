@@ -1,4 +1,4 @@
 {% extends "index.html" %}
 {% block task %}
-    {% include "_task.html" %}
+    {% include task_type.type_name + "/" + task_type.template %}
 {% endblock task %}
