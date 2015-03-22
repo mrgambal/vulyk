@@ -156,7 +156,7 @@ class AbstractTaskType(object):
         except OperationError as err:
             raise TaskSkipError(u"Can not skip the task: {0}".format(err))
 
-    def on_task_done(self, task_id, user, result):
+    def on_task_done(self, user, task_id, result):
         """
         Saves user's answers for a given task
         Assumes that user is eligible for this kind of tasks
@@ -176,17 +176,18 @@ class AbstractTaskType(object):
             # create new answer or modify existing one
             task = self.task_model \
                 .objects \
-                .get_or_404(id=task_id, type=self.type_name)
-            answer = self.answer_model \
+                .get_or_404(id=task_id, task_type=self.type_name)  # TODO: exc
+            answer, _ = self.answer_model \
                 .objects \
-                .get_or_create(task=task, created_by=user) \
-                .update(set__result=result)
+                .get_or_create(task=task, created_by=user.id)
+
+            answer.update(set__result=result)
             # update task
             self._update_task_on_answer(task, answer, user)
             # update user
             user.update(inc__processed=1)
             # update stats record
-            self._end_work_session(task, user, answer)
+            self._end_work_session(task, user.id, answer)
         except ValidationError as err:
             raise TaskValidationError(err, get_tb())
         except (OperationError, LookUpError, InvalidQueryError) as err:
@@ -205,7 +206,7 @@ class AbstractTaskType(object):
         :returns: How many identical answers we got
         :rtype: bool
         """
-        raise NotImplementedError()
+        return False
 
     def _update_task_on_answer(self, task, answer, user):
         """
@@ -227,15 +228,6 @@ class AbstractTaskType(object):
             task.closed = task.users_count == self.redundancy
 
         task.save()
-
-        # get_help that returns help text or template with help. Might be a
-        # property too
-        #
-        # edit, that will return qs or a paginated list of tasks that was
-        # already
-        # complete by a given user or None if editing is prohibited for
-        # this task
-        # type
 
     # TODO: make up something prettier than that mess
     def _start_work_session(self, task, user):
