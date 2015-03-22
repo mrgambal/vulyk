@@ -84,7 +84,7 @@ ENABLED_TASKS = ENV('ENABLED_TASKS', {
 })
 
 SITE_NAME = "Vulyk workspace"
-SITE_MOTTO = "Vulyk: crowdsourcing platfworm"
+SITE_MOTTO = "Vulyk: crowdsourcing platform"
 
 try:
     from werkzeug.utils import import_string
