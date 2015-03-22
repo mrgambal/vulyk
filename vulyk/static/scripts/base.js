@@ -14,18 +14,19 @@ var Vulyk = Vulyk || {
             selected_terms: []
         },
         event_handlers: function () {
-            var vu = Vulyk;
+            var vu = this,
+                vus = vu.State;
 
             vu.State.workplace
                 .on("click", "a#save-button", function (e) {
+                    e.preventDefault();
                     vus.body.trigger("vulyk.save", vu.save_report.bind(vu));
                 })
                 .on("click", "a#skip-button", function (e) {
+                    e.preventDefault();
                     vus.body.trigger("vulyk.skip", vu.skip_task.bind(vu));
                 });
 
-
-            // be able to call methods fluently
             return vu;
         },
 
@@ -36,51 +37,34 @@ var Vulyk = Vulyk || {
             $.get(
                 "/type/" + vus.task_type + "/next",
                 function (data) {
+                    vus.task_id = data.result.task.id;
                     vus.body.trigger("vulyk.next", data);
                 }
             ).fail(function() {
                 alert("error");
             });
         },
-        show_types_selector: function () {
-            // Born to die
-            var vus = Vulyk.State;
-
-            $.get(
-                "/types",
-                function (data) {
-                    var task_list = vus.task_wrapper.empty().append(
-                            $('<ul class="tasklist">')),
-                        task_type;
-
-                    for (var i=0; i < data.result.types.length; i++) {
-                        task_type = data.result.types[i];
-                        task_list.append(
-                            $('<li><a href="/type/' + task_type + '/">' + task_type + '</a></li>'))
-                    }
-
-                }, "json");
-        },
         skip_task: function () {
             var vus = Vulyk.State;
 
             $.post(
-                "/type/" + vus.task_type + "/skip" + vus.task_id,
+                "/type/" + vus.task_type + "/skip/" + vus.task_id,
                 {},
-                function(data){},
-                "json");
+                function(data){
+                    vu.load_next()
+                }
+            );
         },
-        save_report: function () {
-            var
-                vu = this,
+        save_report: function (result) {
+            var vu = this,
                 vus = vu.State;
+
             $.post(
-                "/type/" + vus.task_type + "/done" + vus.task_id,
-                {},
+                "/type/" + vus.task_type + "/done/" + vus.task_id,
+                {result: JSON.stringify(result)},
                 function(data) {
                     vu.load_next()
-                },
-                "json");
+                });
         },
         /* http://xkcd.com/292/ */
         init: function () {

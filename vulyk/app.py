@@ -126,8 +126,7 @@ def task_home(type_name):
     return render_template("task.html", task_type=task_type)
 
 
-@app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["GET"],
-           defaults={'type_name': None})
+@app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["GET"])
 @login.login_required
 def skip(type_name, task_id):
     """
@@ -147,8 +146,7 @@ def skip(type_name, task_id):
     return _json_response({"done": True})
 
 
-@app.route('/type/<string:type_name>/done/<string:task_id>', methods=["POST"],
-           defaults={'type_name': None})
+@app.route('/type/<string:type_name>/done/<string:task_id>', methods=["POST"])
 @login.login_required
 def done(type_name, task_id):
     """
@@ -159,11 +157,15 @@ def done(type_name, task_id):
     :param task_id: Task ID
     :type task_id: basestring
     """
+
     task_type = resolve_task_type(type_name, g.user)
 
     if task_type is None:
         return _no_tasks
 
-    task_type.on_task_done(g.user, task_id, request.form.get("result"))
+    task_type.on_task_done(
+        # Mongoengine will shit bricks if it'll receive LocalProxy object
+        g.user._get_current_object(),
+        task_id, json.loads(request.form.get("result")))
 
     return _json_response({"done": True})

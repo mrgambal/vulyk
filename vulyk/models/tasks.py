@@ -88,6 +88,7 @@ class AbstractAnswer(Document):
         ]
     }
 
+    # TODO: decide, if we need it at all
     @property
     def corrections(self):
         """
@@ -97,7 +98,7 @@ class AbstractAnswer(Document):
         :return: Count of corrections in this answer
         :rtype: int
         """
-        raise NotImplementedError
+        return 1
 
     @corrections.setter
     def corrections(self, value):
