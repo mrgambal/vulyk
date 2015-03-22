@@ -126,7 +126,7 @@ def task_home(type_name):
     return render_template("task.html", task_type=task_type)
 
 
-@app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["GET"])
+@app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["POST"])
 @login.login_required
 def skip(type_name, task_id):
     """
@@ -142,7 +142,7 @@ def skip(type_name, task_id):
     if task_type is None:
         return _no_tasks
 
-    task_type.skip_task(user=g.user, task_id=task_id)
+    task_type.skip_task(user=g.user._get_current_object(), task_id=task_id)
     return _json_response({"done": True})
 
 

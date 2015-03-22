@@ -129,6 +129,13 @@ class AbstractTaskType(object):
             users_skipped__ne=user.id,
             closed__ne=True)
 
+        if rs.count() == 0:
+            # loosening restrictions here
+            rs = self.task_model.objects(
+                task_type=self.type_name,
+                users_processed__ne=user.id,
+                closed__ne=True)
+
         if rs.count() > 0:
             task = random.choice(rs)
 
@@ -147,8 +154,8 @@ class AbstractTaskType(object):
         :raises: TaskSkipError
         """
         try:
-            task = self.task_model.objects.get_or_404(id=task_id,
-                                                      type=self.type_name)
+            task = self.task_model.objects.get_or_404(
+                id=task_id, task_type=self.type_name)
             task.update(push__users_skipped=user)
             self._del_work_session(task, user)
         except NotUniqueError as err:
