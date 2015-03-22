@@ -224,8 +224,18 @@ h5 a,
     float: left;
 }
 
+#skip-button ,
 #save-button {
     float: right;
+    margin-left: 10px;
+}
+
+#skip-button {
+    background-color: #555;
+}
+
+#skip-button:hover {
+    color: #AAA;
 }
 
 /* Styles for dialog window */

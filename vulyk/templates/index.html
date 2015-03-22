@@ -8,7 +8,7 @@
     {% if config.SITE_IS_CLOSED and not user.is_admin() %}
         {% include '_holding_page.html' %}
     {% else %}
-        <div class="inner cover" id="current_task">
+        <div class="inner cover">
             {% block task %}
             <ul id="task-list">
                 {% for t in task_types %}
