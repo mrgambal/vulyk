@@ -161,6 +161,7 @@ h5 a,
     margin-right: 20px;
     text-align: left;
     float: left;
+    width: 100%;
 }
 
 .cover .btn-lg {
@@ -195,29 +196,6 @@ h5 a,
 .mastfoot,
 .cover-container {
     width: 1180px;
-}
-
-.shred-img {
-    max-height: 440px;
-    background: url(/static/images/checkerboard.png);
-    padding: 10px;
-    display: block;
-    margin: 0 auto;
-}
-
-.shred-features {
-    float: right;
-    width: 400px;
-}
-
-.textarea-tags {
-    color: black;
-    width: 400px;
-    font-size: 20px;
-}
-
-.text-dropdown {
-    color: black;
 }
 
 .text-core {
@@ -542,31 +520,6 @@ table th {
     margin-bottom: 3px;
 }
 
-#tags_list {
-    width: 300px;
-    float: right;
-    margin-top: -15px;
-    margin-bottom: 20px;
-}
-
-#tags_list .label {
-    color: #ddd;
-    letter-spacing: 0.05em;
-    padding: 0.25em 0.65em 0.35em;
-    margin-right: 4px;
-}
-
-#tags_list .label span.hotkey {
-    color: #444;
-}
-
-#inline-shred {
-    background: #333;
-    padding: 60px 20px 20px 20px;
-    width: 900px;
-    margin: 30px auto;
-    position: relative;
-}
 
 .mfp-close, .mfp-arrow, .mfp-preloader, .mfp-counter {
     -webkit-user-select: none;
@@ -604,58 +557,6 @@ button.mfp-close, button.mfp-arrow {
     font-family: Arial,Baskerville,monospace;
 }
 
-.shred .btn {
-    float: left;
-    height: 17px;
-    padding: 0;
-    width: 17px;
-    border: none;
-    margin: 2px;
-}
-
-.btn.edit-link {
-    background: url(/static/images/button-pencil.png) no-repeat;
-}
-
-.btn.add-to-page {
-    background: url(/static/images/button-link.png) no-repeat;
-}
-
-.label-angle {
-    display: block;
-    float: left;
-    line-height: 14px;
-}
-
-#tag_hints p {
-    margin-bottom: 18px;
-}
-
-#tag_hints img {
-    padding: 0 10px;
-}
-
-.redhot {
-    color: #f00;
-}
-
-.sceditor-container * {
-    box-sizing: content-box;
-}
-
-div.sceditor-grip,
-.sceditor-button div {
-    background: url('/static/vendor/sceditor/themes/famfamfam.png') no-repeat;
-}
-
-.shred-features .sceditor-container {
-    margin: 3px 0 10px;
-}
-
-.shred-features .text-core {
-    margin-bottom: 15px;
-}
-
-.text-core .text-wrap .text-dropdown {
-    z-index: 300;
+#current_task {
+    width: 100%;
 }
