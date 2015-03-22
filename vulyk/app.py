@@ -56,8 +56,11 @@ def index():
     """
     Main site view
     """
-
-    task_types = [t for t in TASKS_TYPES.keys() if g.user.is_eligible_for(t)]
+    if g.user.is_authenticated():
+        task_types = [t for t in TASKS_TYPES.keys()
+                      if g.user.is_eligible_for(t)]
+    else:
+        task_types = []
     return render_template("index.html", task_types=task_types)
 
 
