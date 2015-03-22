@@ -15,3 +15,12 @@
         <link rel="stylesheet" href="{{ ASSET_URL }}" />
     {% endassets %}
 {% endblock %}
+
+
+{% block helptext %}
+	{% if task_type.helptext_template %}
+		{% include task_type.type_name + "/" + task_type.helptext_template %}
+	{% else %}
+		{{ super() }}
+	{% endif %}
+{% endblock %}

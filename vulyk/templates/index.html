@@ -21,6 +21,7 @@
 
     <div class="zoom-anim-dialog mfp-hide small-dialog" id="tag_hints">
         <div class="dialog-content">
+            {% block helptext %}
             <h3>Инструкция по работе</h3>
 
             <p>
@@ -52,6 +53,7 @@
                 браття миле, Нумо братися за діло! Гей-гей пора встати, Пора
                 волю добувати!
             </p>
+            {% endblock %}
         </div>
         <button title="Close (Esc)" type="button" class="mfp-close">×</button>
     </div>

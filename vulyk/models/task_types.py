@@ -33,6 +33,7 @@ class AbstractTaskType(object):
     task_model = None
 
     template = ""
+    helptext_template = ""
     type_name = ""
 
     redundancy = 3
@@ -104,7 +105,8 @@ class AbstractTaskType(object):
         task = self._get_next_task(user)
 
         if task is not None:
-            self._start_work_session(task, user)
+            # Not sure if we should do that here on GET requests
+            self._start_work_session(task, user.id)
 
             return task.as_dict()
         else:
