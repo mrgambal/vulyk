@@ -1,9 +1,9 @@
 # -*- coding=utf-8 -*-
 import os.path
-import jinja2
-from werkzeug.utils import import_string
 
+import jinja2
 from flask.ext.assets import Bundle
+from werkzeug.utils import import_string
 
 
 def init_tasks(app):
@@ -29,7 +29,7 @@ def init_tasks(app):
         settings = plugin_instance.configure(task_settings)
 
         task_instance = import_string(
-            "{plugin_name}.models.tasks.{task}".format(
+            "{plugin_name}.models.task_types.{task}".format(
                 plugin_name=plugin, task=task)
         )
         static_path = import_string(plugin).__path__[0]
@@ -37,22 +37,22 @@ def init_tasks(app):
         js_name = 'plugin_js_{task}'.format(task=task_instance.type_name)
         css_name = 'plugin_css_{task}'.format(task=task_instance.type_name)
 
-        # Problem below is that if JS_ASSETS/CSS_ASSETS are empty
-        # webassets will throw an exception
-        js = Bundle(*map(lambda x: os.path.join(static_path, x),
-                         task_instance.JS_ASSETS),
-                    output="scripts/{name}.js".format(name=js_name),
-                    filters=app.config.get('JS_ASSETS_FILTERS', ''))
+        if len(task_instance.JS_ASSETS) > 0:
+            js = Bundle(*map(lambda x: os.path.join(static_path, x),
+                             task_instance.JS_ASSETS),
+                        output="scripts/{name}.js".format(name=js_name),
+                        filters=app.config.get('JS_ASSETS_FILTERS', ''))
+            app.assets.register(js_name, js)
 
-        css = Bundle(*map(lambda x: os.path.join(static_path, x),
-                          task_instance.CSS_ASSETS),
-                     output="styles/{name}.css".format(name=css_name),
-                     filters=app.config.get('CSS_ASSETS_FILTERS', ''))
+        if len(task_instance.CSS_ASSETS) > 0:
+            css = Bundle(*map(lambda x: os.path.join(static_path, x),
+                              task_instance.CSS_ASSETS),
+                         output="styles/{name}.css".format(name=css_name),
+                         filters=app.config.get('CSS_ASSETS_FILTERS', ''))
 
-        app.assets.register(js_name, js)
-        app.assets.register(css_name, css)
+            app.assets.register(css_name, css)
+
         loaders[task_instance.type_name] = jinja2.PackageLoader(plugin)
-
         task_types[task_instance.type_name] = task_instance(settings=settings)
 
     app.jinja_loader = jinja2.ChoiceLoader([

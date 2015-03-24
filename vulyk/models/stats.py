@@ -1,6 +1,6 @@
 # -*- coding=utf-8 -*-
-
 from datetime import datetime
+
 from mongoengine import IntField, DateTimeField, ReferenceField, CASCADE
 from flask.ext.mongoengine import Document
 

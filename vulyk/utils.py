@@ -1,13 +1,11 @@
 # -*- coding=utf-8 -*-
 
+import sys
 from functools import wraps
 from itertools import islice
-
 import httplib
-import sys
 
 import six
-
 from flask import jsonify, abort
 
 
@@ -38,12 +36,12 @@ def handle_exception_as_json(exc=Exception):
 
 def resolve_task_type(type_name, user):
     """
-    Looks for `task_type_name` in TASK_TYPES list
+    Looks for `type_name` in TASK_TYPES list
 
     :type type_name: str | basestring
-    :type user: vulyk.models.User
+    :type user: vulyk.models.user.User
 
-    :rtype: AbstractTaskType
+    :rtype: vulyk.models.task_types.AbstractTaskType
     """
     from app import TASKS_TYPES as T
 

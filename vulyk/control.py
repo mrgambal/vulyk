@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding=utf-8 -*-
-
-from app import TASKS_TYPES
-from cli import admin as _admin, db as _db, groups as _groups
 import click
+
+from vulyk.app import TASKS_TYPES
+from vulyk.cli import admin as _admin, db as _db, groups as _groups
 
 
 def abort_if_false(ctx, param, value):

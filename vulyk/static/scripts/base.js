@@ -29,7 +29,6 @@ var Vulyk = Vulyk || {
 
             return vu;
         },
-
         load_next: function () {
             var vus = Vulyk.State,
                 meta = null;
@@ -81,7 +80,7 @@ var Vulyk = Vulyk || {
                 vu.event_handlers();
 
                 if (vu.State.task_wrapper.length) {
-                    vu.State.task_type = vu.State.task_wrapper.data("type")
+                    vu.State.task_type = vu.State.task_wrapper.data("type");
                     vu.load_next();
                 }
 
