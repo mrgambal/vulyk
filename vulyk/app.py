@@ -7,6 +7,7 @@ from flask import (Flask, render_template, redirect, url_for, g, request,
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
+from vulyk import cli
 from vulyk.assets import init as assets_init
 from vulyk.tasks import init_tasks
 from vulyk.users import init_social_login
@@ -62,7 +63,10 @@ def index():
                       if g.user.is_eligible_for(t)]
     else:
         task_types = []
-    return render_template("index.html", task_types=task_types)
+
+    return render_template("index.html",
+                           task_types=task_types,
+                           init=cli.is_initialized())
 
 
 @app.route('/types', methods=['GET'])
@@ -122,7 +126,7 @@ def task_home(type_name):
     task_type = resolve_task_type(type_name, g.user)
 
     if task_type is None:
-        abort(404)
+        abort(httplib.NOT_FOUND)
 
     return render_template("task.html", task_type=task_type)
 

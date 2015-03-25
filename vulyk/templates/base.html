@@ -19,10 +19,16 @@
         <![endif]-->
     </head>
     <body>
-        {% if user.is_anonymous() %}
-        <div class="site-wrapper">
-            <div class="site-wrapper-inner">
-                <div class="cover-container">
+    <div class="site-wrapper">
+        <div class="site-wrapper-inner">
+            <div class="cover-container">
+                {% if not init %}
+                    <div id="public-homepage">
+                        <div id="warm-welcome" class="cover inner">
+                            Site is still uninitialized. Please run <code>./manage.py init ...</code>
+                        </div>
+                    </div>
+                {% elif user.is_anonymous() %}
                     {% if config.SITE_IS_CLOSED %}
                         {% include '_holding_page.html' %}
                     {% else %}
@@ -47,13 +53,7 @@
                         </ul>
                     </div>
                     {% endif %}
-                </div>
-            </div>
-        </div>
-        {% else %}
-        <div class="site-wrapper">
-            <div class="site-wrapper-inner">
-                <div class="cover-container">
+                {% else %}
                     <div class="masthead clearfix">
                         <div class="inner fixed-header clearfix">
                             <img id="logo" src="/static/images/logo.png" alt="Канцелярская сотня представляет!" width="45" height="45" />
@@ -69,21 +69,21 @@
                     </div>
                     {% block content %}
                     {% endblock %}
-                </div>
+                    <script type="text/javascript">
+                        window.user = '{{ user.username }}';
+                        window.urls = {
+                            "next": "{{ url_for('next', type_name='dummy') }}"
+                        }
+                    </script>
+                {% endif %}
             </div>
         </div>
-        <script type="text/javascript">
-            window.user = '{{ user.username }}';
-            window.urls = {
-                "next": "{{ url_for('next', type_name='dummy') }}"
-            }
-        </script>
-        {% endif %}
+    </div>
 
-        {% assets "js_all" %}
-            <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-        {% endassets %}
-        {% block extra_js %}
-        {% endblock %}
+    {% assets "js_all" %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+    {% block extra_js %}
+    {% endblock %}
     </body>
 </html>

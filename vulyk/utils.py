@@ -47,7 +47,7 @@ def resolve_task_type(type_name, user):
 
     task_type = None
 
-    if not (type_name and type_name in T):
+    if not (type_name and type_name in T.keys()):
         abort(httplib.NOT_FOUND)
     elif not user.is_eligible_for(type_name):
         abort(httplib.FORBIDDEN)
