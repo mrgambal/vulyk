@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import httplib
 import ujson as json
+
 from flask import (Flask, render_template, redirect, url_for, g, request,
                    Response, abort)
 from flask.ext import login
@@ -29,7 +30,7 @@ def _json_response(result, template="", errors=None, status=httplib.OK):
     :param template: Template name or id
     :type template: str | unicode
     :param errors: List of errors
-    :type errors: list | set| tuple | dict
+    :type errors: list | set | tuple | dict
     :param status: Response http-status
     :type status: int
 

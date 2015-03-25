@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # -*- coding=utf-8 -*-
-
-from app import TASKS_TYPES
-from cli import admin as _admin, db as _db, groups as _groups
 import click
+
+from vulyk.app import TASKS_TYPES
+from vulyk.cli import (
+    admin as _admin,
+    db as _db,
+    groups as _groups,
+    project_init as _project_init)
 
 
 def abort_if_false(ctx, param, value):
@@ -115,21 +119,40 @@ def group_resign_to(username, gid):
     _groups.resign(username, gid)
 
 
+@group.command("addtype")
 @click.option("--gid",
               prompt="Specify group's id",
               type=click.Choice(_groups.get_groups_ids()))
-@group.command("addtype")
 @click.option("--task_type",
+              type=click.Choice(TASKS_TYPES.keys()),
               prompt="Provide the task type name")
 def group_addtype(gid, task_type):
     _groups.add_task_type(gid, task_type=task_type)
 
 
+@group.command("deltype")
 @click.option("--gid",
               prompt="Specify group's id",
               type=click.Choice(_groups.get_groups_ids()))
-@group.command("deltype")
 @click.option("--task_type",
+              type=click.Choice(TASKS_TYPES.keys()),
               prompt="Provide the task type name")
 def group_deltype(gid, task_type):
     _groups.remove_task_type(gid, task_type=task_type)
+
+
+@cli.command("init")
+@click.argument("allowed_types",
+                type=click.Choice(TASKS_TYPES.keys()),
+                nargs=-1)
+def project_init(allowed_types):
+    """
+    Bootstrapping
+
+    :type allowed_types: list[basestring]
+    """
+    if len(allowed_types) == 0:
+        raise click.BadParameter("Please specify at least "
+                                 "one default task type")
+
+    _project_init(allowed_types)

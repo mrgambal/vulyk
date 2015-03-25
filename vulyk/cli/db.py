@@ -27,6 +27,7 @@ def open_anything(filename):
 
 def load_tasks(task_type, path):
     """
+    :type task_type: vulyk.models.task_types.AbstractTaskType
     :type path: str | unicode
     """
     if isinstance(path, six.string_types):
@@ -41,6 +42,7 @@ def load_tasks(task_type, path):
 
 def _load_tasks_file(task_type, path):
     """
+    :type task_type: vulyk.models.task_types.AbstractTaskType
     :type path: str | unicode
     """
     i = 0
