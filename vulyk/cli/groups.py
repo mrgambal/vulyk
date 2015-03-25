@@ -121,7 +121,7 @@ def assign_to(username, gid):
     :raise click.BadParameter: if wrong `gid` or ` username` has been passed
     """
     try:
-        User.objects.get(username=username)\
+        User.objects.get(username=username) \
             .update(add_to_set__groups=Group.objects.get(id=gid))
     except User.DoesNotExist:
         raise click.BadParameter("No user was found with username " + username)

@@ -1,11 +1,11 @@
 # coding=utf-8
 import datetime
+from itertools import chain
 
 from flask.ext.login import UserMixin, AnonymousUserMixin
 from flask.ext.mongoengine import Document
-from itertools import chain
 from mongoengine import StringField, EmailField, BooleanField, \
-    DateTimeField, IntField, ReferenceField, PULL, ListField
+    DateTimeField, IntField, ReferenceField, PULL, ListField, signals
 
 
 class Group(Document):
@@ -70,6 +70,21 @@ class User(Document, UserMixin):
 
         return task_type in chain(*(g.allowed_types for g in self.groups))
 
+    @classmethod
+    def pre_save(cls, sender, document, **kwargs):
+        """
+        :type sender: type
+        :type document: User
+        :type kwargs: dict
+        """
+        if all(map(lambda x: x.id != "default", document.groups)):
+            try:
+                document.groups = [Group.objects.get(id="default")]
+            except Group.DoesNotExist:
+                raise Group.DoesNotExist("Please run 'manage.py init ...'")
+
 
 class Anonymous(AnonymousUserMixin):
     name = u"Anonymous"
+
+signals.post_save.connect(User.pre_save, sender=User)
