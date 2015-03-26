@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import gzip
-from itertools import imap
+from itertools import imap, ifilter
 
 from click import echo
 import bz2file as bz2
@@ -48,16 +48,25 @@ def _load_tasks_file(task_type, path):
     i = 0
     bunch_size = 100
 
+    def _safe_load(fl):
+        """
+        :type fl: file
+        :rtype: __generator[dict]
+        """
+        l = lambda s: json.loads(s) if len(s.strip()) > 0 else {}
+
+        return ifilter(None, imap(l, fl))
+
     with open_anything(path)(path, "rb") as f:
         try:
-            for chunk in chunked(imap(json.loads, f), bunch_size):
+            for chunk in chunked(_safe_load(f), bunch_size):
                 task_type.import_tasks(chunk)
 
                 i += len(chunk)
                 echo(u"{0:d} tasks processed".format(i))
-        except Exception as e:  # TODO: Except what?
-            # TODO: proper error message
-            echo("uhoh")
-            echo(e)
+        except ValueError as e:
+            echo(u"Error while decoding json in {0}: {1}".format(path, e))
+        except IOError as e:
+            echo(u"Got IO error when tried to decode {0}: {1}".format(path, e))
 
     echo(u"Finished loading {0:d} tasks".format(i))
