@@ -4,6 +4,7 @@ import ujson as json
 
 from flask import (Flask, render_template, redirect, url_for, g, request,
                    Response, abort)
+
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
@@ -20,6 +21,13 @@ assets_init(app)
 db = MongoEngine(app)
 init_social_login(app, db)
 TASKS_TYPES = init_tasks(app)
+
+
+@app.context_processor
+def is_initialized():
+    return {
+        "init": cli.is_initialized()
+    }
 
 
 def _json_response(result, template="", errors=None, status=httplib.OK):
@@ -65,8 +73,7 @@ def index():
         task_types = []
 
     return render_template("index.html",
-                           task_types=task_types,
-                           init=cli.is_initialized())
+                           task_types=task_types)
 
 
 @app.route('/types', methods=['GET'])

@@ -1,8 +1,8 @@
 # -*- coding=utf-8 -*-
 
+import six
 from bson import ObjectId
 from mongoengine.base.fields import ObjectIdField
-import six
 
 
 # Monkey Patch for allowing queryset with unicode objects instead ObjectId
