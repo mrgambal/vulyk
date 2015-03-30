@@ -8,7 +8,7 @@ class DummyTaskType(AbstractTaskType):
     answer_model = DummyAnswer
 
     type_name = "dummy_task"
-    template = "dummy_template.html"
+    template = "base.html"
 
     def export_reports(self, qs=None):
         """Exports results

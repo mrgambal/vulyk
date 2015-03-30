@@ -72,6 +72,9 @@ def index():
     else:
         task_types = []
 
+    if len(task_types) == 1:
+        return redirect(url_for("task_home", type_name=task_types[0]))
+
     return render_template("index.html",
                            task_types=task_types)
 
