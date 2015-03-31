@@ -1,4 +1,5 @@
 # -*- coding=utf-8 -*-
+from __future__ import unicode_literals
 import click
 import re
 
@@ -12,7 +13,7 @@ def get_groups_ids():
 
     :rtype : list[str]
     """
-    return Group.objects().scalar("id")
+    return Group.objects().scalar('id')
 
 
 def validate_id(ctx, param, value):
@@ -30,8 +31,8 @@ def validate_id(ctx, param, value):
     if re.match("^[A-z0-9]+[A-z0-9_]+$", value):
         return value
     else:
-        raise click.BadParameter("Only letters, numbers, underscores "
-                                 "are allowed. Underscore can't go first")
+        raise click.BadParameter('Only letters, numbers, underscores '
+                                 'are allowed. Underscore can\'t go first')
 
 
 def list_groups():
@@ -57,7 +58,7 @@ def new_group(gid, description):
     try:
         Group.objects.create(id=gid, description=description)
     except Group.DoesNotExist:
-        raise click.BadParameter("No group was found with id " + gid)
+        raise click.BadParameter('No group was found with id ' + gid)
 
 
 def remove_group(gid):
@@ -72,7 +73,7 @@ def remove_group(gid):
     try:
         Group.objects.get(id=gid).delete()
     except Group.DoesNotExist:
-        raise click.BadParameter("No group was found with id " + gid)
+        raise click.BadParameter('No group was found with id ' + gid)
 
 
 def add_task_type(gid, task_type):
@@ -89,7 +90,7 @@ def add_task_type(gid, task_type):
     try:
         Group.objects.get(id=gid).update(add_to_set__allowed_types=task_type)
     except Group.DoesNotExist:
-        raise click.BadParameter("No group was found with id " + gid)
+        raise click.BadParameter('No group was found with id ' + gid)
 
 
 def remove_task_type(gid, task_type):
@@ -106,7 +107,7 @@ def remove_task_type(gid, task_type):
     try:
         Group.objects.get(id=gid).update(pull__allowed_types=task_type)
     except Group.DoesNotExist:
-        raise click.BadParameter("No group was found with id " + gid)
+        raise click.BadParameter('No group was found with id ' + gid)
 
 
 def assign_to(username, gid):
@@ -124,9 +125,9 @@ def assign_to(username, gid):
         User.objects.get(username=username) \
             .update(add_to_set__groups=Group.objects.get(id=gid))
     except User.DoesNotExist:
-        raise click.BadParameter("No user was found with username " + username)
+        raise click.BadParameter('No user was found with username ' + username)
     except Group.DoesNotExist:
-        raise click.BadParameter("No group was found with id " + gid)
+        raise click.BadParameter('No group was found with id ' + gid)
 
 
 def resign(username, gid):
@@ -144,6 +145,6 @@ def resign(username, gid):
         User.objects.get(username=username) \
             .update(pull__groups=Group.objects.get(id=gid))
     except User.DoesNotExist:
-        raise click.BadParameter("No user was found with username " + username)
+        raise click.BadParameter('No user was found with username ' + username)
     except Group.DoesNotExist:
-        raise click.BadParameter("No group was found with id " + gid)
+        raise click.BadParameter('No group was found with id ' + gid)

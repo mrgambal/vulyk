@@ -12,7 +12,11 @@
             {% block task %}
             <ul id="task-list">
                 {% for t in task_types %}
-                    <li><a href="{{ url_for("task_home", type_name=t) }}">{{ t }}</a></li>
+                    <li>
+                        <a href="{{ url_for("task_home", type_name=t.type) }}" title="{{ t.description }}">
+                        {{ t.name }}
+                        </a>
+                    </li>
                 {% endfor %}
             </ul>
             {% endblock %}

@@ -4,7 +4,6 @@ import ujson as json
 
 from flask import (Flask, render_template, redirect, url_for, g, request,
                    Response, abort)
-
 from flask.ext import login
 from flask.ext.mongoengine import MongoEngine
 
@@ -26,7 +25,7 @@ TASKS_TYPES = init_tasks(app)
 @app.context_processor
 def is_initialized():
     return {
-        "init": cli.is_initialized()
+        'init': cli.is_initialized()
     }
 
 
@@ -50,15 +49,16 @@ def _json_response(result, template="", errors=None, status=httplib.OK):
         errors = []
 
     data = json.dumps({
-        "result": result,
-        "template": template,
-        "errors": errors})
+        'result': result,
+        'template': template,
+        'errors': errors})
 
     return Response(data, status, mimetype='application/json')
 
-_no_tasks = _json_response({}, "",
-                           ["There is no task having type like this"],
-                           httplib.NOT_FOUND)
+
+_no_tasks = _json_response({}, '',
+                             ['There is no task having type like this'],
+                             httplib.NOT_FOUND)
 
 
 @app.route('/', methods=["GET"])
@@ -67,16 +67,15 @@ def index():
     Main site view
     """
     if g.user.is_authenticated():
-        task_types = [t for t in TASKS_TYPES.keys()
-                      if g.user.is_eligible_for(t)]
+        task_types = [x.to_dict() for x in TASKS_TYPES.itervalues()
+                      if g.user.is_eligible_for(x.type_name)]
     else:
         task_types = []
 
     if len(task_types) == 1:
-        return redirect(url_for("task_home", type_name=task_types[0]))
+        return redirect(url_for('task_home', type_name=task_types[0]['type']))
 
-    return render_template("index.html",
-                           task_types=task_types)
+    return render_template('index.html', task_types=task_types)
 
 
 @app.route('/types', methods=['GET'])
@@ -86,9 +85,10 @@ def types():
     Produces a list of available tasks types which are appropriate
     for current user.
     """
-    res = [t for t in TASKS_TYPES.keys() if g.user.is_eligible_for(t)]
+    tasks = [x.to_dict() for x in TASKS_TYPES.itervalues()
+             if g.user.is_eligible_for(x.type_name)]
 
-    return _json_response({"types": res})
+    return _json_response({'types': tasks})
 
 
 @app.route('/logout', methods=['POST'])
@@ -98,7 +98,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/type/<string:type_name>/next', methods=["GET"])
+@app.route('/type/<string:type_name>/next', methods=['GET'])
 @login.login_required
 def next(type_name):
     """
@@ -109,7 +109,7 @@ def next(type_name):
     :param type_name: Task type name
     :type type_name: basestring
     """
-    task_type = resolve_task_type(type_name, g.user)
+    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
 
     if task_type is None:
         return _no_tasks
@@ -120,28 +120,28 @@ def next(type_name):
         return _no_tasks
 
     return _json_response(
-        {"task": task},
+        {'task': task},
         # doubtful that we need it.
         task_type.template
     )
 
 
-@app.route('/type/<string:type_name>/', methods=["GET"])
+@app.route('/type/<string:type_name>/', methods=['GET'])
 @login.login_required
 def task_home(type_name):
     """
     :param type_name: Task type name
     :type type_name: basestring
     """
-    task_type = resolve_task_type(type_name, g.user)
+    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
 
     if task_type is None:
         abort(httplib.NOT_FOUND)
 
-    return render_template("task.html", task_type=task_type)
+    return render_template('task.html', task_type=task_type)
 
 
-@app.route('/type/<string:type_name>/skip/<string:task_id>', methods=["POST"])
+@app.route('/type/<string:type_name>/skip/<string:task_id>', methods=['POST'])
 @login.login_required
 def skip(type_name, task_id):
     """
@@ -152,16 +152,16 @@ def skip(type_name, task_id):
     :param task_id: Task ID
     :type task_id: basestring
     """
-    task_type = resolve_task_type(type_name, g.user)
+    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
 
     if task_type is None:
         return _no_tasks
 
     task_type.skip_task(user=g.user._get_current_object(), task_id=task_id)
-    return _json_response({"done": True})
+    return _json_response({'done': True})
 
 
-@app.route('/type/<string:type_name>/done/<string:task_id>', methods=["POST"])
+@app.route('/type/<string:type_name>/done/<string:task_id>', methods=['POST'])
 @login.login_required
 def done(type_name, task_id):
     """
@@ -173,7 +173,7 @@ def done(type_name, task_id):
     :type task_id: basestring
     """
 
-    task_type = resolve_task_type(type_name, g.user)
+    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
 
     if task_type is None:
         return _no_tasks
@@ -181,6 +181,6 @@ def done(type_name, task_id):
     task_type.on_task_done(
         # Mongoengine will shit bricks if it'll receive LocalProxy object
         g.user._get_current_object(),
-        task_id, json.loads(request.form.get("result")))
+        task_id, json.loads(request.form.get('result')))
 
-    return _json_response({"done": True})
+    return _json_response({'done': True})
