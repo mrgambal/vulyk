@@ -78,19 +78,6 @@ def index():
     return render_template('index.html', task_types=task_types)
 
 
-@app.route('/types', methods=['GET'])
-@login.login_required
-def types():
-    """
-    Produces a list of available tasks types which are appropriate
-    for current user.
-    """
-    tasks = [x.to_dict() for x in TASKS_TYPES.itervalues()
-             if g.user.is_eligible_for(x.type_name)]
-
-    return _json_response({'types': tasks})
-
-
 @app.route('/logout', methods=['POST'])
 def logout():
     login.logout_user()
