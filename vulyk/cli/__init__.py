@@ -10,8 +10,8 @@ def project_init(allowed_types):
         return
 
     group = Group(
-        id="default",
-        description="default group",
+        id='default',
+        description='default group',
         allowed_types=allowed_types)
 
     group.save()
@@ -23,4 +23,4 @@ def is_initialized():
     """
     :rtype: bool
     """
-    return Group.objects(id="default").count() == 1
+    return Group.objects(id='default').count() == 1
