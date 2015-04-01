@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import gzip
 from itertools import imap, ifilter
 
@@ -17,17 +18,17 @@ except ImportError:
 
 
 def open_anything(filename):
-    if filename.endswith(".bz2"):
+    if filename.endswith('.bz2'):
         return bz2.BZ2File
-    if filename.endswith(".gz"):
+    if filename.endswith('.gz'):
         return gzip.open
 
     return open
 
 
-def load_tasks(task_type, path):
+def load_tasks(task_id, path):
     """
-    :type task_type: vulyk.models.task_types.AbstractTaskType
+    :type task_id: vulyk.models.task_types.AbstractTaskType
     :type path: str | unicode
     """
     if isinstance(path, six.string_types):
@@ -36,13 +37,13 @@ def load_tasks(task_type, path):
     count = len(path)
 
     for i, p in enumerate(path):
-        echo(u"Loading file {0:d} from {1:d}...".format(i + 1, count))
-        _load_tasks_file(task_type, p)
+        echo('Loading file {0:d} from {1:d}...'.format(i + 1, count))
+        _load_tasks_file(task_id, p)
 
 
-def _load_tasks_file(task_type, path):
+def _load_tasks_file(task_id, path):
     """
-    :type task_type: vulyk.models.task_types.AbstractTaskType
+    :type task_id: vulyk.models.task_types.AbstractTaskType
     :type path: str | unicode
     """
     i = 0
@@ -57,16 +58,16 @@ def _load_tasks_file(task_type, path):
 
         return ifilter(None, imap(l, fl))
 
-    with open_anything(path)(path, "rb") as f:
+    with open_anything(path)(path, 'rb') as f:
         try:
             for chunk in chunked(_safe_load(f), bunch_size):
-                task_type.import_tasks(chunk)
+                task_id.import_tasks(chunk)
 
                 i += len(chunk)
-                echo(u"{0:d} tasks processed".format(i))
+                echo('{0:d} tasks processed'.format(i))
         except ValueError as e:
-            echo(u"Error while decoding json in {0}: {1}".format(path, e))
+            echo('Error while decoding json in {0}: {1}'.format(path, e))
         except IOError as e:
-            echo(u"Got IO error when tried to decode {0}: {1}".format(path, e))
+            echo('Got IO error when tried to decode {0}: {1}'.format(path, e))
 
-    echo(u"Finished loading {0:d} tasks".format(i))
+    echo('Finished loading {0:d} tasks'.format(i))

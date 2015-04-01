@@ -30,8 +30,7 @@ var Vulyk = Vulyk || {
             return vu;
         },
         load_next: function () {
-            var vus = Vulyk.State,
-                meta = null;
+            var vus = Vulyk.State;
 
             $.get(
                 "/type/" + vus.task_type + "/next",
@@ -52,7 +51,7 @@ var Vulyk = Vulyk || {
                 "/type/" + vus.task_type + "/skip/" + vus.task_id,
                 {},
                 function(data){
-                    vu.load_next()
+                    vu.load_next();
                 }
             );
         },
@@ -64,7 +63,7 @@ var Vulyk = Vulyk || {
                 "/type/" + vus.task_type + "/done/" + vus.task_id,
                 {result: JSON.stringify(result)},
                 function(data) {
-                    vu.load_next()
+                    vu.load_next();
                 });
         },
         /* http://xkcd.com/292/ */

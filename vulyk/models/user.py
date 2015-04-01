@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import unicode_literals
 import datetime
 from itertools import chain
 
@@ -25,7 +26,7 @@ class Group(Document):
         return self.__unicode__()
 
     def __repr__(self):
-        return u"Group ID: '{id}'. Allowed types: {types}".format(
+        return 'Group ID: {id}. Allowed types: {types}'.format(
             id=self.id,
             types=self.allowed_types)
 
@@ -66,7 +67,7 @@ class User(Document, UserMixin):
 
         :raises: AssertionError - if no `task_type` specified
         """
-        assert task_type, "Empty parameter `task_type` passed"
+        assert task_type, 'Empty parameter `task_type` passed'
 
         return task_type in chain(*(g.allowed_types for g in self.groups))
 
@@ -77,14 +78,14 @@ class User(Document, UserMixin):
         :type document: User
         :type kwargs: dict
         """
-        if all(map(lambda x: x.id != "default", document.groups)):
+        if all(map(lambda x: x.id != 'default', document.groups)):
             try:
-                document.groups = [Group.objects.get(id="default")]
+                document.groups = [Group.objects.get(id='default')]
             except Group.DoesNotExist:
-                raise Group.DoesNotExist("Please run 'manage.py init ...'")
+                raise Group.DoesNotExist('Please run \'manage.py init ...\'')
 
 
 class Anonymous(AnonymousUserMixin):
-    name = u"Anonymous"
+    name = 'Anonymous'
 
 signals.post_save.connect(User.pre_save, sender=User)

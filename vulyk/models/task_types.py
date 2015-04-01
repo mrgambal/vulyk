@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import unicode_literals
 from datetime import datetime
 from hashlib import sha1
 import random
@@ -14,7 +14,6 @@ from mongoengine.errors import (
     OperationError,
     ValidationError,
 )
-
 
 from vulyk.models.tasks import AbstractTask, AbstractAnswer
 from vulyk.models.exc import (
@@ -32,9 +31,12 @@ class AbstractTaskType(object):
     answer_model = None
     task_model = None
 
-    template = ""
-    helptext_template = ""
-    type_name = ""
+    _name = ''
+    _description = ''
+
+    template = ''
+    helptext_template = ''
+    type_name = ''
 
     redundancy = 3
     JS_ASSETS = []
@@ -42,13 +44,21 @@ class AbstractTaskType(object):
 
     def __init__(self, settings):
         assert issubclass(self.task_model, AbstractTask), \
-            "You should define task_model property"
+            'You should define task_model property'
 
         assert issubclass(self.answer_model, AbstractAnswer), \
-            "You should define answer_model property"
+            'You should define answer_model property'
 
-        assert self.type_name, "You should define type_name (underscore)"
-        assert self.template, "You should define template"
+        assert self.type_name, 'You should define type_name (underscore)'
+        assert self.template, 'You should define template'
+
+    @property
+    def name(self):
+        return self._name if len(self._name) > 0 else self.type_name
+
+    @property
+    def description(self):
+        return self._description if len(self._description) > 0 else ''
 
     def import_tasks(self, tasks):
         """Imports tasks from an iterable over dicts
@@ -71,7 +81,7 @@ class AbstractTaskType(object):
                 )
         except (AttributeError, TypeError, OperationError) as e:
             # TODO: review list of exceptions, any fallback actions if needed
-            raise TaskImportError(u"Can't load task: {0}".format(e))
+            raise TaskImportError('Can\'t load task: {0}'.format(e))
 
     def export_reports(self, qs=None):
         """Exports results
@@ -161,7 +171,7 @@ class AbstractTaskType(object):
         except NotUniqueError as err:
             raise TaskSkipError(six.text_type(err))
         except OperationError as err:
-            raise TaskSkipError(u"Can not skip the task: {0}".format(err))
+            raise TaskSkipError('Can not skip the task: {0}'.format(err))
 
     def on_task_done(self, user, task_id, result):
         """
@@ -270,7 +280,7 @@ class AbstractTaskType(object):
                 set__answer=answer,
                 set__corrections=answer.corrections)
         else:
-            msg = "No session was found for {0}".format(answer)
+            msg = 'No session was found for {0}'.format(answer)
 
             raise WorkSessionLookUpError(msg)
 
@@ -290,6 +300,13 @@ class AbstractTaskType(object):
         if rs.count() > 0:
             rs.first().delete()
         else:
-            msg = "No session was found for {0} & {1}".format(user, task.id)
+            msg = 'No session was found for {0} & {1}'.format(user, task.id)
 
             raise WorkSessionLookUpError(msg)
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'description': self.description,
+            'type': self.type_name
+        }

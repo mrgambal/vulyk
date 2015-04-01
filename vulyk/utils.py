@@ -1,11 +1,9 @@
 # -*- coding=utf-8 -*-
-
+from __future__ import unicode_literals
+import httplib
 import sys
 from functools import wraps
 from itertools import islice
-import httplib
-
-import six
 
 from flask import jsonify, abort
 
@@ -28,32 +26,33 @@ def handle_exception_as_json(exc=Exception):
         def wrapper(*args, **kwargs):
             try:
                 fn(*args, **kwargs)
-                return jsonify({"result": True})
+                return jsonify({'result': True})
             except exc as e:
-                return jsonify({"result": False, "reason": six.text_type(e)})
+                return jsonify({'result': False, 'reason': e})
+
         return wrapper
+
     return decorator
 
 
-def resolve_task_type(type_name, user):
+def resolve_task_type(type_id, tasks, user):
     """
-    Looks for `type_name` in TASK_TYPES list
+    Looks for `type_id` in TASK_TYPES list
 
-    :type type_name: str | basestring
+    :type type_id: str | basestring
+    :type tasks: dict
     :type user: vulyk.models.user.User
 
     :rtype: vulyk.models.task_types.AbstractTaskType
     """
-    from app import TASKS_TYPES as T
-
     task_type = None
 
-    if not (type_name and type_name in T.keys()):
+    if not (type_id and type_id in tasks.keys()):
         abort(httplib.NOT_FOUND)
-    elif not user.is_eligible_for(type_name):
+    elif not user.is_eligible_for(type_id):
         abort(httplib.FORBIDDEN)
     else:
-        task_type = T[type_name]
+        task_type = tasks[type_id]
 
     return task_type
 

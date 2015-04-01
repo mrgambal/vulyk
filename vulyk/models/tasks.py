@@ -1,7 +1,6 @@
 # -*- coding=utf-8 -*-
+from __future__ import unicode_literals
 from datetime import datetime
-
-import six
 from mongoengine import (
     BooleanField,
     CASCADE,
@@ -10,8 +9,10 @@ from mongoengine import (
     IntField,
     ListField,
     ReferenceField,
-    StringField,
+    StringField
 )
+import six
+
 from flask.ext.mongoengine import Document
 
 from vulyk.models.user import User
@@ -49,9 +50,9 @@ class AbstractTask(Document):
         :rtype : dict
         """
         return {
-            "id": self.id,
-            "closed": self.closed,
-            "data": self.task_data
+            'id': self.id,
+            'closed': self.closed,
+            'data': self.task_data
         }
 
     def __unicode__(self):
@@ -71,9 +72,9 @@ class AbstractAnswer(Document):
     """
     task = ReferenceField(AbstractTask, reverse_delete_rule=CASCADE)
     created_by = ReferenceField(User, reverse_delete_rule=CASCADE,
-                                db_field="createdBy")
+                                db_field='createdBy')
     created_at = DateTimeField(default=datetime.now(),
-                               db_field="createdAt")
+                               db_field='createdAt')
     # not sure - could be extended
     result = DictField()
 
@@ -114,4 +115,4 @@ class AbstractAnswer(Document):
         return self.__unicode__()
 
     def __repr__(self):
-        return u"Report [%s by %s]".format(self.created_by, self.task)
+        return 'Report [%s by %s]'.format(self.created_by, self.task)
