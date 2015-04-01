@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import gzip
 from itertools import imap, ifilter
+import os
 
 from click import echo
 import bz2file as bz2
@@ -58,16 +59,46 @@ def _load_tasks_file(task_id, path):
 
         return ifilter(None, imap(l, fl))
 
-    with open_anything(path)(path, 'rb') as f:
-        try:
+    if path.startswith('~'):
+        path = os.path.expanduser(path)
+
+    try:
+        with open_anything(path)(path, 'rb') as f:
             for chunk in chunked(_safe_load(f), bunch_size):
                 task_id.import_tasks(chunk)
 
                 i += len(chunk)
                 echo('{0:d} tasks processed'.format(i))
-        except ValueError as e:
-            echo('Error while decoding json in {0}: {1}'.format(path, e))
-        except IOError as e:
-            echo('Got IO error when tried to decode {0}: {1}'.format(path, e))
+    except ValueError as e:
+        echo('Error while decoding json in {0}: {1}'.format(path, e))
+    except IOError as e:
+        echo('Got IO error when tried to decode {0}: {1}'.format(path, e))
+
+    echo('Finished loading {0:d} tasks'.format(i))
+
+
+def export_tasks(task_id, path):
+    """
+    :type task_id: vulyk.models.task_types.AbstractTaskType
+    :type path: str | unicode
+    """
+    i = 0
+    bunch_size = 100
+
+    if path.startswith('~'):
+        path = os.path.expanduser(path)
+
+    try:
+        with open(path, 'w+') as f:
+            for chunk in chunked(imap(json.dumps, task_id.export_reports()),
+                                 bunch_size):
+                f.write(os.linesep.join(chunk))
+                i += 1
+
+                echo('{0:d} tasks processed'.format(i))
+    except ValueError as e:
+        echo('Error while encoding json in {0}: {1}'.format(path, e))
+    except IOError as e:
+        echo('Got IO error when tried to decode {0}: {1}'.format(path, e))
 
     echo('Finished loading {0:d} tasks'.format(i))

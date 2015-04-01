@@ -47,50 +47,61 @@ def admin_remove(email):
     _admin.toggle_admin(email, False)
 
 
-@cli.group("db")
+@cli.group('db')
 def db():
     """Commands to manage DB"""
     pass
 
 
-@db.command("load")
+@db.command('load')
 @click.argument('task_type', type=click.Choice(TASKS_TYPES.keys()))
-@click.argument("name",
+@click.argument('path',
                 type=click.Path(exists=True,
                                 dir_okay=False,
                                 readable=True,
                                 resolve_path=True),
                 nargs=-1)
-def load(task_type, name):
+def load(task_type, path):
     """Refills tasks collection from json."""
-    _db.load_tasks(TASKS_TYPES[task_type], name)
+    _db.load_tasks(TASKS_TYPES[task_type], path)
 
 
-@cli.group("group")
+@db.command('export')
+@click.argument('task_type', type=click.Choice(TASKS_TYPES.keys()))
+@click.argument('path',
+                type=click.Path(file_okay=True,
+                                writable=True,
+                                resolve_path=True))
+def load(task_type, path):
+    """Refills tasks collection from json."""
+    _db.export_tasks(TASKS_TYPES[task_type], path)
+
+
+@cli.group('group')
 def group():
     """Groups management section"""
     pass
 
 
-@group.command("list")
+@group.command('list')
 def group_show():
     for g in _groups.list_groups():
         click.echo(g)
 
 
-@group.command("add")
-@click.option("--gid",
-              prompt="Specify string code (letters, numbers, underscores)",
+@group.command('add')
+@click.option('--gid',
+              prompt='Specify string code (letters, numbers, underscores)',
               callback=_groups.validate_id)
-@click.option("--description",
-              prompt="Provide a short description (up to 200 characters)")
+@click.option('--description',
+              prompt='Provide a short description (up to 200 characters)')
 def group_add(gid, description):
     _groups.new_group(gid, description)
 
 
-@group.command("del")
-@click.option("--gid",
-              prompt="Specify the group you want to remove",
+@group.command('del')
+@click.option('--gid',
+              prompt='Specify the group you want to remove',
               type=click.Choice(_groups.get_groups_ids()))
 @click.option('--yes', is_flag=True, callback=abort_if_false,
               expose_value=False,
@@ -99,50 +110,50 @@ def group_remove(gid):
     _groups.remove_group(gid)
 
 
-@group.command("assign")
-@click.option("--username",
-              prompt="Provide the username")
-@click.option("--gid",
-              prompt="Specify the group you want to assign",
+@group.command('assign')
+@click.option('--username',
+              prompt='Provide the username')
+@click.option('--gid',
+              prompt='Specify the group you want to assign',
               type=click.Choice(_groups.get_groups_ids()))
 def group_assign_to(username, gid):
     _groups.assign_to(username, gid)
 
 
-@group.command("resign")
-@click.option("--username",
-              prompt="Provide the username")
-@click.option("--gid",
-              prompt="Specify the group you want to resign the user from",
+@group.command('resign')
+@click.option('--username',
+              prompt='Provide the username')
+@click.option('--gid',
+              prompt='Specify the group you want to resign the user from',
               type=click.Choice(_groups.get_groups_ids()))
 def group_resign_to(username, gid):
     _groups.resign(username, gid)
 
 
-@group.command("addtype")
-@click.option("--gid",
-              prompt="Specify group's id",
+@group.command('addtype')
+@click.option('--gid',
+              prompt='Specify group\'s id',
               type=click.Choice(_groups.get_groups_ids()))
-@click.option("--task_type",
+@click.option('--task_type',
               type=click.Choice(TASKS_TYPES.keys()),
-              prompt="Provide the task type name")
+              prompt='Provide the task type name')
 def group_addtype(gid, task_type):
     _groups.add_task_type(gid, task_type=task_type)
 
 
-@group.command("deltype")
-@click.option("--gid",
-              prompt="Specify group's id",
+@group.command('deltype')
+@click.option('--gid',
+              prompt='Specify group\'s id',
               type=click.Choice(_groups.get_groups_ids()))
-@click.option("--task_type",
+@click.option('--task_type',
               type=click.Choice(TASKS_TYPES.keys()),
-              prompt="Provide the task type name")
+              prompt='Provide the task type name')
 def group_deltype(gid, task_type):
     _groups.remove_task_type(gid, task_type=task_type)
 
 
-@cli.command("init")
-@click.argument("allowed_types",
+@cli.command('init')
+@click.argument('allowed_types',
                 type=click.Choice(TASKS_TYPES.keys()),
                 nargs=-1)
 def project_init(allowed_types):
@@ -152,7 +163,7 @@ def project_init(allowed_types):
     :type allowed_types: list[basestring]
     """
     if len(allowed_types) == 0:
-        raise click.BadParameter("Please specify at least "
-                                 "one default task type")
+        raise click.BadParameter('Please specify at least '
+                                 'one default task type')
 
     _project_init(allowed_types)

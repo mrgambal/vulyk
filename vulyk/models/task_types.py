@@ -96,11 +96,10 @@ class AbstractTaskType(object):
 
         if qs is None:
             # Not really tested yet
-            qs = self.task_model.objects.filter(
-                users_count__gte=self.redundancy)
+            qs = self.task_model.objects(closed=True)
 
         for task in qs:
-            yield task.get_results()
+            yield self.answer_model.objects(task=task)
 
     def get_next(self, user):
         """
@@ -239,7 +238,7 @@ class AbstractTaskType(object):
         task.users_count += 1
         task.users_processed.append(user)
 
-        if self._is_ready_for_autoclose(answer, task):
+        if self._is_ready_for_autoclose(task, answer):
             task.closed = True
         else:
             task.closed = task.users_count == self.redundancy
