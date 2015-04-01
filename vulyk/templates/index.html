@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block nav %}
-    <li class="active">
-        <a href="#tag_hints" class="popup-with-zoom-anim">Инструкция<!-- (F1)--></a>
-    </li>
+{#    <li class="active">
+        <a href="#tag_hints" class="popup-with-zoom-anim">Інструкція<!-- (F1)--></a>
+    </li>#}
 {% endblock %}
 {% block content %}
     {% if config.SITE_IS_CLOSED and not user.is_admin() %}
@@ -22,7 +22,7 @@
     <div class="zoom-anim-dialog mfp-hide small-dialog" id="tag_hints">
         <div class="dialog-content">
             {% block helptext %}
-            <h3>Инструкция по работе</h3>
+            <h3>Інструкція</h3>
 
             <p>
                 Привет.
