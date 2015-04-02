@@ -59,9 +59,6 @@ def _load_tasks_file(task_id, path):
 
         return ifilter(None, imap(l, fl))
 
-    if path.startswith('~'):
-        path = os.path.expanduser(path)
-
     try:
         with open_anything(path)(path, 'rb') as f:
             for chunk in chunked(_safe_load(f), bunch_size):
@@ -83,19 +80,15 @@ def export_tasks(task_id, path):
     :type path: str | unicode
     """
     i = 0
-    bunch_size = 100
-
-    if path.startswith('~'):
-        path = os.path.expanduser(path)
 
     try:
         with open(path, 'w+') as f:
-            for chunk in chunked(imap(json.dumps, task_id.export_reports()),
-                                 bunch_size):
-                f.write(os.linesep.join(chunk))
+            for report in task_id.export_reports():
+                f.write(json.dumps(report) + os.linesep)
                 i += 1
 
-                echo('{0:d} tasks processed'.format(i))
+                if i + 1 % 100 == 0:
+                    echo('{0:d} tasks processed'.format(i))
     except ValueError as e:
         echo('Error while encoding json in {0}: {1}'.format(path, e))
     except IOError as e:

@@ -72,7 +72,7 @@ def load(task_type, path):
                 type=click.Path(file_okay=True,
                                 writable=True,
                                 resolve_path=True))
-def load(task_type, path):
+def export(task_type, path):
     """Refills tasks collection from json."""
     _db.export_tasks(TASKS_TYPES[task_type], path)
 
