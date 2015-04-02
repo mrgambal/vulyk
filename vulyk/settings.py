@@ -78,7 +78,6 @@ USERS_PER_TASK = ENV('USERS_PER_TASK', 2)
 # Restrict an access to site to admins only
 SITE_IS_CLOSED = ENV('SITE_IS_CLOSED', False)
 
-
 ENABLED_TASKS = ENV('ENABLED_TASKS', {
     'vulyk.plugins.dummy': 'DummyTaskType',
 })
@@ -88,6 +87,7 @@ SITE_MOTTO = "Vulyk: crowdsourcing platform"
 
 try:
     from werkzeug.utils import import_string
+
     local_settings = import_string('local_settings')
     for attr in dir(local_settings):
         locals()[attr] = getattr(local_settings, attr)

@@ -1,6 +1,6 @@
 # coding=utf-8
 from vulyk.models.task_types import AbstractTaskType
-from vulyk.tasks.dummy import DummyTask, DummyAnswer
+from vulyk.plugins.dummy.models.tasks import DummyTask, DummyAnswer
 
 
 class DummyTaskType(AbstractTaskType):
