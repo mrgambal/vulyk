@@ -1,5 +1,4 @@
-# -*- coding=utf-8 -*-
-
+# -*- coding: utf-8 -*-
 import six
 from bson import ObjectId
 from mongoengine.base.fields import ObjectIdField

@@ -56,7 +56,8 @@ def _json_response(result, template="", errors=None, status=httplib.OK):
     return Response(data, status, mimetype='application/json')
 
 
-_no_tasks = _json_response({}, '',
+_no_tasks = _json_response({},
+                           '',
                            ['There is no task having type like this'],
                            httplib.NOT_FOUND)
 
@@ -132,6 +133,7 @@ def task_home(type_name):
 
 
 @app.route('/type/<string:type_name>/leaders', methods=['GET'])
+@login.login_required
 def leaders(type_name):
     """
     :param type_name: Task type name

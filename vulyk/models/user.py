@@ -1,12 +1,13 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import datetime
 from itertools import chain
 
 from flask.ext.login import UserMixin, AnonymousUserMixin
 from flask.ext.mongoengine import Document
-from mongoengine import StringField, EmailField, BooleanField, \
-    DateTimeField, IntField, ReferenceField, PULL, ListField, signals
+from mongoengine import (
+    StringField, BooleanField, DateTimeField, IntField, ReferenceField, PULL,
+    ListField, signals)
 
 
 class Group(Document):
@@ -38,9 +39,8 @@ class User(Document, UserMixin):
     email = StringField()
     active = BooleanField(default=True)
     admin = BooleanField(default=False)
-    groups = ListField(ReferenceField(Group,
-                                      reverse_delete_rule=PULL,
-                                      default=None))
+    groups = ListField(
+        ReferenceField(Group, reverse_delete_rule=PULL, default=None))
     last_login = DateTimeField(default=datetime.datetime.now)
     processed = IntField(default=0)
 
@@ -104,5 +104,6 @@ class User(Document, UserMixin):
 
 class Anonymous(AnonymousUserMixin):
     name = 'Anonymous'
+
 
 signals.post_save.connect(User.pre_save, sender=User)
