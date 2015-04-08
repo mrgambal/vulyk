@@ -1,4 +1,4 @@
-# -*- coding=utf-8 -*-
+# -*- coding: utf-8 -*-
 from datetime import datetime
 
 from mongoengine import IntField, DateTimeField, ReferenceField, CASCADE

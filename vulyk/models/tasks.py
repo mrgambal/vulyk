@@ -1,6 +1,9 @@
-# -*- coding=utf-8 -*-
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from datetime import datetime
+import six
+
+from flask.ext.mongoengine import Document
 from mongoengine import (
     BooleanField,
     CASCADE,
@@ -11,9 +14,6 @@ from mongoengine import (
     ReferenceField,
     StringField
 )
-import six
-
-from flask.ext.mongoengine import Document
 
 from vulyk.models.user import User
 

@@ -4,7 +4,6 @@ from datetime import datetime
 from hashlib import sha1
 from operator import itemgetter
 import random
-
 import six
 import ujson as json
 
@@ -13,7 +12,7 @@ from mongoengine.errors import (
     LookUpError,
     NotUniqueError,
     OperationError,
-    ValidationError,
+    ValidationError
 )
 
 from vulyk.models.tasks import AbstractTask, AbstractAnswer

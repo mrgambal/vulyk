@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.plugins.dummy.models.tasks import DummyTask, DummyAnswer
 
