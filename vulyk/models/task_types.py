@@ -106,8 +106,8 @@ class AbstractTaskType(object):
     def get_leaders(self):
         """Return sorted list of tuples (user_id, tasks_done)
 
-        Returns:
-            list of tuples (user_id, tasks_done)
+        :returns: list of tuples (user_id, tasks_done)
+        :rtype: list
         """
         scores = self.answer_model.objects.item_frequencies('created_by')
         return sorted(scores.items(), key=itemgetter(1), reverse=True)
@@ -115,14 +115,15 @@ class AbstractTaskType(object):
     def get_leaderboard(self, limit=10):
         """Find users who contributed the most
 
-        Args:
-            limit: number of top users to return
-        Returns:
-            List of dicts {user: user_obj, freq: count}
+        :param limit: number of top users to return
+        :type limit: integer
+
+        :returns: List of dicts {user: user_obj, freq: count}
+        :rtype: list
         """
 
         # TODO: Here we should filter answers by task_type, which is absent atm
-        scores = self.get_leaders()[:limit]
+        scores = self.get_leaders()
 
         return map(lambda x: {"user": User.objects.get(id=x[0]),
                               "freq": x[1]}, scores[:limit])

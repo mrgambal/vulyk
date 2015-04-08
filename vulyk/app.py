@@ -143,7 +143,9 @@ def leaders(type_name):
         abort(httplib.NOT_FOUND)
 
     return render_template(
-        'leaderboard.html', leaders=task_type.get_leaderboard())
+        'leaderboard.html',
+        task_type=task_type,
+        leaders=task_type.get_leaderboard())
 
 
 @app.route('/type/<string:type_name>/skip/<string:task_id>', methods=['POST'])
@@ -189,3 +191,8 @@ def done(type_name, task_id):
         task_id, json.loads(request.form.get('result')))
 
     return _json_response({'done': True})
+
+
+@app.template_filter('strip_email')
+def strip_email(s):
+    return s.split("@", 1)[0]

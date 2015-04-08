@@ -1,4 +1,16 @@
 {% extends "index.html" %}
+
+{% block nav %}
+    {{ super() }}
+    <li>
+        <a href="{{ url_for("task_home", type_name=task_type.type_name) }}">Завдання</a>
+    </li>
+    <li class="active">
+        <a href="{{ url_for("leaders", type_name=task_type.type_name) }}">Топ-10 волонтерів</a>
+    </li>
+{% endblock %}
+
+
 {% block task %}
 	<table class="table leaderboard table-bordered table-hover">
 		<tr>
@@ -9,7 +21,7 @@
 		{% for l in leaders %}
 		<tr>
 			<th>{{ loop.index }}</th>
-			<td>{{ l.user }}</td>
+			<td>{{ l.user.username|strip_email }}</td>
 			<td>{{ l.freq }}</td>
 		</tr>
 		{% endfor %}
