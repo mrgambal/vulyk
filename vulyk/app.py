@@ -57,8 +57,8 @@ def _json_response(result, template="", errors=None, status=httplib.OK):
 
 
 _no_tasks = _json_response({}, '',
-                             ['There is no task having type like this'],
-                             httplib.NOT_FOUND)
+                           ['There is no task having type like this'],
+                           httplib.NOT_FOUND)
 
 
 @app.route('/', methods=["GET"])
@@ -107,7 +107,10 @@ def next(type_name):
         return _no_tasks
 
     return _json_response(
-        {'task': task},
+        {
+            'task': task,
+            'stats': g.user.get_stats(task_type=task_type)
+        },
         # doubtful that we need it.
         task_type.template
     )
@@ -126,6 +129,21 @@ def task_home(type_name):
         abort(httplib.NOT_FOUND)
 
     return render_template('task.html', task_type=task_type)
+
+
+@app.route('/type/<string:type_name>/leaders', methods=['GET'])
+def leaders(type_name):
+    """
+    :param type_name: Task type name
+    :type type_name: basestring
+    """
+    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
+
+    if task_type is None:
+        abort(httplib.NOT_FOUND)
+
+    return render_template(
+        'leaderboard.html', leaders=task_type.get_leaderboard())
 
 
 @app.route('/type/<string:type_name>/skip/<string:task_id>', methods=['POST'])

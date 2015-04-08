@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from datetime import datetime
 from hashlib import sha1
+from operator import itemgetter
 import random
 
 import six
@@ -16,6 +17,7 @@ from mongoengine.errors import (
 )
 
 from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.models.user import User
 from vulyk.models.exc import (
     TaskImportError,
     TaskSaveError,
@@ -100,6 +102,30 @@ class AbstractTaskType(object):
 
         for task in qs:
             yield self.answer_model.objects(task=task)
+
+    def get_leaders(self):
+        """Return sorted list of tuples (user_id, tasks_done)
+
+        Returns:
+            list of tuples (user_id, tasks_done)
+        """
+        scores = self.answer_model.objects.item_frequencies('created_by')
+        return sorted(scores.items(), key=itemgetter(1), reverse=True)
+
+    def get_leaderboard(self, limit=10):
+        """Find users who contributed the most
+
+        Args:
+            limit: number of top users to return
+        Returns:
+            List of dicts {user: user_obj, freq: count}
+        """
+
+        # TODO: Here we should filter answers by task_type, which is absent atm
+        scores = self.get_leaders()[:limit]
+
+        return map(lambda x: {"user": User.objects.get(id=x[0]),
+                              "freq": x[1]}, scores[:limit])
 
     def get_next(self, user):
         """

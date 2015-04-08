@@ -1,5 +1,13 @@
 {% extends "index.html" %}
 {% block task %}
+    <div class="clearfix" id="user-stats">
+        <dl>
+            <dt>Обработал всего:</dt>
+            <dd></dd>
+            <dt>Рейтинг:</dt>
+            <dd></dd>
+        </dl>
+    </div>
     <div id="current_task" data-type="{{ task_type.type_name }}">
         {% include task_type.type_name + "/" + task_type.template %}
 

@@ -1,0 +1,18 @@
+{% extends "index.html" %}
+{% block task %}
+	<table class="table leaderboard table-bordered table-hover">
+		<tr>
+			<th>Місце</th>
+			<th>Користувач</th>
+			<th>Кількість завданнь</th>
+		</tr>
+		{% for l in leaders %}
+		<tr>
+			<th>{{ loop.index }}</th>
+			<td>{{ l.user }}</td>
+			<td>{{ l.freq }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+{% endblock task %}
+
