@@ -404,22 +404,24 @@ dl {
     margin-top: 10px;
 }
 
-.mastfoot {
+#user-stats {
     width: 500px;
+    margin: 0 auto;
+    display: none;
 }
 
-.mastfoot dt, .mastfoot dd {
+#user-stats dt, #user-stats dd {
     float: left;
     font-size: 12px;
     font-weight: normal;
 }
 
-.mastfoot dd {
+#user-stats dd {
     margin-right: 20px;
     font-weight: bold;
 }
 
-.mastfoot dt {
+#user-stats dt {
     margin-right: 5px;
 }
 
@@ -555,4 +557,14 @@ button.mfp-close, button.mfp-arrow {
 
 #current_task {
     width: 100%;
+}
+
+.leaderboard {
+    width: 500px;
+    margin: 0 auto;
+}
+
+.leaderboard th {
+    background-color: #fff;
+    color: #555;
 }

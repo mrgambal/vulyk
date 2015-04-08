@@ -68,20 +68,33 @@ var Vulyk = Vulyk || {
         },
         /* http://xkcd.com/292/ */
         init: function () {
-            var vu = this;
+            var vu = this,
+                vus = vu.State;
 
             $.ajaxSetup({traditional: true});
 
             $(function () {
-                vu.State.workplace = $(".site-wrapper");
-                vu.State.body = $(document.body);
-                vu.State.task_wrapper = vu.State.workplace.find("#current_task");
+                vus.workplace = $(".site-wrapper");
+                vus.body = $(document.body);
+                vus.stats = $("#user-stats");
+                vus.task_wrapper = vus.workplace.find("#current_task");
                 vu.event_handlers();
 
-                if (vu.State.task_wrapper.length) {
-                    vu.State.task_type = vu.State.task_wrapper.data("type");
+                if (vus.task_wrapper.length) {
+                    vus.task_type = vus.task_wrapper.data("type");
                     vu.load_next();
                 }
+
+                vus.body.on("vulyk.next", function(e, data) {
+                    vus.stats
+                        .find("dd:eq(0)")
+                            .html(data.result.stats.total)
+                        .end()
+                        .find("dd:eq(1)")
+                            .html(data.result.stats.position)
+                        .end()
+                        .show();
+                });
 
                 $('.popup-with-zoom-anim').magnificPopup({
                     type: 'inline',

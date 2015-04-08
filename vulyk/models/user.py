@@ -71,6 +71,23 @@ class User(Document, UserMixin):
 
         return task_type in chain(*(g.allowed_types for g in self.groups))
 
+    def get_stats(self, task_type):
+        leaders = task_type.get_leaders()
+        this_user = filter(lambda x: x[0] == self.id, leaders)
+
+        if this_user:
+            this_user = this_user[0]
+        else:
+            return {
+                "total": 0,
+                "position": 0
+            }
+
+        return {
+            "total": this_user[1],
+            "position": leaders.index(this_user)
+        }
+
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         """
