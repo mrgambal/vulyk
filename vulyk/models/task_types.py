@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from collections import defaultdict
 from datetime import datetime
 from hashlib import sha1
 from operator import itemgetter
@@ -97,19 +98,23 @@ class AbstractTaskType(object):
 
         if qs is None:
             # Not really tested yet
-            qs = self.task_model.objects(closed=True)
+            qs = self.task_model.objects(closed=True, task_type=self.type_name)
 
         for task in qs:
-            yield self.answer_model.objects(task=task)
+            yield self.answer_model.objects(task=task,
+                                            task_type=self.type_name)
 
     def get_leaders(self):
         """Return sorted list of tuples (user_id, tasks_done)
 
         :returns: list of tuples (user_id, tasks_done)
-        :rtype: list
+        :rtype: list[tuple]
         """
-        scores = self.answer_model.objects.item_frequencies('created_by')
-        return sorted(scores.items(), key=itemgetter(1), reverse=True)
+        scores = self.answer_model \
+            .objects(task_type=self.type_name) \
+            .item_frequencies('created_by')
+
+        return scores.items()
 
     def get_leaderboard(self, limit=10):
         """Find users who contributed the most
@@ -118,14 +123,25 @@ class AbstractTaskType(object):
         :type limit: integer
 
         :returns: List of dicts {user: user_obj, freq: count}
-        :rtype: list
+        :rtype: list[dict]
         """
+        result = []
+        dct = defaultdict(list)
 
-        # TODO: Here we should filter answers by task_type, which is absent atm
-        scores = self.get_leaders()
+        [dct[item[1]].append(item)
+         for item in self.get_leaders()
+         if len(dct.keys()) < limit]
 
-        return map(lambda x: {"user": User.objects.get(id=x[0]),
-                              "freq": x[1]}, scores[:limit])
+        sorted_list = sorted(dct.values(), key=lambda r: r[0][1], reverse=True)
+
+        for i, el in enumerate(sorted_list):
+            for v in el:
+                result.append({
+                    'rank': i + 1,
+                    'user': User.objects.get(id=v[0]),
+                    'freq': v[1]})
+
+        return result
 
     def get_next(self, user):
         """
@@ -221,7 +237,8 @@ class AbstractTaskType(object):
                 .get_or_404(id=task_id, task_type=self.type_name)  # TODO: exc
             answer, _ = self.answer_model \
                 .objects \
-                .get_or_create(task=task, created_by=user.id)
+                .get_or_create(task=task, created_by=user.id,
+                               task_type=self.type_name)
 
             answer.update(set__result=result)
             # update task

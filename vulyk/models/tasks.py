@@ -75,6 +75,7 @@ class AbstractAnswer(Document):
                                 db_field='createdBy')
     created_at = DateTimeField(default=datetime.now(),
                                db_field='createdAt')
+    task_type = StringField(max_length=50, required=True, db_field='taskType')
     # not sure - could be extended
     result = DictField()
 
