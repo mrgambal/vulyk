@@ -74,16 +74,17 @@ def _load_tasks_file(task_id, path):
     echo('Finished loading {0:d} tasks'.format(i))
 
 
-def export_tasks(task_id, path):
+def export_tasks(task_id, path, closed):
     """
     :type task_id: vulyk.models.task_types.AbstractTaskType
     :type path: str | unicode
+    :type closed: boolean
     """
     i = 0
 
     try:
         with open(path, 'w+') as f:
-            for report in task_id.export_reports():
+            for report in task_id.export_reports(closed):
                 f.write(json.dumps(report) + os.linesep)
                 i += 1
 
@@ -94,4 +95,4 @@ def export_tasks(task_id, path):
     except IOError as e:
         echo('Got IO error when tried to decode {0}: {1}'.format(path, e))
 
-    echo('Finished loading {0:d} tasks'.format(i))
+    echo('Finished exporting answers for {0:d} tasks'.format(i))

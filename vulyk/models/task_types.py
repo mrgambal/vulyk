@@ -84,7 +84,7 @@ class AbstractTaskType(object):
             # TODO: review list of exceptions, any fallback actions if needed
             raise TaskImportError('Can\'t load task: {0}'.format(e))
 
-    def export_reports(self, qs=None):
+    def export_reports(self, closed=True, qs=None):
         """Exports results
         io is left out of scope here as well
 
@@ -92,15 +92,16 @@ class AbstractTaskType(object):
             qs: Queryset, an optional argument. Default value is QS that
             exports all tasks with amount of answers > redundancy
         Returns:
-            Generator of dicts with results
+            Generator of lists of dicts with results
         """
 
         if qs is None:
             # Not really tested yet
-            qs = self.task_model.objects(closed=True)
+            qs = self.task_model.objects(closed=closed)
 
         for task in qs:
-            yield self.answer_model.objects(task=task)
+            yield [answer.as_dict()
+                   for answer in self.answer_model.objects(task=task)]
 
     def get_leaders(self):
         """Return sorted list of tuples (user_id, tasks_done)

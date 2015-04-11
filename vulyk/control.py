@@ -72,9 +72,10 @@ def load(task_type, path):
                 type=click.Path(file_okay=True,
                                 writable=True,
                                 resolve_path=True))
-def export(task_type, path):
+@click.option('--export-all', 'export_all', default=False, is_flag=True)
+def export(task_type, path, export_all):
     """Exports answers on closed tasks to json."""
-    _db.export_tasks(TASKS_TYPES[task_type], path)
+    _db.export_tasks(TASKS_TYPES[task_type], path, not export_all)
 
 
 @cli.group('group')

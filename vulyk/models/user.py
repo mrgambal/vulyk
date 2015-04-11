@@ -88,6 +88,18 @@ class User(Document, UserMixin):
             "position": leaders.index(this_user)
         }
 
+    def as_dict(self):
+        """
+        Converts the model-instance into a safe that will include also task
+        and user.
+
+        :rtype : dict
+        """
+        return {
+            'username': self.username,
+            'email': self.email
+        }
+
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         """
