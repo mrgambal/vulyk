@@ -73,7 +73,7 @@ def load(task_type, path):
                                 writable=True,
                                 resolve_path=True))
 def export(task_type, path):
-    """Refills tasks collection from json."""
+    """Exports answers on closed tasks to json."""
     _db.export_tasks(TASKS_TYPES[task_type], path)
 
 
