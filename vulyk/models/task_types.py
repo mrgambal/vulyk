@@ -3,11 +3,10 @@ from __future__ import unicode_literals
 from collections import defaultdict
 from datetime import datetime
 from hashlib import sha1
-from operator import itemgetter
-import random
 import six
 import ujson as json
 
+from mongoengine import Q
 from mongoengine.errors import (
     InvalidQueryError,
     LookUpError,
@@ -16,7 +15,7 @@ from mongoengine.errors import (
     ValidationError
 )
 
-from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
 from vulyk.models.user import User
 from vulyk.models.exc import (
     TaskImportError,
@@ -62,24 +61,24 @@ class AbstractTaskType(object):
     def description(self):
         return self._description if len(self._description) > 0 else ''
 
-    def import_tasks(self, tasks):
+    def import_tasks(self, tasks, batch):
         """Imports tasks from an iterable over dicts
         io is left out of scope here.
 
-        Args:
-            tasks: An iterable over dicts
-        Returns:
-            None
+        :param tasks: An iterable over dicts
+        :type tasks: list[dict]
+        :param batch: Batch ID (optional)
+        :type batch: str | unicode
 
-        Raises:
-            TaskImportError
+        :raise: TaskImportError
         """
         try:
             for task in tasks:
                 self.task_model.objects.create(
-                    _id=sha1(json.dumps(task)).hexdigest()[:20],
+                    id=sha1(json.dumps(task)).hexdigest()[:20],
+                    batch=batch,
                     task_type=self.type_name,
-                    task_data=task
+                    task_data=task,
                 )
         except (AttributeError, TypeError, OperationError) as e:
             # TODO: review list of exceptions, any fallback actions if needed
@@ -97,7 +96,6 @@ class AbstractTaskType(object):
         """
 
         if qs is None:
-            # Not really tested yet
             qs = self.task_model.objects(closed=True, task_type=self.type_name)
 
         for task in qs:
@@ -126,15 +124,13 @@ class AbstractTaskType(object):
         :rtype: list[dict]
         """
         result = []
-        dct = defaultdict(list)
+        top = defaultdict(list)
 
-        [dct[item[1]].append(item)
-         for item in self.get_leaders()
-         if len(dct.keys()) < limit]
+        [top[e[1]].append(e) for e in self.get_leaders() if len(top) < limit]
 
-        sorted_list = sorted(dct.values(), key=lambda r: r[0][1], reverse=True)
+        sorted_top = sorted(top.values(), key=lambda r: r[0][1], reverse=True)
 
-        for i, el in enumerate(sorted_list):
+        for i, el in enumerate(sorted_top):
             for v in el:
                 result.append({
                     'rank': i + 1,
@@ -173,24 +169,17 @@ class AbstractTaskType(object):
         :returns: Model instance or None
         :rtype: AbstractTask
         """
-        task = None
-        rs = self.task_model.objects(
-            task_type=self.type_name,
-            users_processed__ne=user.id,
-            users_skipped__ne=user.id,
-            closed__ne=True)
+        base_q = Q(task_type=self.type_name) \
+                 & Q(users_processed__ne=user.id) \
+                 & Q(closed__ne=True)
+        rs = self.task_model.objects(base_q & Q(users_skipped__ne=user.id))
 
         if rs.count() == 0:
             # loosening restrictions here
-            rs = self.task_model.objects(
-                task_type=self.type_name,
-                users_processed__ne=user.id,
-                closed__ne=True)
+            del rs
+            rs = self.task_model.objects(base_q)
 
-        if rs.count() > 0:
-            task = random.choice(rs)
-
-        return task
+        return rs.order_by('batch', 'users_processed').first()
 
     def skip_task(self, task_id, user):
         """
@@ -247,6 +236,11 @@ class AbstractTaskType(object):
             user.update(inc__processed=1)
             # update stats record
             self._end_work_session(task, user.id, answer)
+
+            if task.closed and task.batch is not None:
+                batch = Batch.objects.get_or_404(id=task.batch)
+                batch.tasks_processed += 1
+                batch.save()
         except ValidationError as err:
             raise TaskValidationError(err, get_tb())
         except (OperationError, LookUpError, InvalidQueryError) as err:
@@ -350,5 +344,6 @@ class AbstractTaskType(object):
         return {
             'name': self.name,
             'description': self.description,
-            'type': self.type_name
+            'type': self.type_name,
+            'tasks': self.task_model.objects.count()
         }

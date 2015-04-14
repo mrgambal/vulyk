@@ -18,6 +18,30 @@ from mongoengine import (
 from vulyk.models.user import User
 
 
+class Batch(Document):
+    id = StringField(max_length=50, primary_key=True)
+    task_type = StringField(max_length=50, required=True, db_field='taskType')
+    tasks_count = IntField(default=0, required=True, db_field='tasksCount')
+    tasks_processed = IntField(default=0, db_field='tasksProcessed')
+
+    meta = {
+        'collection': 'batches',
+        'allow_inheritance': True,
+        'indexes': [
+            'task_type'
+        ]
+    }
+
+    def __unicode__(self):
+        return six.text_type(self.id)
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __repr__(self):
+        return self.__unicode__()
+
+
 class AbstractTask(Document):
     """
     This is AbstractTask model.
@@ -25,12 +49,12 @@ class AbstractTask(Document):
     """
     id = StringField(max_length=200, default='', primary_key=True)
     task_type = StringField(max_length=50, required=True, db_field='taskType')
+    batch = ReferenceField(Batch, reverse_delete_rule=CASCADE)
 
     users_count = IntField(default=0, db_field='usersCount')
     users_processed = ListField(ReferenceField(User),
                                 db_field='usersProcessed')
-    users_skipped = ListField(ReferenceField(User),
-                              db_field='usersSkipped')
+    users_skipped = ListField(ReferenceField(User), db_field='usersSkipped')
 
     closed = BooleanField(default=False)
     task_data = DictField(required=True)

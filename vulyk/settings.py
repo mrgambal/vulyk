@@ -82,8 +82,10 @@ ENABLED_TASKS = ENV('ENABLED_TASKS', {
     'vulyk.plugins.dummy': 'DummyTaskType',
 })
 
-SITE_NAME = "Vulyk workspace"
+SITE_NAME = 'Vulyk workspace'
 SITE_MOTTO = "Vulyk: crowdsourcing platform"
+
+DEFAULT_BATCH='default'
 
 try:
     from werkzeug.utils import import_string
