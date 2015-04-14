@@ -268,7 +268,7 @@ class AbstractTaskType(object):
         if self._is_ready_for_autoclose(task, answer):
             task.closed = True
         else:
-            task.closed = task.users_count == self.redundancy
+            task.closed = task.users_count >= self.redundancy
 
         task.save()
 
