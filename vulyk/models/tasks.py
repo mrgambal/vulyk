@@ -133,6 +133,19 @@ class AbstractAnswer(Document):
     def corrections(self):
         pass
 
+    def as_dict(self):
+        """
+        Converts the model-instance into a safe that will include also task
+        and user.
+
+        :rtype : dict
+        """
+        return {
+            'task': self.task.as_dict(),
+            'answer': self.result,
+            'user': self.created_by.as_dict()
+        }
+
     def __unicode__(self):
         return six.text_type(self.pk)
 
