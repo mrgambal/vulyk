@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from collections import defaultdict
 from datetime import datetime
 from hashlib import sha1
+import random
 import six
 import ujson as json
 
@@ -170,17 +171,27 @@ class AbstractTaskType(object):
         :returns: Model instance or None
         :rtype: AbstractTask
         """
+        rs = None
         base_q = Q(task_type=self.type_name) \
                  & Q(users_processed__ne=user.id) \
                  & Q(closed__ne=True)
-        rs = self.task_model.objects(base_q & Q(users_skipped__ne=user.id))
 
-        if rs.count() == 0:
-            # loosening restrictions here
-            del rs
-            rs = self.task_model.objects(base_q)
+        for batch in Batch.objects.order_by('id'):
+            if batch.tasks_count == batch.tasks_processed:
+                continue
 
-        return rs.order_by('batch', 'users_processed').first()
+            rs = self.task_model.objects(base_q
+                                         & Q(users_skipped__ne=user.id)
+                                         & Q(batch=batch.id))
+
+            if rs.count() == 0:
+                del rs
+                rs = self.task_model.objects(base_q & Q(batch=batch.id))
+
+            if rs.count() > 0:
+                break
+
+        return random.choice(rs or [])
 
     def skip_task(self, task_id, user):
         """
