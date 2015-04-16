@@ -191,7 +191,10 @@ class AbstractTaskType(object):
             if rs.count() > 0:
                 break
 
-        return random.choice(rs or [])
+        if rs:
+            return random.choice(rs or [])
+        else:
+            return None
 
     def skip_task(self, task_id, user):
         """

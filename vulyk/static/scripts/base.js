@@ -38,9 +38,8 @@ var Vulyk = Vulyk || {
                     vus.task_id = data.result.task.id;
                     vus.body.trigger("vulyk.next", data);
                 }
-            ).fail(function() {
-                // TODO: no more tasks to do
-                alert("Error occurred or no unassigned tasks left");
+            ).fail(function(data) {
+                vus.body.trigger("vulyk.task_error", data.responseJSON);
             });
         },
         skip_task: function () {
