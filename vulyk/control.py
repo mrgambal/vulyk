@@ -2,9 +2,10 @@
 # -*- coding=utf-8 -*-
 import click
 
-from vulyk.app import TASKS_TYPES
+from vulyk.app import TASKS_TYPES, app
 from vulyk.cli import (
     admin as _admin,
+    batches as _batches,
     db as _db,
     groups as _groups,
     project_init as _project_init)
@@ -61,9 +62,16 @@ def db():
                                 readable=True,
                                 resolve_path=True),
                 nargs=-1)
-def load(task_type, path):
+@click.option('--batch',
+              default=app.config['DEFAULT_BATCH'],
+              callback=_batches.validate_batch,
+              help='Specify the batch id tasks should be loaded into')
+def load(task_type, path, batch):
     """Refills tasks collection from json."""
-    _db.load_tasks(TASKS_TYPES[task_type], path)
+    count = _db.load_tasks(TASKS_TYPES[task_type], path, batch)
+
+    if batch is not None and count > 0:
+        _batches.add_batch(batch, count, task_type)
 
 
 @db.command('export')

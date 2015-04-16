@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from collections import defaultdict
 from datetime import datetime
 from hashlib import sha1
-from operator import itemgetter
 import random
 import six
 import ujson as json
 
+from mongoengine import Q
 from mongoengine.errors import (
     InvalidQueryError,
     LookUpError,
@@ -15,7 +16,7 @@ from mongoengine.errors import (
     ValidationError
 )
 
-from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
 from vulyk.models.user import User
 from vulyk.models.exc import (
     TaskImportError,
@@ -61,24 +62,24 @@ class AbstractTaskType(object):
     def description(self):
         return self._description if len(self._description) > 0 else ''
 
-    def import_tasks(self, tasks):
+    def import_tasks(self, tasks, batch):
         """Imports tasks from an iterable over dicts
         io is left out of scope here.
 
-        Args:
-            tasks: An iterable over dicts
-        Returns:
-            None
+        :param tasks: An iterable over dicts
+        :type tasks: list[dict]
+        :param batch: Batch ID (optional)
+        :type batch: str | unicode
 
-        Raises:
-            TaskImportError
+        :raise: TaskImportError
         """
         try:
             for task in tasks:
                 self.task_model.objects.create(
-                    _id=sha1(json.dumps(task)).hexdigest()[:20],
+                    id=sha1(json.dumps(task)).hexdigest()[:20],
+                    batch=batch,
                     task_type=self.type_name,
-                    task_data=task
+                    task_data=task,
                 )
         except (AttributeError, TypeError, OperationError) as e:
             # TODO: review list of exceptions, any fallback actions if needed
@@ -107,10 +108,13 @@ class AbstractTaskType(object):
         """Return sorted list of tuples (user_id, tasks_done)
 
         :returns: list of tuples (user_id, tasks_done)
-        :rtype: list
+        :rtype: list[tuple]
         """
-        scores = self.answer_model.objects.item_frequencies('created_by')
-        return sorted(scores.items(), key=itemgetter(1), reverse=True)
+        scores = self.answer_model \
+            .objects(task_type=self.type_name) \
+            .item_frequencies('created_by')
+
+        return scores.items()
 
     def get_leaderboard(self, limit=10):
         """Find users who contributed the most
@@ -119,14 +123,23 @@ class AbstractTaskType(object):
         :type limit: integer
 
         :returns: List of dicts {user: user_obj, freq: count}
-        :rtype: list
+        :rtype: list[dict]
         """
+        result = []
+        top = defaultdict(list)
 
-        # TODO: Here we should filter answers by task_type, which is absent atm
-        scores = self.get_leaders()
+        [top[e[1]].append(e) for e in self.get_leaders() if len(top) < limit]
 
-        return map(lambda x: {"user": User.objects.get(id=x[0]),
-                              "freq": x[1]}, scores[:limit])
+        sorted_top = sorted(top.values(), key=lambda r: r[0][1], reverse=True)
+
+        for i, el in enumerate(sorted_top):
+            for v in el:
+                result.append({
+                    'rank': i + 1,
+                    'user': User.objects.get(id=v[0]),
+                    'freq': v[1]})
+
+        return result
 
     def get_next(self, user):
         """
@@ -158,24 +171,27 @@ class AbstractTaskType(object):
         :returns: Model instance or None
         :rtype: AbstractTask
         """
-        task = None
-        rs = self.task_model.objects(
-            task_type=self.type_name,
-            users_processed__ne=user.id,
-            users_skipped__ne=user.id,
-            closed__ne=True)
+        rs = None
+        base_q = Q(task_type=self.type_name) \
+                 & Q(users_processed__ne=user.id) \
+                 & Q(closed__ne=True)
 
-        if rs.count() == 0:
-            # loosening restrictions here
-            rs = self.task_model.objects(
-                task_type=self.type_name,
-                users_processed__ne=user.id,
-                closed__ne=True)
+        for batch in Batch.objects.order_by('id'):
+            if batch.tasks_count == batch.tasks_processed:
+                continue
 
-        if rs.count() > 0:
-            task = random.choice(rs)
+            rs = self.task_model.objects(base_q
+                                         & Q(users_skipped__ne=user.id)
+                                         & Q(batch=batch.id))
 
-        return task
+            if rs.count() == 0:
+                del rs
+                rs = self.task_model.objects(base_q & Q(batch=batch.id))
+
+            if rs.count() > 0:
+                break
+
+        return random.choice(rs or [])
 
     def skip_task(self, task_id, user):
         """
@@ -222,7 +238,8 @@ class AbstractTaskType(object):
                 .get_or_404(id=task_id, task_type=self.type_name)  # TODO: exc
             answer, _ = self.answer_model \
                 .objects \
-                .get_or_create(task=task, created_by=user.id)
+                .get_or_create(task=task, created_by=user.id,
+                               task_type=self.type_name)
 
             answer.update(set__result=result)
             # update task
@@ -231,6 +248,11 @@ class AbstractTaskType(object):
             user.update(inc__processed=1)
             # update stats record
             self._end_work_session(task, user.id, answer)
+
+            if task.closed and task.batch is not None:
+                batch = Batch.objects.get_or_404(id=task.batch)
+                batch.tasks_processed += 1
+                batch.save()
         except ValidationError as err:
             raise TaskValidationError(err, get_tb())
         except (OperationError, LookUpError, InvalidQueryError) as err:
@@ -334,5 +356,6 @@ class AbstractTaskType(object):
         return {
             'name': self.name,
             'description': self.description,
-            'type': self.type_name
+            'type': self.type_name,
+            'tasks': self.task_model.objects.count()
         }

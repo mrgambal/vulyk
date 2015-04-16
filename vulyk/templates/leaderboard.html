@@ -20,7 +20,7 @@
 		</tr>
 		{% for l in leaders %}
 		<tr>
-			<th>{{ loop.index }}</th>
+			<th>{{ l.rank }}</th>
 			<td>{{ l.user.username|strip_email }}</td>
 			<td>{{ l.freq }}</td>
 		</tr>
