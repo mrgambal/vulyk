@@ -73,19 +73,21 @@ class User(Document, UserMixin):
 
     def get_stats(self, task_type):
         leaders = task_type.get_leaders()
-        this_user = filter(lambda x: x[0] == self.id, leaders)
+        i = 0
+        prev_val = -1
+        total = 0
+        for user, freq in leaders:
+            if freq != prev_val:
+                i += 1
+                prev_val = freq
 
-        if this_user:
-            this_user = this_user[0]
-        else:
-            return {
-                "total": 0,
-                "position": 0
-            }
+            if user == self.id:
+                total = freq
+                break
 
         return {
-            "total": this_user[1],
-            "position": leaders.index(this_user)
+            "total": total,
+            "position": i
         }
 
     def as_dict(self):

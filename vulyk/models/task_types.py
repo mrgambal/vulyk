@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from collections import defaultdict
 from datetime import datetime
+from operator import itemgetter
 from hashlib import sha1
 import random
 import six
@@ -114,7 +115,7 @@ class AbstractTaskType(object):
             .objects(task_type=self.type_name) \
             .item_frequencies('created_by')
 
-        return scores.items()
+        return sorted(scores.items(), key=itemgetter(1), reverse=True)
 
     def get_leaderboard(self, limit=10):
         """Find users who contributed the most
