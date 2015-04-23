@@ -174,8 +174,8 @@ class AbstractTaskType(object):
         """
         rs = None
         base_q = Q(task_type=self.type_name) \
-                 & Q(users_processed__ne=user.id) \
-                 & Q(closed__ne=True)
+            & Q(users_processed__ne=user.id) \
+            & Q(closed__ne=True)
 
         for batch in Batch.objects.order_by('id'):
             if batch.tasks_count == batch.tasks_processed:
@@ -191,6 +191,14 @@ class AbstractTaskType(object):
 
             if rs.count() > 0:
                 break
+        else:
+            # Now searching in default batch
+            rs = self.task_model.objects(base_q
+                                         & Q(users_skipped__ne=user.id))
+
+            if rs.count() == 0:
+                del rs
+                rs = self.task_model.objects(base_q)
 
         if rs:
             return random.choice(rs or [])
