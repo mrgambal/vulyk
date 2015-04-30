@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from datetime import datetime
 import six
 
 from flask.ext.mongoengine import Document
@@ -97,8 +96,7 @@ class AbstractAnswer(Document):
     task = ReferenceField(AbstractTask, reverse_delete_rule=CASCADE)
     created_by = ReferenceField(User, reverse_delete_rule=CASCADE,
                                 db_field='createdBy')
-    created_at = DateTimeField(default=datetime.now(),
-                               db_field='createdAt')
+    created_at = DateTimeField(db_field='createdAt')
     task_type = StringField(max_length=50, required=True, db_field='taskType')
     # not sure - could be extended
     result = DictField()

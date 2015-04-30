@@ -250,7 +250,9 @@ class AbstractTaskType(object):
                 .get_or_404(id=task_id, task_type=self.type_name)  # TODO: exc
             answer, _ = self.answer_model \
                 .objects \
-                .get_or_create(task=task, created_by=user.id,
+                .get_or_create(task=task,
+                               created_by=user.id,
+                               created_at=datetime.now(),
                                task_type=self.type_name)
 
             answer.update(set__result=result)
@@ -262,7 +264,7 @@ class AbstractTaskType(object):
             self._end_work_session(task, user.id, answer)
 
             if task.closed and task.batch is not None:
-                batch = Batch.objects.get_or_404(id=task.batch)
+                batch = Batch.objects.get_or_404(id=task.batch.id)
                 batch.tasks_processed += 1
                 batch.save()
         except ValidationError as err:
