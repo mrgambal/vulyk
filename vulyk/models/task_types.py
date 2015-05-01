@@ -264,9 +264,8 @@ class AbstractTaskType(object):
             self._end_work_session(task, user.id, answer)
 
             if task.closed and task.batch is not None:
-                batch = Batch.objects.get_or_404(id=task.batch.id)
-                batch.tasks_processed += 1
-                batch.save()
+                batch_id = task.batch.id
+                Batch.objects(id=batch_id).update_one(inc__tasks_processed=1)
         except ValidationError as err:
             raise TaskValidationError(err, get_tb())
         except (OperationError, LookUpError, InvalidQueryError) as err:

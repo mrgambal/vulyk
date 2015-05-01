@@ -14,7 +14,8 @@ def add_batch(batch, count, task_type):
     :type task_type: str | unicode
     """
     if batch == app.config['DEFAULT_BATCH']:
-        Batch.objects(id=batch).update_one(inc__tasks_count=count)
+        batch, _ = Batch.objects.get_or_create(id=batch)
+        batch.update(inc__tasks_count=count)
     else:
         Batch.objects.create(id=batch, task_type=task_type, tasks_count=count)
 
