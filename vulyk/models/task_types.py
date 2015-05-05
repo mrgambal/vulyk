@@ -100,9 +100,8 @@ class AbstractTaskType(object):
         :returns: Generator of lists of dicts with results
         :rtype: __generator[list[dict]]
         """
-        query = Q(batch=batch, closed=closed) if closed else Q(batch=batch)
-
         if qs is None:
+            query = Q(batch=batch, closed=closed) if closed else Q(batch=batch)
             qs = self.task_model.objects(query)
 
         for task in qs:
