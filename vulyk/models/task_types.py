@@ -86,20 +86,23 @@ class AbstractTaskType(object):
             # TODO: review list of exceptions, any fallback actions if needed
             raise TaskImportError('Can\'t load task: {0}'.format(e))
 
-    def export_reports(self, closed=True, qs=None):
-        """Exports results
-        io is left out of scope here as well
+    def export_reports(self, batch, closed=True, qs=None):
+        """Exports results. IO is left out of scope here as well
 
-        Args:
-            qs: Queryset, an optional argument. Default value is QS that
-            exports all tasks with amount of answers > redundancy
-        Returns:
-            Generator of lists of dicts with results
+        :param batch: Certain batch to extract
+        :type batch: str | unicode
+        :param closed: Specify if we need to export only closed tasks reports
+        :type closed: bool
+        :param qs: Queryset, an optional argument. Default value is QS that
+                   exports all tasks with amount of answers > redundancy
+        :type qs: QuerySet
+
+        :returns: Generator of lists of dicts with results
+        :rtype: __generator[list[dict]]
         """
 
         if qs is None:
-            # Not really tested yet
-            qs = self.task_model.objects(closed=closed)
+            qs = self.task_model.objects(batch=batch, closed=closed)
 
         for task in qs:
             yield [answer.as_dict()

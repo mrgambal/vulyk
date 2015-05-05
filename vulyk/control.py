@@ -80,10 +80,14 @@ def load(task_type, path, batch):
                 type=click.Path(file_okay=True,
                                 writable=True,
                                 resolve_path=True))
+@click.option('--batch',
+              default=app.config['DEFAULT_BATCH'],
+              type=click.Choice(_batches.batches_list()),
+              help='Specify the batch id tasks should be loaded into')
 @click.option('--export-all', 'export_all', default=False, is_flag=True)
-def export(task_type, path, export_all):
+def export(task_type, path, batch, export_all):
     """Exports answers on closed tasks to json."""
-    _db.export_tasks(TASKS_TYPES[task_type], path, not export_all)
+    _db.export_tasks(TASKS_TYPES[task_type], path, batch, not export_all)
 
 
 @cli.group('group')

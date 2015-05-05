@@ -90,17 +90,18 @@ def _load_tasks_file(task_id, path, batch):
     return i
 
 
-def export_tasks(task_id, path, closed):
+def export_tasks(task_id, path, batch, closed):
     """
     :type task_id: vulyk.models.task_types.AbstractTaskType
     :type path: str | unicode
+    :type batch: str | unicode
     :type closed: boolean
     """
     i = 0
 
     try:
         with open(path, 'w+') as f:
-            for report in task_id.export_reports(closed):
+            for report in task_id.export_reports(batch, closed):
                 f.write(json.dumps(report) + os.linesep)
                 i += 1
 
