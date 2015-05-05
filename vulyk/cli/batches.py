@@ -38,3 +38,10 @@ def validate_batch(ctx, param, value):
             'Batch with id {id} already exists'.format(id=value))
     else:
         return value
+
+def batches_list():
+    """
+    :return: List of batches IDs to validate CLI input
+    :rtype : list[str]
+    """
+    return Batch.objects.scalar('id')
