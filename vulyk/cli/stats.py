@@ -13,9 +13,8 @@ def batch_completeness():
     :rtype : dict
     """
     batches = {}
-    tasks = lambda: AbstractTask.objects(batch=b.id)
-    f_percent = lambda done, total: (float(done) / (total or done or 1)) * 100
-    a_percent = lambda got, limit, total: (float(got) / (limit * total)) * 100
+    tasks = lambda batch: AbstractTask.objects(batch=batch.id)
+    percent = lambda done, total: (float(done) / (total or done or 1)) * 100
 
     for b in Batch.objects.all():
         batches[b.id] = {
@@ -25,20 +24,18 @@ def batch_completeness():
             'answers': 0,
             'answers_percent': 0}
 
-        if len(tasks()) > 0:
-            answers = sum(tasks().scalar('users_count'))
-            type_id = tasks().first().task_type
+        if len(tasks(b)) > 0:
+            type_id = tasks(b).first().task_type
             task_type = TASKS_TYPES[type_id]
+            answers = sum(tasks(b).filter(closed=False).scalar('users_count'))
+            done = answers + (task_type.redundancy * b.tasks_processed)
 
             batches[b.id] = {
                 'total': b.tasks_count,
                 'flag': b.tasks_processed,
-                'flag_percent': f_percent(b.tasks_processed,
-                                          b.tasks_count),
-                'answers': answers,
-                'answers_percent': a_percent(answers,
-                                             task_type.redundancy,
-                                             b.tasks_count)
+                'flag_percent': percent(b.tasks_processed, b.tasks_count),
+                'answers': done,
+                'answers_percent': percent(done, b.tasks_count)
             }
 
     return batches
