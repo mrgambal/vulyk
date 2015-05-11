@@ -62,7 +62,8 @@ class AbstractTask(Document):
         'collection': 'tasks',
         'allow_inheritance': True,
         'indexes': [
-            'task_type'
+            'task_type',
+            'batch'
         ]
     }
 

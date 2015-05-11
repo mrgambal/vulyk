@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding=utf-8 -*-
 import click
+from prettytable import PrettyTable
 
 from vulyk.app import TASKS_TYPES, app
 from vulyk.cli import (
@@ -8,7 +9,8 @@ from vulyk.cli import (
     batches as _batches,
     db as _db,
     groups as _groups,
-    project_init as _project_init)
+    project_init as _project_init,
+    stats as _stats)
 
 
 def abort_if_false(ctx, param, value):
@@ -180,3 +182,32 @@ def project_init(allowed_types):
                                  'one default task type')
 
     _project_init(allowed_types)
+
+
+@cli.group('stats')
+def stats():
+    """Commands to show some stats"""
+    pass
+
+
+@stats.command('batch')
+def batch():
+    headers = ['Batch',
+               'Total',
+               'Completed (flag)',
+               'Percent (flag)',
+               'Answers',
+               'Percent (answers)']
+    pt = PrettyTable(headers)
+    pt.padding_width = 1
+
+    for k, v in _stats.batch_completeness().iteritems():
+        values = [k,
+                  v['total'],
+                  v['flag'],
+                  u'{:5.1f} %'.format(v['flag_percent']),
+                  v['answers'],
+                  u'{:5.1f} %'.format(v['answers_percent'])]
+        pt.add_row(values)
+
+    print(pt)
