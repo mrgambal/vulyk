@@ -177,8 +177,8 @@ class AbstractTaskType(object):
         """
         rs = None
         base_q = Q(task_type=self.type_name) \
-            & Q(users_processed__ne=user.id) \
-            & Q(closed__ne=True)
+                 & Q(users_processed__ne=user.id) \
+                 & Q(closed__ne=True)
 
         for batch in Batch.objects.order_by('id'):
             if batch.tasks_count == batch.tasks_processed:
@@ -260,13 +260,13 @@ class AbstractTaskType(object):
 
             answer.update(set__result=result)
             # update task
-            self._update_task_on_answer(task, answer, user)
+            closed = self._update_task_on_answer(task, answer, user)
             # update user
             user.update(inc__processed=1)
             # update stats record
             self._end_work_session(task, user.id, answer)
 
-            if task.closed and task.batch is not None:
+            if closed and task.batch is not None:
                 batch_id = task.batch.id
                 Batch.objects(id=batch_id).update_one(inc__tasks_processed=1)
         except ValidationError as err:
@@ -299,16 +299,29 @@ class AbstractTaskType(object):
         :type answer: AbstractAnswer
         :param user: an instance of User model who provided an answer
         :type user: models.User
+
+        :rtype: bool
         """
         task.users_count += 1
         task.users_processed.append(user)
+
+        task.save()
 
         if self._is_ready_for_autoclose(task, answer):
             task.closed = True
         else:
             task.closed = task.users_count >= self.redundancy
 
-        task.save()
+        closed = self._is_ready_for_autoclose(task, answer) \
+                 or (task.users_count >= self.redundancy)
+
+        if closed:
+            closed = self.task_model \
+                         .objects(id=task.id, closed=False) \
+                         .update(closed=True) == 1
+            print('Closed: ' + str(closed))
+
+        return closed
 
     # TODO: make up something prettier than that mess
     def _start_work_session(self, task, user):
