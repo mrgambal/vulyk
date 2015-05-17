@@ -223,7 +223,7 @@ class AbstractTaskType(object):
         try:
             task = self.task_model.objects.get_or_404(
                 id=task_id, task_type=self.type_name)
-            task.update(push__users_skipped=user)
+            task.update(add_to_set__users_skipped=user)
             self._del_work_session(task, user)
         except NotUniqueError as err:
             raise TaskSkipError(six.text_type(err))
@@ -319,7 +319,6 @@ class AbstractTaskType(object):
             closed = self.task_model \
                          .objects(id=task.id, closed=False) \
                          .update(closed=True) == 1
-            print('Closed: ' + str(closed))
 
         return closed
 
