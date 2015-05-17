@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding=utf-8 -*-
+from __future__ import unicode_literals
 import click
-from prettytable import PrettyTable
+from prettytable import PrettyTable, ALL
 
 from vulyk.app import TASKS_TYPES, app
 from vulyk.cli import (
@@ -192,22 +193,29 @@ def stats():
 
 @stats.command('batch')
 def batch():
+    """
+    Prints out some numbers which describe the state of tasks in certain batch
+    """
     headers = ['Batch',
                'Total',
                'Completed (flag)',
                'Percent (flag)',
                'Answers',
-               'Percent (answers)']
+               'Percent (answers)',
+               'Breakdown (answers: tasks)']
     pt = PrettyTable(headers)
-    pt.padding_width = 1
+    pt.align = 'l'
+    pt.left_padding_width = 1
+    pt.hrules = ALL
 
-    for k, v in _stats.batch_completeness().iteritems():
+    for k, v in _stats.batch_completeness().items():
         values = [k,
                   v['total'],
                   v['flag'],
-                  u'{:5.1f} %'.format(v['flag_percent']),
+                  '{:5.1f} %'.format(v['flag_percent']),
                   v['answers'],
-                  u'{:5.1f} %'.format(v['answers_percent'])]
+                  '{:5.1f} %'.format(v['answers_percent']),
+                  v['breakdown']]
         pt.add_row(values)
 
     print(pt)
