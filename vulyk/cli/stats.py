@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from vulyk.app import TASKS_TYPES
-from vulyk.models.tasks import Batch, AbstractTask, AbstractAnswer
+from vulyk.models.tasks import Batch, AbstractTask
 
 
 def batch_completeness():
@@ -13,7 +13,7 @@ def batch_completeness():
     :rtype : dict
     """
     batches = {}
-    tasks = lambda batch: AbstractTask.objects(batch=batch)
+    rs = lambda batch: AbstractTask.objects(batch=batch)
     percent = lambda done, total: (float(done) / (total or done or 1)) * 100
 
     for b in Batch.objects.all():
@@ -25,18 +25,18 @@ def batch_completeness():
             'answers_percent': 0,
             'breakdown': ''}
 
-        if len(tasks(b.id)) > 0:
-            type_id = tasks(b.id).first().task_type
-            task_type = TASKS_TYPES[type_id]
-            answers = sum(tasks(b.id).filter(closed=False).scalar('users_count'))
-            done = answers + (task_type.redundancy * b.tasks_processed)
+        if len(rs(b.id)) > 0:
+            task_type = TASKS_TYPES[rs(b.id).first().task_type]
+            answers = sum(rs(b.id).filter(closed=False).scalar('users_count'))
+            answers_got = answers + (task_type.redundancy * b.tasks_processed)
+            answers_needed = b.tasks_count * task_type.redundancy
 
             batches[b.id] = {
                 'total': b.tasks_count,
                 'flag': b.tasks_processed,
                 'flag_percent': percent(b.tasks_processed, b.tasks_count),
-                'answers': done,
-                'answers_percent': percent(done, b.tasks_count),
+                'answers': answers_got,
+                'answers_percent': percent(answers_got, answers_needed),
                 'breakdown': _breakdown_by_processed(b.id)
             }
 
