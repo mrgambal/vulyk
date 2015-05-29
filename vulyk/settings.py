@@ -11,12 +11,12 @@ SESSION_COOKIE_NAME = ENV('SESSION_COOKIE_NAME', 'vulyk_session')
 DEBUG = ENV('DEBUG', True)
 
 MONGODB_SETTINGS = {
-    'DB': ENV("mongodb_db", "vulyk"),
-    'HOST': ENV("mongodb_host", "localhost"),
-    'USERNAME': ENV("mongodb_username", None),
-    'PASSWORD': ENV("mongodb_password", None),
-    'PORT': (int(ENV("mongodb_port"))
-             if ENV("mongodb_port") else None)
+    'DB': ENV('mongodb_db', 'vulyk'),
+    'HOST': ENV('mongodb_host', 'localhost'),
+    'USERNAME': ENV('mongodb_username', None),
+    'PASSWORD': ENV('mongodb_password', None),
+    'PORT': (int(ENV('mongodb_port'))
+             if ENV('mongodb_port') else None)
 }
 
 DEBUG_TB_INTERCEPT_REDIRECTS = ENV('DEBUG_TB_INTERCEPT_REDIRECTS', False)
@@ -70,7 +70,8 @@ CSS_ASSETS = ['vendor/bootstrap/bootstrap.css',
               'styles/style.css']
 CSS_ASSETS_OUTPUT = ENV('CSS_ASSETS_OUTPUT', 'styles/packed.css')
 CSS_ASSETS_FILTERS = ENV('CSS_ASSETS_FILTERS', 'yui_css')
-
+# static files for plugin X get stored in COLLECT_STATIC_ROOT/plugin_X/static
+COLLECT_PLUGIN_DIR_PREFIX = 'plugin_'
 
 # Default redundancy level for processing
 USERS_PER_TASK = ENV('USERS_PER_TASK', 2)
@@ -83,9 +84,9 @@ ENABLED_TASKS = ENV('ENABLED_TASKS', {
 })
 
 SITE_NAME = 'Vulyk workspace'
-SITE_MOTTO = "Vulyk: crowdsourcing platform"
+SITE_MOTTO = 'Vulyk: crowdsourcing platform'
 
-DEFAULT_BATCH='default'
+DEFAULT_BATCH = 'default'
 
 try:
     from werkzeug.utils import import_string

@@ -1,12 +1,21 @@
 # -*- coding: utf-8 -*-
-
 from flask.ext.assets import Environment, Bundle
+from flask.ext.collect import Collect
 
 
 def init(app):
-    """ Bundle projects assets """
+    """
+    Bundle projects assets
 
+    :type app: flask.Flask
+    """
     assets = Environment(app)
+
+    if 'COLLECT_STATIC_ROOT' in app.config:
+        collect = Collect()
+        collect.init_app(app)
+        collect.collect()
+        app.static_folder = app.config['COLLECT_STATIC_ROOT']\
 
     if 'JS_ASSETS' in app.config and len(app.config['JS_ASSETS']) > 0:
         js = Bundle(*app.config['JS_ASSETS'],

@@ -15,10 +15,11 @@ from vulyk.utils import resolve_task_type
 
 app = Flask(__name__)
 app.config.from_object('vulyk.settings')
+db = MongoEngine(app)
 
 assets_init(app)
-db = MongoEngine(app)
 init_social_login(app, db)
+
 TASKS_TYPES = init_tasks(app)
 
 
