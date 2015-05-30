@@ -45,7 +45,7 @@ def init_tasks(app):
                                        '{}{}'.format(prefix, plugin))
         # else - use standard static folder
         else:
-            static_path = task_instance.__path__[0]
+            static_path = plugin_instance.__path__[0]
 
         js_name = 'plugin_js_{task}'.format(task=task_instance.type_name)
         css_name = 'plugin_css_{task}'.format(task=task_instance.type_name)
