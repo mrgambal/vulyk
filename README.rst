@@ -7,9 +7,6 @@ Crowdsourcing platform for various tasks
 .. image:: https://travis-ci.org/mrgambal/vulyk.png?branch=master
         :target: https://travis-ci.org/mrgambal/vulyk
 
-.. image:: https://pypip.in/d/vulyk/badge.png
-        :target: https://pypi.python.org/pypi/vulyk
-
 .. image:: https://readthedocs.org/projects/vulyk/badge/?version=latest
         :target: https://vulyk.readthedocs.org/en/latest/
 
@@ -72,13 +69,63 @@ How could I participate?
 
 You just need to contact me mr_gambal@outlook.com or `@dchaplinsky <http://github.com/dchaplinsky>`__ via
 chaplinsky.dmitry@gmail.com. One day we'll find one brave heart who'll
-create a list of issues so the process will besimplified. But not now...
+create a list of issues so the process will be simplified. But not now...
 
 Running it locally
 ------------
-TBA
+You'll need MongoDB, Python 2.7 and virtualenv and with little bit of instructions you'll be able to run the Beast (with two real plugins)!
+
+First of all, check out all required components:
 
 .. code:: bash
 
-    venv
+    mkdir vulyk
+    git clone https://github.com/mrgambal/vulyk.git
+    git clone https://github.com/hotsyk/vulyk-declaration.git
+    git clone https://github.com/hotsyk/vulyk-tagging.git
 
+Then create virtual environment and install all three of them there in editable mode (unfortunatelly we don't have any of them released on pypi yet)
+
+.. code:: bash
+
+    mkdir sandbox
+    cd sandbox
+    virtualenv venv && source venv/bin/activate
+    pip install -e ../vulyk
+    pip install -e ../vulyk-declaration
+    pip install -e ../vulyk-tagging
+
+
+Then let's set things up. Edit local_settings.py and add some stuff into it:
+
+.. code:: python
+
+    # This one only works to log in via http://localhost:5000
+    SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
+    SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
+
+    # This one works for both, http://localhost:5000 and http://127.0.0.1:5000
+    SOCIAL_AUTH_TWITTER_KEY = ''
+    SOCIAL_AUTH_TWITTER_SECRET = ''
+
+    # This one only works to log in via http://localhost:5000
+    SOCIAL_AUTH_FACEBOOK_KEY = ''
+    SOCIAL_AUTH_FACEBOOK_SECRET = ''
+
+    # This one only works to log in via http://localhost:5000
+    SOCIAL_AUTH_VK_OAUTH2_KEY = ''
+    SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
+
+
+    MONGODB_SETTINGS = {
+        'DB': "vulyk",
+    }
+
+    ENABLED_TASKS = {
+        'vulyk_declaration': 'DeclarationTaskType',
+        'vulyk_tagging': 'TaggingTaskType',
+    }
+
+You'll need to register you localhost app in one of social networks (and fill corresponding credentials in local_settings.py!) to make it work locally.
+
+Finally you should be able to init the app using CLI, load some tasks and run it locally.
