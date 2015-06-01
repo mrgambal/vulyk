@@ -159,3 +159,5 @@ And finally you should create run.py and put some stuff into it:
     python run.py
     
 Then open http://localhost:5000 and you are set!
+
+Easy, isn't it?! Well, we'll smoothen some rough edges soon, we promise.
