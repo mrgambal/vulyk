@@ -1,4 +1,4 @@
-Crowdsourcing platform for NLP tasks
+Crowdsourcing platform for various tasks
 ====================================
 
 .. image:: https://badge.fury.io/py/vulyk.png
@@ -23,9 +23,10 @@ License
 What is it?
 -----------
 
-We have results produced by different NLP software that should be
-checked and verified manually. So, we decided to generalize those tasks
-a bit and build a platform with basic support for crowdsourcing using
+We have a lot of tasks that can only be done manually. 
+Those includes digitizing of scanned assets declarations, 
+manual verification of results produced by different NLP software, stalking and so on.
+So, we decided to generalize those tasks a bit and build a platform with basic support for crowdsourcing using
 knowledge and chunks of code from the `unshred.it <http://unshred.it>`__
 project. We don't use anything extraordinary: Flask, MongoDB, Bootstrap,
 jQuery etc (all trademarks are the property of their respective owners,
@@ -34,6 +35,7 @@ don't forget that).
 What for?
 ---------
 
+-  digitize assets declarations of ukrainian officials for `Declarations project <http://declarations.com.ua>`__
 -  improve the current state of Ukrainian NLP by creating a simple and
    robust solution for various NLP tasks that require human input.
 -  process and manually verify existing results from
@@ -47,24 +49,13 @@ But, God, how?
 --------------
 
 We provide some kind of playground where any interested (or
-procrastination-addicted) person could spent some time checking
-correctness of NLP software processing results. Site will show you, mr.
-Solver, random text, which was processed by one of our NER solutions,
-with layered marks, that should highlight entities, extracted by our
-software, and their types. If you see that something is wrong with
-recognition you're able to:
-
--  Delete false positive entities (i.e those where NER tagging software
-   thinks it’s an entity but it’s not).
--  Change boundary of the entity (i.e entity found only covers a part of
-   a real one or entity found includes real one + neighbour words which
-   aren’t a part of real one)
--  Create new entities in a given text (i.e entity hasn’t been found by
-   a NER tagging software).
--  Provide free-form feedback to the author of the software.
+procrastination-addicted) person could spent some time doing some manual tasks. 
+Site will show you, mr. Solver, some tasks of a given type, which you'll need to solve
 
 In the best case we'll add some gamification (badges, achievement... you
 name it).
+
+Leaderboard is already in place!
 
 How could I participate?
 ------------------------
@@ -73,16 +64,11 @@ You just need to contact me mr_gambal@outlook.com or `@dchaplinsky <http://githu
 chaplinsky.dmitry@gmail.com. One day we'll find one brave heart who'll
 create a list of issues so the process will besimplified. But not now...
 
-Example data
+Running it locally
 ------------
-
-To start developing you'll need a bootstrap data to work with. So...
-`Here <http://goo.gl/fLxQef>`__ is it - 7zipped json files (circa 15
-MB).
-
-It must be loaded into your MongoDB using:
+TBA
 
 .. code:: bash
 
-    ./cli.py db load <path_to_extracted_files>/*.json
+    venv
 
