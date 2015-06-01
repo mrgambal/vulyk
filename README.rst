@@ -32,6 +32,16 @@ project. We don't use anything extraordinary: Flask, MongoDB, Bootstrap,
 jQuery etc (all trademarks are the property of their respective owners,
 don't forget that).
 
+How it's build
+--------------
+
+Vulyk itself is a platform that can be stuffed with various plugins (check `this <https://github.com/hotsyk/vulyk-tagging/>`__ `two <https://github.com/hotsyk/vulyk-declaration>`__ for example).
+
+Vulyk providing basic facilities to manage tasks, users, has simple but effective system of groups and permissions, also can load tasks in format of json lines and export results. For admin purposes we have a nice (not really) CLI tool that gives admin an access to users management, tasks management, results management, stats, etc.
+
+Vulyk is also doing dirty job to collect assets for plugin, to provide registration/login via social networks for end users and has leaderboard.
+
+
 What for?
 ---------
 
