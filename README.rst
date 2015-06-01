@@ -128,4 +128,34 @@ Then let's set things up. Edit local_settings.py and add some stuff into it:
 
 You'll need to register you localhost app in one of social networks (and fill corresponding credentials in local_settings.py!) to make it work locally.
 
-Finally you should be able to init the app using CLI, load some tasks and run it locally.
+Then you should be able to init the app using CLI, load some tasks and run it locally.
+
+.. code:: bash
+
+    cp `which manage.py` .  # FUgly, I know!
+    python ./manage.py  init declaration_task tagging_task
+    
+That'll create default user group and give users of this group an access to two task types that we've installed before.
+
+Then:
+
+.. code:: bash
+
+    python ./manage.py db load declaration_task --batch 01_declaration decl_tasks.json
+    python ./manage.py db load tagging_task --batch 01_tagging tagging_tasks.json
+
+And finally you should create run.py and put some stuff into it:
+
+.. code:: python
+
+    from vulyk.app import app
+
+    if __name__ == '__main__':
+        app.run()
+
+
+.. code:: bash
+
+    python run.py
+    
+Then open http://localhost:5000 and you are set!
