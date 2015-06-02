@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     vulyk.cli
+    vulyk.ext
     vulyk.models
     vulyk.plugins
     vulyk.tasks
@@ -34,14 +35,6 @@ vulyk.control module
 --------------------
 
 .. automodule:: vulyk.control
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-vulyk.local_settings module
----------------------------
-
-.. automodule:: vulyk.local_settings
     :members:
     :undoc-members:
     :show-inheritance:

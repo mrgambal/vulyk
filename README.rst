@@ -1,5 +1,5 @@
 Crowdsourcing platform for various tasks
-====================================
+========================================
 
 .. image:: https://badge.fury.io/py/vulyk.png
     :target: http://badge.fury.io/py/vulyk
@@ -72,7 +72,7 @@ chaplinsky.dmitry@gmail.com. One day we'll find one brave heart who'll
 create a list of issues so the process will be simplified. But not now...
 
 Running it locally
-------------
+------------------
 You'll need MongoDB, Python 2.7 and virtualenv and with little bit of instructions you'll be able to run the Beast (with two real plugins)!
 
 First of all, check out all required components:

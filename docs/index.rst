@@ -15,6 +15,7 @@ Contents:
    installation
    usage
    plugins
+   modules
    contributing
    authors
    history
