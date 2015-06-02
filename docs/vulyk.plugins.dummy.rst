@@ -8,7 +8,6 @@ Subpackages
 
     vulyk.plugins.dummy.models
     vulyk.plugins.dummy.static
-    vulyk.plugins.dummy.views
 
 Module contents
 ---------------

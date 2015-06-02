@@ -1,13 +1,6 @@
 vulyk.models package
 ====================
 
-Subpackages
------------
-
-.. toctree::
-
-    vulyk.models.repositories
-
 Submodules
 ----------
 
