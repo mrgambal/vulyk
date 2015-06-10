@@ -79,9 +79,7 @@ USERS_PER_TASK = ENV('USERS_PER_TASK', 2)
 # Restrict an access to site to admins only
 SITE_IS_CLOSED = ENV('SITE_IS_CLOSED', False)
 
-ENABLED_TASKS = ENV('ENABLED_TASKS', {
-    'vulyk.plugins.dummy': 'DummyTaskType',
-})
+ENABLED_TASKS = ENV('ENABLED_TASKS', {})
 
 SITE_NAME = 'Vulyk workspace'
 SITE_MOTTO = 'Vulyk: crowdsourcing platform'

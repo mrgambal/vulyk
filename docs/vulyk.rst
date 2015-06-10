@@ -9,7 +9,6 @@ Subpackages
     vulyk.cli
     vulyk.ext
     vulyk.models
-    vulyk.plugins
     vulyk.tasks
 
 Submodules

@@ -48,7 +48,7 @@ Import data
 
 Data loading that's been created to add some life to your plugin should be
 performed via embedded CLI tool.
-To plug CLI into an application I create file with similar content::
+To plug CLI into an application I create file ``control.py`` with similar content::
 
 	#!/usr/bin/env python
 	from vulyk.control import cli
@@ -56,16 +56,21 @@ To plug CLI into an application I create file with similar content::
 	if __name__ == '__main__':
 	    cli()
 
+Firstly we need to initiate some bootstrap data::
+
+	$ chmod +x control.py
+	$ ./control.py  init <task_type_1> <task_type_2>
+
 Having that done we're able to load tasks from datafiles (also supports gzip 
 and bz2 archives with data). Datafile should contain a bunch of valid 
 JSON-objects with arbitary content with line-separators in between.
 Loading process may be initiated by calling::
 
-	./control.py db load <task type> --batch "<batch_name>" <name or wildcard>.js
+	./control.py db load <task_type> --batch "<batch_name>" <name or wildcard>.js
 	# or
-	./control.py db load <task type> --batch "<batch_name>" <name or wildcard>.bz2
+	./control.py db load <task_type> --batch "<batch_name>" <name or wildcard>.bz2
 	# or
-	./control.py db load <task type> --batch "<batch_name>" <name or wildcard>.gz
+	./control.py db load <task_type> --batch "<batch_name>" <name or wildcard>.gz
 
 Task type – is an internal name of type that will be assigned to your tasks.
 Batch describes just a category of tasks you may want to be in there to 
