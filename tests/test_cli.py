@@ -4,28 +4,28 @@
 """
 test_cli
 """
-
+import bz2file
+import gzip
 import unittest
-import mongomock
 
 from mock import patch
-from mongoengine.connection import register_connection
 
-from vulyk.cli import admin
-
-
-_collection = mongomock.Connection().db
-
-
-def mocked_get_connection(alias):
-    return {alias: _collection}
+from vulyk.cli import admin, db
+from .base import (
+    _collection,
+    BaseTest,
+    mocked_get_connection,
+)
 
 
-class TestAdmin(unittest.TestCase):
+class TestAdmin(BaseTest):
 
     def setUp(self):
+        super(TestAdmin, self).setUp()
+
         self.user_collection = _collection.user
         self.group_collection = _collection.groups
+
         self.users = [
             dict(username='1', email='1@email.com', admin=True),
             dict(username='2', email='2@email.com', admin=True),
@@ -39,8 +39,6 @@ class TestAdmin(unittest.TestCase):
         ]
         for obj in self.groups:
             obj['_id'] = self.group_collection.insert(obj)
-
-        register_connection('default', name='default')
 
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_toggle_admin(self):
@@ -58,8 +56,24 @@ class TestAdmin(unittest.TestCase):
             self.user_collection.find_one({'email': '3@email.com'})['admin']
         )
 
-    def tearDown(self):
+
+class TestDB(BaseTest):
+
+    def setUp(self):
+        super(TestDB, self).setUp()
+
+    def test_open_anything(self):
+        filename = 'test.bz2'
+        self.assertEqual(db.open_anything(filename), bz2file.BZ2File)
+        filename = 'test.gz'
+        self.assertEqual(db.open_anything(filename), gzip.open)
+
+    def test_load_tasks(self):
         pass
+
+    def test_export_tasks(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -9,7 +9,6 @@ import bz2file as bz2
 import six
 
 from vulyk.utils import chunked
-from vulyk.app import db
 
 
 try:
