@@ -8,6 +8,7 @@ import unittest
 
 from mock import patch, Mock
 
+from vulyk.models.exc import TaskImportError
 from vulyk.models.tasks import AbstractTask, AbstractAnswer
 from vulyk.models.task_types import AbstractTaskType
 from .base import (
@@ -17,7 +18,25 @@ from .base import (
 )
 
 
+class FakeModel(AbstractTask):
+    pass
+
+
+class FakeType(AbstractTaskType):
+    task_model = FakeModel
+    answer_model = AbstractAnswer
+    type_name = 'FakeTaskType'
+    template = 'tmpl.html'
+
+    _name = 'Fake name'
+    _description = 'Fake description'
+
+
 class TestTaskTypes(BaseTest):
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    def tearDown(self):
+        _collection.tasks.drop()
+
     def test_init_task_inheritance(self):
         class NoTask(AbstractTaskType):
             task_model = Mock
@@ -56,19 +75,28 @@ class TestTaskTypes(BaseTest):
             'tasks': 22
         }
 
-        class FakeModel(AbstractTask):
-            pass
+        self.assertDictEqual(FakeType({}).to_dict(), got)
 
-        class ToDict(AbstractTaskType):
-            task_model = FakeModel
-            answer_model = AbstractAnswer
-            type_name = 'FakeTaskType'
-            template = 'tmpl.html'
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    def test_import_tasks(self):
+        tasks = [{'name': '1'}, {'name': '2'}, {'name': '3'}]
+        FakeType({}).import_tasks(tasks, 'default')
 
-            _name = 'Fake name'
-            _description = 'Fake description'
+        self.assertEqual(_collection.tasks.count(), len(tasks))
 
-        self.assertDictEqual(ToDict({}).to_dict(), got)
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    def test_import_tasks_not_dict(self):
+        tasks = [{'name': '1'}, tuple(), {'name': '3'}]
+
+        self.assertRaises(TaskImportError,
+                          lambda: FakeType({}).import_tasks(tasks, 'default'))
+
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    def test_import_tasks_not_list(self):
+        self.assertRaises(TaskImportError,
+                          lambda: FakeType({}).import_tasks(
+                              {'name': '1'},
+                              'default'))
 
 
 if __name__ == '__main__':

@@ -74,6 +74,8 @@ class AbstractTaskType(object):
 
         :raise: TaskImportError
         """
+        errors = (AttributeError, TypeError, ValidationError, OperationError)
+
         try:
             for task in tasks:
                 self.task_model.objects.create(
@@ -82,7 +84,7 @@ class AbstractTaskType(object):
                     task_type=self.type_name,
                     task_data=task,
                 )
-        except (AttributeError, TypeError, OperationError) as e:
+        except errors as e:
             # TODO: review list of exceptions, any fallback actions if needed
             raise TaskImportError('Can\'t load task: {0}'.format(e))
 
