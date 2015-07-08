@@ -21,9 +21,9 @@ To create new plugin you can use http://cookiecutter.readthedocs.org/en/latest/ 
     - settings.py
     - models
         - __init__.py
+        - task_types.py
         - tasks.py
-    - views
-        - __init__.py
+
     - static
         - images
         - scripts
@@ -31,7 +31,7 @@ To create new plugin you can use http://cookiecutter.readthedocs.org/en/latest/ 
     - templates
         - *.html
 
-Main entrance point to plugin will be views.get_task() [[! TBD ]]
+Main entrance point to plugin will be ``AbstractTaskType.get_task()``
 
 --------------
  Configuration

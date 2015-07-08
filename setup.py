@@ -20,7 +20,7 @@ test_requirements = requirements
 
 setup(
     name='vulyk',
-    version='0.1.0',
+    version='0.3.0',
     description='Crowdsourcing platform for NLP tasks',
     long_description=readme + '\n\n' + history,
     author='Dmytro Hambal',
@@ -29,13 +29,9 @@ setup(
     packages=[
         'vulyk',
         'vulyk.cli',
+        'vulyk.ext',
         'vulyk.models',
-        'vulyk.plugins',
-        'vulyk.tasks',
-        'vulyk.plugins.dummy',
-        'vulyk.plugins.dummy.models',
-        'vulyk.plugins.dummy.static',
-        'vulyk.plugins.dummy.views'
+        'vulyk.tasks'
     ],
     package_dir={'vulyk': 'vulyk'},
     include_package_data=True,
@@ -44,11 +40,11 @@ setup(
     zip_safe=False,
     keywords='vulyk',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
