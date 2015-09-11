@@ -54,7 +54,13 @@ def _json_response(result, template="", errors=None, status=httplib.OK):
         'template': template,
         'errors': errors})
 
-    return Response(data, status, mimetype='application/json')
+    return Response(
+        data, status, mimetype='application/json',
+        headers=[
+            ("Cache-Control", "no-cache, no-store, must-revalidate"),
+            ("Pragma", "no-cache"),
+            ("Expires", "0"),
+        ])
 
 
 _no_tasks = _json_response({},
