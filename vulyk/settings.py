@@ -1,5 +1,4 @@
 # -*- coding=utf-8 -*-
-
 import logging
 import os
 
@@ -85,6 +84,10 @@ SITE_NAME = 'Vulyk workspace'
 SITE_MOTTO = 'Vulyk: crowdsourcing platform'
 
 DEFAULT_BATCH = 'default'
+
+WARM_WELCOME = u"""
+<h3>Вас вітає Канцелярська сотня.</h3>
+"""
 
 try:
     from werkzeug.utils import import_string
