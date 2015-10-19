@@ -10,6 +10,7 @@ def init(app):
     :type app: flask.Flask
     """
     assets = Environment(app)
+    assets.auto_build = app.config.get('ASSETS_AUTO_BUILD', True)
 
     if 'COLLECT_STATIC_ROOT' in app.config:
         collect = Collect()
