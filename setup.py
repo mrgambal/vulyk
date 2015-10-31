@@ -53,5 +53,5 @@ setup(
     ],
     test_suite='tests',
     tests_require=test_requirements,
-    scripts=['manage.py'],
+    scripts=['manage.py']
 )

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding=utf-8 -*-
-from __future__ import unicode_literals
 import click
-from prettytable import PrettyTable, ALL
+from veryprettytable import VeryPrettyTable, ALL
 
 from vulyk.app import TASKS_TYPES, app
 from vulyk.cli import (
@@ -203,7 +202,7 @@ def batch():
                'Answers',
                'Percent (answers)',
                'Breakdown (answers: tasks)']
-    pt = PrettyTable(headers)
+    pt = VeryPrettyTable(headers)
     pt.align = 'l'
     pt.left_padding_width = 1
     pt.hrules = ALL

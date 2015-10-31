@@ -11,7 +11,7 @@ import mongomock
 from mongoengine.connection import register_connection
 
 
-_collection = mongomock.Connection().db
+_collection = mongomock.MongoClient().db.collection
 
 
 def mocked_get_connection(alias):
@@ -25,6 +25,7 @@ class BaseTest(unittest.TestCase):
 
     def tearDown(self):
         pass
+
 
 if __name__ == '__main__':
     unittest.main()

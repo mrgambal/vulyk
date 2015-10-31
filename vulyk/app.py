@@ -74,7 +74,7 @@ def index():
     """
     Main site view
     """
-    if g.user.is_authenticated():
+    if g.user.is_authenticated:
         task_types = [x.to_dict() for x in TASKS_TYPES.itervalues()
                       if g.user.is_eligible_for(x.type_name)]
     else:

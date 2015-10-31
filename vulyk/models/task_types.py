@@ -248,18 +248,27 @@ class AbstractTaskType(object):
         :raises: TaskSaveError - in case of general problems
         :raises: TaskValidationError - in case of validation problems
         """
-        try:
-            # create new answer or modify existing one
-            task = self.task_model \
-                .objects \
-                .get_or_404(id=task_id, task_type=self.type_name)  # TODO: exc
-            answer, _ = self.answer_model \
-                .objects \
-                .get_or_create(task=task,
-                               created_by=user.id,
-                               created_at=datetime.now(),
-                               task_type=self.type_name)
 
+        # create new answer or modify existing one
+        answer = None
+        task = self.task_model \
+            .objects \
+            .get_or_404(id=task_id, task_type=self.type_name)
+
+        try:
+            answer = self.answer_model.objects \
+                .get(task=task,
+                     created_by=user.id,
+                     created_at=datetime.now(),
+                     task_type=self.type_name)
+        except self.answer_model.DoesNotExist:
+            answer = self.answer_model.objects.create(
+                task=task,
+                created_by=user.id,
+                created_at=datetime.now(),
+                task_type=self.type_name)
+
+        try:
             answer.update(set__result=result)
             # update task
             closed = self._update_task_on_answer(task, answer, user)
