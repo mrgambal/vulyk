@@ -39,6 +39,7 @@ def validate_batch(ctx, param, value):
     else:
         return value
 
+
 def batches_list():
     """
     :return: List of batches IDs to validate CLI input
