@@ -28,7 +28,7 @@
                             Site is still uninitialized. Please run <code>./manage.py init ...</code>
                         </div>
                     </div>
-                {% elif user.is_anonymous() %}
+                {% elif user.is_anonymous %}
                     {% if config.SITE_IS_CLOSED %}
                         {% include '_holding_page.html' %}
                     {% else %}
@@ -61,7 +61,7 @@
                             <ul class="nav masthead-nav">
                                 {% block nav %}
                                 {% endblock %}
-                                {% if user.is_authenticated() %}
+                                {% if user.is_authenticated %}
                                 <li><form action="{{ url_for('logout') }}" method="post"><input type="submit" value="Logout"></form></li>
                                 {% endif %}
                             </ul>

@@ -1,9 +1,7 @@
 # -*- coding=utf-8 -*-
-from __future__ import unicode_literals
 import click
 import re
 
-from vulyk.app import db
 from vulyk.models.user import Group, User
 
 

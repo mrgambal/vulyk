@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import gzip
 from itertools import imap, ifilter
 import os
@@ -9,7 +8,6 @@ import bz2file as bz2
 import six
 
 from vulyk.utils import chunked
-from vulyk.app import db
 
 
 try:

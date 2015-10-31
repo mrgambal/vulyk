@@ -74,6 +74,8 @@ class AbstractTaskType(object):
 
         :raise: TaskImportError
         """
+        errors = (AttributeError, TypeError, ValidationError, OperationError)
+
         try:
             for task in tasks:
                 self.task_model.objects.create(
@@ -82,7 +84,7 @@ class AbstractTaskType(object):
                     task_type=self.type_name,
                     task_data=task,
                 )
-        except (AttributeError, TypeError, OperationError) as e:
+        except errors as e:
             # TODO: review list of exceptions, any fallback actions if needed
             raise TaskImportError('Can\'t load task: {0}'.format(e))
 
@@ -246,18 +248,27 @@ class AbstractTaskType(object):
         :raises: TaskSaveError - in case of general problems
         :raises: TaskValidationError - in case of validation problems
         """
-        try:
-            # create new answer or modify existing one
-            task = self.task_model \
-                .objects \
-                .get_or_404(id=task_id, task_type=self.type_name)  # TODO: exc
-            answer, _ = self.answer_model \
-                .objects \
-                .get_or_create(task=task,
-                               created_by=user.id,
-                               created_at=datetime.now(),
-                               task_type=self.type_name)
 
+        # create new answer or modify existing one
+        answer = None
+        task = self.task_model \
+            .objects \
+            .get_or_404(id=task_id, task_type=self.type_name)
+
+        try:
+            answer = self.answer_model.objects \
+                .get(task=task,
+                     created_by=user.id,
+                     created_at=datetime.now(),
+                     task_type=self.type_name)
+        except self.answer_model.DoesNotExist:
+            answer = self.answer_model.objects.create(
+                task=task,
+                created_by=user.id,
+                created_at=datetime.now(),
+                task_type=self.type_name)
+
+        try:
             answer.update(set__result=result)
             # update task
             closed = self._update_task_on_answer(task, answer, user)
