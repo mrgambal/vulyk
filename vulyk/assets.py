@@ -13,10 +13,11 @@ def init(app):
     assets.auto_build = app.config.get('ASSETS_AUTO_BUILD', True)
 
     if 'COLLECT_STATIC_ROOT' in app.config:
+        assets.cache = app.config['COLLECT_STATIC_ROOT']
         collect = Collect()
         collect.init_app(app)
         collect.collect()
-        app.static_folder = app.config['COLLECT_STATIC_ROOT']\
+        app.static_folder = app.config['COLLECT_STATIC_ROOT']
 
     if 'JS_ASSETS' in app.config and len(app.config['JS_ASSETS']) > 0:
         js = Bundle(*app.config['JS_ASSETS'],
