@@ -20,10 +20,12 @@ var Vulyk = Vulyk || {
             vu.State.workplace
                 .on("click", "a#save-button", function (e) {
                     e.preventDefault();
+
                     vus.body.trigger("vulyk.save", vu.save_report.bind(vu));
                 })
                 .on("click", "a#skip-button", function (e) {
                     e.preventDefault();
+
                     vus.body.trigger("vulyk.skip", vu.skip_task.bind(vu));
                 });
 
@@ -46,6 +48,10 @@ var Vulyk = Vulyk || {
             var vu = this,
                 vus = vu.State;
 
+            if (typeof(ga) !== "undefined") {
+                ga('send', 'event', 'Task', 'Skip', vus.task_type);
+            }
+
             $.post(
                 "/type/" + vus.task_type + "/skip/" + vus.task_id,
                 {},
@@ -57,6 +63,10 @@ var Vulyk = Vulyk || {
         save_report: function (result) {
             var vu = this,
                 vus = vu.State;
+
+            if (typeof(ga) !== "undefined") {
+                ga('send', 'event', 'Task', 'Save', vus.task_type);
+            }
 
             $.post(
                 "/type/" + vus.task_type + "/done/" + vus.task_id,
