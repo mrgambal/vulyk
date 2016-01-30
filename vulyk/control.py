@@ -191,7 +191,11 @@ def stats():
 
 
 @stats.command('batch')
-def batch():
+@click.option('-n', '--batch_name', 'batch_name',
+              type=click.Choice(_batches.batches_list()))
+@click.option('-t', '--task_type', 'task_type',
+              type=click.Choice(TASKS_TYPES.keys()))
+def batch(batch_name, task_type):
     """
     Prints out some numbers which describe the state of tasks in certain batch
     """
@@ -207,7 +211,7 @@ def batch():
     pt.left_padding_width = 1
     pt.hrules = ALL
 
-    for k, v in _stats.batch_completeness().items():
+    for k, v in _stats.batch_completeness(batch_name, task_type).items():
         values = [k,
                   v['total'],
                   v['flag'],
