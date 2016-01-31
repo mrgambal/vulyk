@@ -6,6 +6,8 @@ import os
 from flask.ext.collect.storage.file import Storage as FileStorage
 from werkzeug.utils import import_string
 
+__all__ = ['Storage']
+
 
 class PluginWrapper(object):
     """

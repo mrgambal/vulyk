@@ -1,8 +1,6 @@
 # -*- coding=utf-8 -*-
-import logging
 import os
 
-logger = logging.getLogger(__name__)
 ENV = os.environ.get
 
 SECRET_KEY = ENV('SECRET_KEY', 'random-secret-key')
@@ -88,12 +86,3 @@ DEFAULT_BATCH = 'default'
 WARM_WELCOME = u"""
 <h3>Вас вітає Канцелярська сотня.</h3>
 """
-
-try:
-    from werkzeug.utils import import_string
-
-    local_settings = import_string('local_settings')
-    for attr in dir(local_settings):
-        locals()[attr] = getattr(local_settings, attr)
-except Exception as e:
-    logger.error(e)

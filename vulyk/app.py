@@ -15,6 +15,7 @@ from vulyk.utils import resolve_task_type
 
 app = Flask(__name__)
 app.config.from_object('vulyk.settings')
+app.config.from_object('local_settings')
 db = MongoEngine(app)
 
 assets_init(app)
