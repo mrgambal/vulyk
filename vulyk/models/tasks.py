@@ -152,4 +152,4 @@ class AbstractAnswer(Document):
         return self.__unicode__()
 
     def __repr__(self):
-        return 'Report [%s by %s]'.format(self.created_by, self.task)
+        return 'Report [{} by {}]'.format(self.created_by, self.task)

@@ -18,10 +18,11 @@ install_reqs = parse_requirements('requirements.txt', session=uuid.uuid1())
 requirements = [str(ir.req) for ir in install_reqs]
 test_requirements = requirements
 
+
 setup(
     name='vulyk',
-    version='0.3.0',
-    description='Crowdsourcing platform for NLP tasks',
+    version='0.3.1',
+    description='Crowdsourcing platform for different kinds of tasks',
     long_description=readme + '\n\n' + history,
     author='Dmytro Hambal',
     author_email='mr_gambal@outlook.com',
@@ -36,7 +37,7 @@ setup(
     package_dir={'vulyk': 'vulyk'},
     include_package_data=True,
     install_requires=requirements,
-    license="BSD",
+    license='BSD',
     zip_safe=False,
     keywords='vulyk',
     classifiers=[
@@ -46,10 +47,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 2.7'
     ],
     test_suite='tests',
     tests_require=test_requirements,
