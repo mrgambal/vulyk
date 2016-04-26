@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from operator import itemgetter
 from hashlib import sha1
+import logging
 import random
 import six
 import ujson as json
@@ -46,6 +47,8 @@ class AbstractTaskType(object):
     CSS_ASSETS = []
 
     def __init__(self, settings):
+        self._logger = logging.getLogger(self.__class__.__name__)
+
         assert issubclass(self.task_model, AbstractTask), \
             'You should define task_model property'
 
@@ -206,7 +209,15 @@ class AbstractTaskType(object):
                 rs = self.task_model.objects(base_q)
 
         if rs:
-            return random.choice(rs or [])
+            _id = random.choice(rs.distinct('id') or [])
+
+            try:
+                return rs.get(id=_id)
+            except self.task_model.DoesNotExist:
+                self._logger.error(
+                    'DoesNotExist when trying to fetch task {}'.format(_id))
+
+                return None
         else:
             return None
 
