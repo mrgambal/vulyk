@@ -38,7 +38,10 @@ class Batch(Document):
         return self.__unicode__()
 
     def __repr__(self):
-        return self.__unicode__()
+        return six.text_type('Batch [{id}] ({processed}/{count})'.format(
+            id=self.id,
+            processed=self.tasks_processed,
+            count=self.tasks_count))
 
 
 class AbstractTask(Document):

@@ -31,7 +31,7 @@ def is_initialized():
     }
 
 
-def _json_response(result, template="", errors=None, status=httplib.OK):
+def _json_response(result, template='', errors=None, status=httplib.OK):
     """
     Handy helper to prepare unified responses
 
@@ -58,9 +58,9 @@ def _json_response(result, template="", errors=None, status=httplib.OK):
     return Response(
         data, status, mimetype='application/json',
         headers=[
-            ("Cache-Control", "no-cache, no-store, must-revalidate"),
-            ("Pragma", "no-cache"),
-            ("Expires", "0"),
+            ('Cache-Control', 'no-cache, no-store, must-revalidate'),
+            ('Pragma', 'no-cache'),
+            ('Expires', '0'),
         ])
 
 
@@ -70,7 +70,7 @@ _no_tasks = _json_response({},
                            httplib.NOT_FOUND)
 
 
-@app.route('/', methods=["GET"])
+@app.route('/', methods=['GET'])
 def index():
     """
     Main site view
@@ -205,4 +205,4 @@ def done(type_name, task_id):
 
 @app.template_filter('strip_email')
 def strip_email(s):
-    return s.split("@", 1)[0]
+    return s.split('@', 1)[0]

@@ -182,8 +182,8 @@ class AbstractTaskType(object):
         """
         rs = None
         base_q = Q(task_type=self.type_name) \
-                 & Q(users_processed__ne=user.id) \
-                 & Q(closed__ne=True)
+            & Q(users_processed__ne=user.id) \
+            & Q(closed__ne=True)
 
         for batch in Batch.objects.order_by('id'):
             if batch.tasks_count == batch.tasks_processed:
@@ -262,9 +262,9 @@ class AbstractTaskType(object):
 
         # create new answer or modify existing one
         answer = None
-        task = self.task_model \
-            .objects \
-            .get_or_404(id=task_id, task_type=self.type_name)
+        task = self.task_model.objects.get_or_404(
+            id=task_id,
+            task_type=self.type_name)
 
         try:
             answer = self.answer_model.objects \
@@ -335,7 +335,7 @@ class AbstractTaskType(object):
             task.closed = task.users_count >= self.redundancy
 
         closed = self._is_ready_for_autoclose(task, answer) \
-                 or (task.users_count >= self.redundancy)
+            or (task.users_count >= self.redundancy)
 
         if closed:
             closed = self.task_model \

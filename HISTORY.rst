@@ -21,5 +21,10 @@ History
 * fixed static timestamp (#42)
 * added top users scoreboard (#39)
 * added possibility to serve static files from wherever you want (#10)
+* a lots of other little fixes and improvements...
 
-... a lots of other little fixes and improvements.
+0.3.1 (2016-04-27)
+------------------
+* lightweight tasks randomization
+* filter stats by batch name and/or task type 
+* now vulyk is recording all media

@@ -1,4 +1,5 @@
 # -*- coding=utf-8 -*-
+from __future__ import unicode_literals
 import os.path
 
 import jinja2
@@ -18,19 +19,19 @@ def init_tasks(app):
     """
     task_types = {}
     loaders = {}
-    enabled_tasks = app.config.get("ENABLED_TASKS", {})
+    enabled_tasks = app.config.get('ENABLED_TASKS', {})
     files_to_watch = []
 
     for plugin, task in enabled_tasks.iteritems():
         task_settings = import_string(
-            "{plugin_name}.settings".format(plugin_name=plugin)
+            '{plugin_name}.settings'.format(plugin_name=plugin)
         )
         plugin_instance = import_string(
-            "{plugin_name}".format(plugin_name=plugin))
+            '{plugin_name}'.format(plugin_name=plugin))
         settings = plugin_instance.configure(task_settings)
 
         task_instance = import_string(
-            "{plugin_name}.models.task_types.{task}".format(
+            '{plugin_name}.models.task_types.{task}'.format(
                 plugin_name=plugin, task=task)
         )
 
