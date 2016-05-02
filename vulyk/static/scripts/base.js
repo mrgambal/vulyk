@@ -20,11 +20,13 @@ var Vulyk = Vulyk || {
             vu.State.workplace
                 .on("click", "a#save-button", function (e) {
                     e.preventDefault();
+                    $("a#save-button, a#skip-button").addClass("disabled");
 
                     vus.body.trigger("vulyk.save", vu.save_report.bind(vu));
                 })
                 .on("click", "a#skip-button", function (e) {
                     e.preventDefault();
+                    $("a#save-button, a#skip-button").addClass("disabled");
 
                     vus.body.trigger("vulyk.skip", vu.skip_task.bind(vu));
                 });
@@ -95,6 +97,7 @@ var Vulyk = Vulyk || {
                 }
 
                 vus.body.on("vulyk.next", function(e, data) {
+                    $("a#save-button, a#skip-button").removeClass("disabled");
                     vus.stats
                         .find("dd:eq(0)")
                             .html(data.result.stats.total)

@@ -45,4 +45,4 @@ def batches_list():
     :return: List of batches IDs to validate CLI input
     :rtype : list[str]
     """
-    return Batch.objects.scalar('id')
+    return list(Batch.objects.scalar('id'))
