@@ -3,7 +3,7 @@
 
 import os
 
-from flask.ext.collect.storage.file import Storage as FileStorage
+from flask_collect.storage.file import Storage as FileStorage
 from werkzeug.utils import import_string
 
 __all__ = ['Storage']
@@ -67,7 +67,7 @@ class Storage(FileStorage):
         prefix = self.collect.app.config.get('COLLECT_PLUGIN_DIR_PREFIX', '')
         static_url = self.collect.app.static_url_path
 
-        for name, _ in enabled_tasks.iteritems():
+        for name, _ in enabled_tasks.items():
             plugin = PluginWrapper(name, static_url, prefix)
             blueprints[name] = plugin
 

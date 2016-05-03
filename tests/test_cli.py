@@ -8,7 +8,7 @@ import bz2file
 import gzip
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 
 from vulyk.cli import admin, db
 from .base import (
@@ -32,13 +32,13 @@ class TestAdmin(BaseTest):
             dict(username='3', email='3@email.com', admin=False),
         ]
         for obj in self.users:
-            obj['_id'] = self.user_collection.insert(obj)
+            obj['_id'] = self.user_collection.insert_one(obj)
 
         self.groups = [
             dict(description='test', _id='default', allowed_types=['test'])
         ]
         for obj in self.groups:
-            obj['_id'] = self.group_collection.insert(obj)
+            obj['_id'] = self.group_collection.insert_one(obj)
 
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_toggle_admin(self):

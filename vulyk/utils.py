@@ -1,11 +1,9 @@
 # -*- coding=utf-8 -*-
-from __future__ import unicode_literals
-
+from http import HTTPStatus
 import sys
 from functools import wraps
 from itertools import islice
 
-import httplib
 from flask import jsonify, abort
 
 
@@ -49,9 +47,9 @@ def resolve_task_type(type_id, tasks, user):
     task_type = None
 
     if not (type_id and type_id in tasks.keys()):
-        abort(httplib.NOT_FOUND)
+        abort(HTTPStatus.NOT_FOUND)
     elif not user.is_eligible_for(type_id):
-        abort(httplib.FORBIDDEN)
+        abort(HTTPStatus.FORBIDDEN)
     else:
         task_type = tasks[type_id]
 

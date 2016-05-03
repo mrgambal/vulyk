@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-import six
-
-from flask.ext.mongoengine import Document
+from flask_mongoengine import Document
 from mongoengine import (
     BooleanField,
     CASCADE,
@@ -32,16 +29,16 @@ class Batch(Document):
     }
 
     def __unicode__(self):
-        return six.text_type(self.id)
+        return str(self.id)
 
     def __str__(self):
         return self.__unicode__()
 
     def __repr__(self):
-        return six.text_type('Batch [{id}] ({processed}/{count})'.format(
+        return 'Batch [{id}] ({processed}/{count})'.format(
             id=self.id,
             processed=self.tasks_processed,
-            count=self.tasks_count))
+            count=self.tasks_count)
 
 
 class AbstractTask(Document):
@@ -83,7 +80,7 @@ class AbstractTask(Document):
         }
 
     def __unicode__(self):
-        return six.text_type(self.id)
+        return str(self.id)
 
     def __str__(self):
         return self.__unicode__()
@@ -149,7 +146,7 @@ class AbstractAnswer(Document):
         }
 
     def __unicode__(self):
-        return six.text_type(self.pk)
+        return str(self.pk)
 
     def __str__(self):
         return self.__unicode__()

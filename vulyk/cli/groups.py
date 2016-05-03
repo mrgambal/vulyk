@@ -47,9 +47,9 @@ def new_group(gid, description):
     Creates new group
 
     :param gid: Group's symbolic code
-    :type gid: str | unicode
+    :type gid: str
     :param description: Short description (optional)
-    :type description: str | unicode
+    :type description: str
 
     :raise click.BadParameter: if wrong `id` has been passed
     """
@@ -64,7 +64,7 @@ def remove_group(gid):
     Delete existing group
 
     :param gid: Group's symbolic code
-    :type gid: str | unicode
+    :type gid: str
 
     :raise click.BadParameter: if wrong `id` has been passed
     """
@@ -79,9 +79,9 @@ def add_task_type(gid, task_type):
     Appends task type to the list of allowed ones of certain group
 
     :param gid: Group's symbolic code
-    :type gid: str | unicode
+    :type gid: str
     :param task_type: Task type symbolic code
-    :type task_type: str | unicode
+    :type task_type: str
 
     :raise click.BadParameter: if wrong `gid` has been passed
     """
@@ -96,9 +96,9 @@ def remove_task_type(gid, task_type):
     Removes task type from the list of allowed types of specified group
 
     :param gid: Group's symbolic code
-    :type gid: str | unicode
+    :type gid: str
     :param task_type: Task type symbolic code
-    :type task_type: str | unicode
+    :type task_type: str
 
     :raise click.BadParameter: if wrong `gid` has been passed
     """
@@ -113,9 +113,9 @@ def assign_to(username, gid):
     Assigns a group to user
 
     :param gid: Group's symbolic code
-    :type gid: str | unicode
+    :type gid: str
     :param username: Username of member
-    :type username: str | unicode
+    :type username: str
 
     :raise click.BadParameter: if wrong `gid` or ` username` has been passed
     """
@@ -133,9 +133,9 @@ def resign(username, gid):
     Excludes user from specified group
 
     :param gid: Group's symbolic code
-    :type gid: str | unicode
+    :type gid: str
     :param username: Username of member
-    :type username: str | unicode
+    :type username: str
 
     :raise click.BadParameter: if wrong `gid` or ` username` has been passed
     """

@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 from collections import defaultdict
 from datetime import datetime
 from operator import itemgetter
 from hashlib import sha1
 import logging
 import random
-import six
 import ujson as json
 
 from mongoengine import Q
@@ -31,7 +29,7 @@ from vulyk.models.stats import WorkSession
 from vulyk.utils import get_tb
 
 
-class AbstractTaskType(object):
+class AbstractTaskType:
     answer_model = None
     task_model = None
 
@@ -73,7 +71,7 @@ class AbstractTaskType(object):
         :param tasks: An iterable over dicts
         :type tasks: list[dict]
         :param batch: Batch ID (optional)
-        :type batch: str | unicode
+        :type batch: str
 
         :raise: TaskImportError
         """
@@ -82,20 +80,20 @@ class AbstractTaskType(object):
         try:
             for task in tasks:
                 self.task_model.objects.create(
-                    id=sha1(json.dumps(task)).hexdigest()[:20],
+                    id=sha1(json.dumps(task).encode('utf8')).hexdigest()[:20],
                     batch=batch,
                     task_type=self.type_name,
                     task_data=task,
                 )
         except errors as e:
             # TODO: review list of exceptions, any fallback actions if needed
-            raise TaskImportError('Can\'t load task: {0}'.format(e))
+            raise TaskImportError('Can\'t load task: {}'.format(e))
 
     def export_reports(self, batch, closed=True, qs=None):
         """Exports results. IO is left out of scope here as well
 
         :param batch: Certain batch to extract
-        :type batch: str | unicode
+        :type batch: str
         :param closed: Specify if we need to export only closed tasks reports
         :type closed: bool
         :param qs: Queryset, an optional argument. Default value is QS that
@@ -106,13 +104,13 @@ class AbstractTaskType(object):
         :rtype: __generator[list[dict]]
         """
         if qs is None:
-            if batch != "__all__":
-                query = Q(batch=batch)
-            else:
-                query = Q()
+            query = Q()
+
+            if batch != '__all__':
+                query &= Q(batch=batch)
 
             if closed:
-                query = query & Q(closed=closed)
+                query &= Q(closed=closed)
 
             qs = self.task_model.objects(query)
 
@@ -246,7 +244,7 @@ class AbstractTaskType(object):
             task.update(add_to_set__users_skipped=user)
             self._del_work_session(task, user)
         except NotUniqueError as err:
-            raise TaskSkipError(six.text_type(err))
+            raise TaskSkipError(err)
         except OperationError as err:
             raise TaskSkipError('Can not skip the task: {0}'.format(err))
 
@@ -334,20 +332,13 @@ class AbstractTaskType(object):
         task.users_count += 1
         task.users_processed.append(user)
 
-        task.save()
-
-        if self._is_ready_for_autoclose(task, answer):
-            task.closed = True
-        else:
-            task.closed = task.users_count >= self.redundancy
-
         closed = self._is_ready_for_autoclose(task, answer) \
             or (task.users_count >= self.redundancy)
 
         if closed:
-            closed = self.task_model \
-                         .objects(id=task.id, closed=False) \
-                         .update(closed=True) == 1
+            task.closed = closed
+
+        task.save()
 
         return closed
 
