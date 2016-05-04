@@ -1,10 +1,14 @@
 # -*- coding=utf-8 -*-
-from http import HTTPStatus
 import sys
 from functools import wraps
 from itertools import islice
 
 from flask import jsonify, abort
+
+if sys.version_info.minor <= 4:  # PY 3.4
+    import http.client as HTTPStatus
+else:
+    from http import HTTPStatus
 
 
 # Soooo lame

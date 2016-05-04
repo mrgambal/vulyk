@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from http import HTTPStatus
 import ujson as json
 
 import flask
@@ -11,7 +10,7 @@ from vulyk import cli
 from vulyk.assets import init as assets_init
 from vulyk.tasks import init_tasks
 from vulyk.users import init_social_login
-from vulyk.utils import resolve_task_type, get_template_path
+from vulyk.utils import resolve_task_type, HTTPStatus, get_template_path
 
 app = Flask(__name__)
 app.config.from_object('vulyk.settings')
@@ -69,9 +68,7 @@ def _json_response(result, template='', errors=None, status=HTTPStatus.OK):
         ])
 
 
-_no_tasks = _json_response({},
-                           '',
-                           ['There is no task having type like this'],
+_no_tasks = _json_response({}, '', ['There is no task having type like this'],
                            HTTPStatus.NOT_FOUND)
 
 
