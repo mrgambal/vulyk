@@ -86,3 +86,5 @@ DEFAULT_BATCH = 'default'
 WARM_WELCOME = u"""
 <h3>Вас вітає Канцелярська сотня.</h3>
 """
+
+THANKS_TASK_MESSAGE = u'Спасибо за помощь, сознательный гражданин!'
