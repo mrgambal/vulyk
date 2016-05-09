@@ -1,0 +1,40 @@
+{% extends "base/base.html" %}
+{% block nav %}
+    {% with short=True %}
+        {% include '_nav.html'|app_template %}
+    {% endwith %}
+{% endblock %}
+{% block content %}
+    {% if config.SITE_IS_CLOSED and not user.is_admin() %}
+        {% include '_holding_page.html'|app_template %}
+    {% else %}
+        <div class="inner cover">
+            {% block task %}
+                <ul id="task-list">
+                    {% for t in task_types %}
+                        <li>
+                            <a href="{{ url_for("task_home", type_name=t.type) }}"
+                               title="{{ t.description }}">
+                                {{ t.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endblock %}
+        </div>
+    {% endif %}
+
+    <div class="zoom-anim-dialog mfp-hide small-dialog" id="tag_hints">
+        <div class="dialog-content">
+            {% block helptext %}
+                {% if task_type and task_type.helptext_template %}
+                    {% include task_type.type_name + "/" + task_type.helptext_template %}
+                {% else %}
+                    {% include '_instruction.html'|app_template %}
+                {% endif %}
+            {% endblock %}
+
+        </div>
+        <button title="Close (Esc)" type="button" class="mfp-close">×</button>
+    </div>
+{% endblock %}
