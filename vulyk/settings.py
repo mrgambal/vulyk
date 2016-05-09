@@ -86,3 +86,7 @@ DEFAULT_BATCH = 'default'
 WARM_WELCOME = u"""
 <h3>Вас вітає Канцелярська сотня.</h3>
 """
+
+CSS_ASSETS_ADDITIONAL = ENV('CSS_ASSETS_ADDITIONAL', [])
+JS_ASSETS_ADDITIONAL = ENV('JS_ASSETS_ADDITIONAL', [])
+
