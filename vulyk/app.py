@@ -96,7 +96,7 @@ def logout():
 
 @app.route('/type/<string:type_name>/next', methods=['GET'])
 @login.login_required
-def next(type_name):
+def next_page(type_name):
     """
     Provides next available task for user.
     If user isn't eligible for that type of tasks - an exception
