@@ -23,6 +23,14 @@ def cli():
     """Vulyk UA management CLI"""
     pass
 
+
+@cli.command('run')
+def run():
+    """Start vulyk"""
+    app.config.from_object('local_settings')
+    app.run()
+
+
 # region Admin
 @cli.group('admin')
 def admin():
@@ -48,6 +56,8 @@ def admin_add(email):
 def admin_remove(email):
     """Unmark user as admin"""
     _admin.toggle_admin(email, False)
+
+
 # endregion Admin
 
 # region DB (export/import)
@@ -92,6 +102,8 @@ def load(task_type, path, batch):
 def export(task_type, path, batch, export_all):
     """Exports answers on closed tasks to json."""
     _db.export_tasks(TASKS_TYPES[task_type], path, batch, not export_all)
+
+
 # endregion DB (export/import)
 
 # region Group
@@ -168,6 +180,8 @@ def group_addtype(gid, task_type):
               prompt='Provide the task type name')
 def group_deltype(gid, task_type):
     _groups.remove_task_type(gid, task_type=task_type)
+
+
 # endregion Group
 
 # region Bootstrapping
@@ -186,6 +200,8 @@ def project_init(allowed_types):
                                  'one default task type')
 
     _project_init(allowed_types)
+
+
 # endregion Bootstrapping
 
 # region Stats
@@ -227,4 +243,5 @@ def batch(batch_name, task_type):
         pt.add_row(values)
 
     print(pt)
+
 # endregion Stats

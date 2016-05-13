@@ -91,4 +91,5 @@ SITE_LOGO = ENV('SITE_LOGO', '/static/images/logo.png')
 SITE_TITLE = ENV('SITE_TITLE', u'Канцелярская сотня представляет!')
 
 TEMPLATE_BASE_FOLDERS = []
+
 THANKS_TASK_MESSAGE = u'Спасибо за помощь, сознательный гражданин!'
