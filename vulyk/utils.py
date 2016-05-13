@@ -90,8 +90,8 @@ def get_tb():
 
 
 def get_template_path(app, name):
-    for x in iter(app.jinja_loader.list_templates()):
-        for folder in iter(app.config['TEMPLATE_BASE_FOLDERS']):
+    for x in app.jinja_loader.list_templates():
+        for folder in app.config.get('TEMPLATE_BASE_FOLDERS', []):
             if folder and '%s/base/%s' % (folder, name) == x:
                 return x
     return "base/%s" % name
