@@ -87,6 +87,8 @@ WARM_WELCOME = u"""
 <h3>Вас вітає Канцелярська сотня.</h3>
 """
 
+THANKS_TASK_MESSAGE = u'Спасибо за помощь, сознательный гражданин!'
+
 CSS_ASSETS_ADDITIONAL = ENV('CSS_ASSETS_ADDITIONAL', [])
 JS_ASSETS_ADDITIONAL = ENV('JS_ASSETS_ADDITIONAL', [])
 
