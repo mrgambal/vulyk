@@ -1,0 +1,38 @@
+<li>
+    <a href="#tag_hints" class="popup-with-zoom-anim">
+        {% if config.LANGUAGE == 'ua' %}Інструкція
+        {% elif config.LANGUAGE == 'ru' %}Инструкция
+        {% else %}Manual
+        {% endif %}
+        <!-- (F1)-->
+    </a>
+</li>
+
+{% if short %}
+
+{% else %}
+
+    {% with url=url_for("task_home", type_name=task_type.type_name) %}
+        <li {% if request.path == url %}class="active"{% endif %}>
+            <a href="{{ url }}">
+                {% if config.LANGUAGE == 'ua' %}Завдання
+                {% elif config.LANGUAGE == 'ru' %}Задания
+                {% else %}Tasks
+                {% endif %}
+            </a>
+        </li>
+    {% endwith %}
+
+
+    {% with url=url_for("leaders", type_name=task_type.type_name), title='Топ-10 волонтеров' %}
+        <li {% if request.path == url %}class="active"{% endif %}>
+            <a href="{{ url }}">
+                {% if config.LANGUAGE == 'ua' %}Топ-10 волонтерів
+                {% elif config.LANGUAGE == 'ru' %}Топ-10 волонтеров
+                {% else %}Top 10
+                {% endif %}
+            </a>
+        </li>
+    {% endwith %}
+
+{% endif %}

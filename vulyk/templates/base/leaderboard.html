@@ -1,0 +1,45 @@
+{% extends "base/index.html" %}
+
+
+{% block nav %}
+    {% with short=False %}
+        {% include '_nav.html'|app_template %}
+    {% endwith %}
+{% endblock %}
+
+
+{% block task %}
+    <table class="table leaderboard table-bordered table-hover">
+        <tr>
+            <th>
+                {% if config.LANGUAGE == 'ua' %}Місце
+                {% elif config.LANGUAGE == 'ru' %}Место
+                {% else %}#
+                {% endif %}
+            </th>
+            <th>
+                {% if config.LANGUAGE == 'ua' %}Користувач
+                {% elif config.LANGUAGE == 'ru' %}Пользователь
+                {% else %}User
+                {% endif %}
+
+            </th>
+            <th>
+                {% if config.LANGUAGE == 'ua' %}Кількість завданнь
+                {% elif config.LANGUAGE == 'ru' %}Количество заданий
+                {% else %}Count of tasks
+                {% endif %}
+            </th>
+        </tr>
+        {% for l in leaders %}
+            <tr>
+                <th>{{ l.rank }}</th>
+                <td>{{ l.user.username|strip_email }}</td>
+                <td>{{ l.freq }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock task %}
+
+
+

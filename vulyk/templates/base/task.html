@@ -1,0 +1,71 @@
+{% extends "base/index.html" %}
+{% block task %}
+    <div class="clearfix" id="user-stats">
+        <dl>
+            <dt>
+
+                {% if config.LANGUAGE == 'ua' %}Опрацював всього:
+                {% elif config.LANGUAGE == 'ru' %}Обработано всего:
+                {% else %}Processed
+                {% endif %}
+
+
+            </dt>
+            <dd></dd>
+            <dt>
+
+
+                {% if config.LANGUAGE == 'ua' %}Позиція у рейтингу:
+                {% elif config.LANGUAGE == 'ru' %}Позиция в рейтинге:
+                {% else %}Rating position:
+                {% endif %}
+
+
+            </dt>
+            <dd></dd>
+        </dl>
+    </div>
+    <div id="current_task" data-type="{{ task_type.type_name }}">
+        {% include task_type.type_name + "/" + task_type.template %}
+
+        <a class="btn btn-lg btn-default" id="save-button" href="#">
+
+            {% if config.LANGUAGE == 'ua' %}Надіслати форму:
+            {% elif config.LANGUAGE == 'ru' %}Отправить:
+            {% else %}Submit:
+            {% endif %}
+            <!--small>(alt+enter)</small-->
+
+
+        </a>
+        <a class="btn" id="skip-button" href="#">
+
+            {% if config.LANGUAGE == 'ua' %}Пропустити завдання:
+            {% elif config.LANGUAGE == 'ru' %}Пропустить задание:
+            {% else %}Skip task:
+            {% endif %}
+            <!--small>(esc)</small-->
+
+        </a>
+    </div>
+{% endblock task %}
+
+{% block nav %}
+    {% with short=False %}
+        {% include '_nav.html'|app_template %}
+    {% endwith %}
+{% endblock %}
+
+
+{% block extra_js %}
+    {% assets "plugin_js_" + task_type.type_name %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+{% endblock %}
+
+{% block extra_css %}
+    {% assets "plugin_css_" + task_type.type_name %}
+        <link rel="stylesheet" href="{{ ASSET_URL }}"/>
+    {% endassets %}
+{% endblock %}
+
