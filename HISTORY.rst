@@ -26,5 +26,15 @@ History
 0.3.1 (2016-04-27)
 ------------------
 * lightweight tasks randomization
-* filter stats by batch name and/or task type 
+* filter stats by batch name and/or task type
 * now vulyk is recording all media
+
+0.4.0 (2016-05-18)
+------------------
+* python 3 migration
+* fixes for manage script
+* Move base templates to base-folder
+* Added key LANGUAGE and an example translation
+* Added keys SITE_LOGO and SITE_TITLE
+* Added key THANKS_TASK_MESSAGE
+* Fixed templates for navigate.

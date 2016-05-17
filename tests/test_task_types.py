@@ -5,8 +5,7 @@
 test_task_types
 """
 import unittest
-
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 
 from vulyk.models.exc import TaskImportError
 from vulyk.models.tasks import AbstractTask, AbstractAnswer

@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 import gzip
-from itertools import imap, ifilter
 import os
 
 from click import echo
 import bz2file as bz2
-import six
 
 from vulyk.utils import chunked
 
@@ -29,14 +27,14 @@ def load_tasks(task_id, path, batch):
     """
 
     :type task_id: vulyk.models.task_types.AbstractTaskType
-    :type path: str | unicode
+    :type path: str
     :param batch: Batch ID tasks should be loaded into
-    :type batch: str | unicode
+    :type batch: str
 
     :return: Number of tasks loaded
     :rtype: int
     """
-    if isinstance(path, six.string_types):
+    if isinstance(path, str):
         path = (path,)
 
     count = len(path)
@@ -52,9 +50,9 @@ def load_tasks(task_id, path, batch):
 def _load_tasks_file(task_id, path, batch):
     """
     :type task_id: vulyk.models.task_types.AbstractTaskType
-    :type path: str | unicode
+    :type path: str
     :param batch: Batch ID tasks should be loaded into
-    :type batch: str | unicode
+    :type batch: str
 
     :return: Number of stored tasks
     :rtype: int
@@ -69,7 +67,7 @@ def _load_tasks_file(task_id, path, batch):
         """
         l = lambda s: json.loads(s) if len(s.strip()) > 0 else {}
 
-        return ifilter(None, imap(l, fl))
+        return filter(None, map(l, fl))
 
     try:
         with open_anything(path)(path, 'rb') as f:
@@ -88,11 +86,11 @@ def _load_tasks_file(task_id, path, batch):
     return i
 
 
-def export_tasks(task_id, path, batch, closed):
+def export_reports(task_id, path, batch, closed):
     """
     :type task_id: vulyk.models.task_types.AbstractTaskType
-    :type path: str | unicode
-    :type batch: str | unicode
+    :type path: str
+    :type batch: str
     :type closed: boolean
     """
     i = 0

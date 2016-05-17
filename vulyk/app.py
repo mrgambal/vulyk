@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-import httplib
 import ujson as json
-from flask import (Flask, render_template, redirect, url_for, g, request,
-                   Response, abort)
-from flask.ext import login
-from flask.ext.mongoengine import MongoEngine
+
+import flask
+from flask import (Flask, Response)
+import flask_login as login
+from flask_mongoengine import MongoEngine
 
 from vulyk import cli
 from vulyk.assets import init as assets_init
 from vulyk.tasks import init_tasks
 from vulyk.users import init_social_login
-from vulyk.utils import resolve_task_type, get_template_path
+from vulyk.utils import resolve_task_type, HTTPStatus, get_template_path
 
 app = Flask(__name__)
 app.config.from_object('vulyk.settings')
@@ -35,14 +35,14 @@ def is_initialized():
     }
 
 
-def _json_response(result, template='', errors=None, status=httplib.OK):
+def _json_response(result, template='', errors=None, status=HTTPStatus.OK):
     """
     Handy helper to prepare unified responses
 
     :param result: Data to be sent
     :type result: dict
     :param template: Template name or id
-    :type template: str | unicode
+    :type template: str
     :param errors: List of errors
     :type errors: list | set | tuple | dict
     :param status: Response http-status
@@ -68,10 +68,8 @@ def _json_response(result, template='', errors=None, status=httplib.OK):
         ])
 
 
-_no_tasks = _json_response({},
-                           '',
-                           ['There is no task having type like this'],
-                           httplib.NOT_FOUND)
+_no_tasks = _json_response({}, '', ['There is no task having type like this'],
+                           HTTPStatus.NOT_FOUND)
 
 
 @app.route('/', methods=['GET'])
@@ -79,24 +77,26 @@ def index():
     """
     Main site view
     """
-    if g.user.is_authenticated:
-        task_types = [x.to_dict() for x in TASKS_TYPES.itervalues()
-                      if g.user.is_eligible_for(x.type_name)]
-    else:
-        task_types = []
+    task_types = []
+    user = flask.g.user
+
+    if user.is_authenticated:
+        task_types = [x.to_dict() for x in TASKS_TYPES.values()
+                      if user.is_eligible_for(x.type_name)]
 
     if len(task_types) == 1:
-        return redirect(url_for('task_home', type_name=task_types[0]['type']))
+        return flask.redirect(
+            flask.url_for('task_home', type_name=task_types[0]['type']))
 
-    return render_template(get_template_path(app, 'index.html'),
-                           task_types=task_types)
+    return flask.render_template(get_template_path(app, 'index.html'),
+                                 task_types=task_types)
 
 
 @app.route('/logout', methods=['POST'])
 def logout():
     login.logout_user()
 
-    return redirect(url_for('index'))
+    return flask.redirect(flask.url_for('index'))
 
 
 @app.route('/type/<string:type_name>/next', methods=['GET'])
@@ -108,14 +108,15 @@ def next_page(type_name):
     should be thrown.
 
     :param type_name: Task type name
-    :type type_name: basestring
+    :type type_name: str
     """
-    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
+    user = flask.g.user
+    task_type = resolve_task_type(type_name, TASKS_TYPES, user)
 
     if task_type is None:
         return _no_tasks
 
-    task = task_type.get_next(g.user)
+    task = task_type.get_next(user)
 
     if not task:
         return _no_tasks
@@ -123,7 +124,7 @@ def next_page(type_name):
     return _json_response(
         {
             'task': task,
-            'stats': g.user.get_stats(task_type=task_type)
+            'stats': user.get_stats(task_type=task_type)
         },
         # doubtful that we need it.
         task_type.template
@@ -135,15 +136,15 @@ def next_page(type_name):
 def task_home(type_name):
     """
     :param type_name: Task type name
-    :type type_name: basestring
+    :type type_name: str
     """
-    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
+    task_type = resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
 
     if task_type is None:
-        abort(httplib.NOT_FOUND)
+        flask.abort(HTTPStatus.NOT_FOUND)
 
-    return render_template(get_template_path(app, 'task.html'),
-                           task_type=task_type)
+    return flask.render_template(get_template_path(app, 'task.html'),
+                                 task_type=task_type)
 
 
 @app.route('/type/<string:type_name>/leaders', methods=['GET'])
@@ -151,14 +152,14 @@ def task_home(type_name):
 def leaders(type_name):
     """
     :param type_name: Task type name
-    :type type_name: basestring
+    :type type_name: str
     """
-    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
+    task_type = resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
 
     if task_type is None:
-        abort(httplib.NOT_FOUND)
+        flask.abort(HTTPStatus.NOT_FOUND)
 
-    return render_template(
+    return flask.render_template(
         get_template_path(app, 'leaderboard.html'),
         task_type=task_type,
         leaders=task_type.get_leaderboard())
@@ -171,16 +172,18 @@ def skip(type_name, task_id):
     This action adds the task to the 'skipped' list of current user.
 
     :param type_name: Task type name
-    :type type_name: basestring
+    :type type_name: str
     :param task_id: Task ID
-    :type task_id: basestring
+    :type task_id: str
     """
-    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
+    user = flask.g.user
+    task_type = resolve_task_type(type_name, TASKS_TYPES, user)
 
     if task_type is None:
         return _no_tasks
 
-    task_type.skip_task(user=g.user._get_current_object(), task_id=task_id)
+    task_type.skip_task(user=user._get_current_object(),
+                        task_id=task_id)
     return _json_response({'done': True})
 
 
@@ -191,20 +194,20 @@ def done(type_name, task_id):
     This action adds the task to the 'skipped' list of current user.
 
     :param type_name: Task type name
-    :type type_name: basestring
+    :type type_name: str
     :param task_id: Task ID
-    :type task_id: basestring
+    :type task_id: str
     """
-
-    task_type = resolve_task_type(type_name, TASKS_TYPES, g.user)
+    user = flask.g.user
+    task_type = resolve_task_type(type_name, TASKS_TYPES, user)
 
     if task_type is None:
         return _no_tasks
 
     task_type.on_task_done(
         # Mongoengine will shit bricks if it'll receive LocalProxy object
-        g.user._get_current_object(),
-        task_id, json.loads(request.form.get('result')))
+        user._get_current_object(),
+        task_id, json.loads(flask.request.form.get('result')))
 
     return _json_response({'done': True})
 

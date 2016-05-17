@@ -1,9 +1,8 @@
 # -*- coding=utf-8 -*-
-from __future__ import unicode_literals
 import os.path
 
 import jinja2
-from flask.ext.assets import Bundle
+from flask_assets import Bundle
 from werkzeug.utils import import_string
 
 
@@ -22,7 +21,7 @@ def init_tasks(app):
     enabled_tasks = app.config.get('ENABLED_TASKS', {})
     files_to_watch = []
 
-    for plugin, task in enabled_tasks.iteritems():
+    for plugin, task in enabled_tasks.items():
         task_settings = import_string(
             '{plugin_name}.settings'.format(plugin_name=plugin)
         )

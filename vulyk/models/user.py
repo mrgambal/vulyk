@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import datetime
 from itertools import chain
 
-from flask.ext.login import UserMixin, AnonymousUserMixin
-from flask.ext.mongoengine import Document
+from flask_login import UserMixin, AnonymousUserMixin
+from flask_mongoengine import Document
 from mongoengine import (
     StringField, BooleanField, DateTimeField, IntField, ReferenceField, PULL,
     ListField, signals)
@@ -86,8 +85,8 @@ class User(Document, UserMixin):
                 break
 
         return {
-            "total": total,
-            "position": i
+            'total': total,
+            'position': i
         }
 
     def as_dict(self):

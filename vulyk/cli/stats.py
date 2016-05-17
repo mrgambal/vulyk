@@ -13,9 +13,9 @@ def batch_completeness(batch_name, task_type):
     - actual reports to total planned amount ratio (tasks * redundancy)
 
     :param batch_name: Optional name of batch to filter by
-    :type batch_name: basestring
+    :type batch_name: str
     :param task_type: Optional name of task type to filter by
-    :type task_type: basestring
+    :type task_type: str
 
     :rtype: OrderedDict
     """
@@ -59,7 +59,7 @@ def _breakdown_by_processed(batch):
     Combines stats on responses count ratio for certain batch
 
     :param batch: Batch ID
-    :type batch: str | basestring
+    :type batch: str
 
     :returns: string ready to be displayed in CLI
     :rtype: str
