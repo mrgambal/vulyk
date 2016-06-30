@@ -89,7 +89,8 @@ class AbstractTaskType:
                     batch=batch,
                     task_type=self.type_name,
                     task_data=task))
-            self.task_model.objects.insert(bulk, load_bulk=True)
+
+            self.task_model.objects.insert(bulk)
         except errors as e:
             # TODO: review list of exceptions, any fallback actions if needed
             raise TaskImportError('Can\'t load task: {}'.format(e))

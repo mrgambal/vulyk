@@ -79,9 +79,12 @@ class TestTaskTypes(BaseTest):
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_import_tasks(self):
         tasks = [{'name': '1'}, {'name': '2'}, {'name': '3'}]
-        FakeType({}).import_tasks(tasks, 'default')
+        repo = FakeType({})
+
+        repo.import_tasks(tasks, 'default')
 
         self.assertEqual(_collection.tasks.count(), len(tasks))
+        self.assertEquals(repo.task_model.objects.count(), 3)
 
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_import_tasks_not_dict(self):
@@ -98,11 +101,14 @@ class TestTaskTypes(BaseTest):
                               'default'))
 
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
-    def test_raises_error_when_overwriting(self):
-        tasks = [{'name': '1'}, {'name': '1'}]
+    def test_import_fails_when_overwriting(self):
+        tasks = [{'name': '0'}, {'name': '1'}, {'name': '1'}, {'name': '2'}]
+        repo = FakeType({})
 
         self.assertRaises(TaskImportError,
-                          lambda: FakeType({}).import_tasks(tasks, 'default'))
+                          lambda: repo.import_tasks(tasks, 'default'))
+        self.assertEqual(repo.task_model.objects.count(), 2)
+
 
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_skip_raises_not_found(self):
