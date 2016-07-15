@@ -8,6 +8,7 @@ from flask_mongoengine import MongoEngine
 
 from vulyk import cli
 from vulyk.assets import init as assets_init
+from vulyk.models.exc import TaskNotFoundError
 from vulyk.tasks import init_tasks
 from vulyk.users import init_social_login
 from vulyk.utils import resolve_task_type, HTTPStatus, get_template_path
@@ -182,8 +183,12 @@ def skip(type_name, task_id):
     if task_type is None:
         return _no_tasks
 
-    task_type.skip_task(user=user._get_current_object(),
-                        task_id=task_id)
+    try:
+        task_type.skip_task(user=user._get_current_object(),
+                            task_id=task_id)
+    except TaskNotFoundError:
+        return _no_tasks
+
     return _json_response({'done': True})
 
 
@@ -204,10 +209,13 @@ def done(type_name, task_id):
     if task_type is None:
         return _no_tasks
 
-    task_type.on_task_done(
-        # Mongoengine will shit bricks if it'll receive LocalProxy object
-        user._get_current_object(),
-        task_id, json.loads(flask.request.form.get('result')))
+    try:
+        task_type.on_task_done(
+            # Mongoengine will shit bricks if it receives LocalProxy object
+            user._get_current_object(),
+            task_id, json.loads(flask.request.form.get('result')))
+    except TaskNotFoundError:
+        return _no_tasks
 
     return _json_response({'done': True})
 

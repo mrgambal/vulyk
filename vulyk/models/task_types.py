@@ -23,6 +23,7 @@ from vulyk.models.exc import (
     TaskSaveError,
     TaskSkipError,
     TaskValidationError,
+    TaskNotFoundError,
     WorkSessionLookUpError
 )
 from vulyk.models.stats import WorkSession
@@ -75,16 +76,21 @@ class AbstractTaskType:
 
         :raise: TaskImportError
         """
-        errors = (AttributeError, TypeError, ValidationError, OperationError)
+        errors = (AttributeError, TypeError, ValidationError, OperationError,
+                  AssertionError)
+        bulk = []
 
         try:
             for task in tasks:
-                self.task_model.objects.create(
+                assert isinstance(task, dict)
+
+                bulk.append(self.task_model(
                     id=sha1(json.dumps(task).encode('utf8')).hexdigest()[:20],
                     batch=batch,
                     task_type=self.type_name,
-                    task_data=task,
-                )
+                    task_data=task))
+
+            self.task_model.objects.insert(bulk)
         except errors as e:
             # TODO: review list of exceptions, any fallback actions if needed
             raise TaskImportError('Can\'t load task: {}'.format(e))
@@ -239,10 +245,12 @@ class AbstractTaskType:
         :raises: TaskSkipError
         """
         try:
-            task = self.task_model.objects.get_or_404(
+            task = self.task_model.objects.get(
                 id=task_id, task_type=self.type_name)
             task.update(add_to_set__users_skipped=user)
             self._del_work_session(task, user)
+        except self.task_model.DoesNotExist:
+            raise TaskNotFoundError()
         except NotUniqueError as err:
             raise TaskSkipError(err)
         except OperationError as err:
@@ -267,9 +275,12 @@ class AbstractTaskType:
 
         # create new answer or modify existing one
         answer = None
-        task = self.task_model.objects.get_or_404(
-            id=task_id,
-            task_type=self.type_name)
+        try:
+            task = self.task_model.objects.get(
+                id=task_id,
+                task_type=self.type_name)
+        except self.task_model.DoesNotExist:
+            raise TaskNotFoundError()
 
         try:
             answer = self.answer_model.objects \

@@ -7,7 +7,7 @@ test_task_types
 import unittest
 from unittest.mock import patch, Mock
 
-from vulyk.models.exc import TaskImportError
+from vulyk.models.exc import TaskImportError, TaskNotFoundError
 from vulyk.models.tasks import AbstractTask, AbstractAnswer
 from vulyk.models.task_types import AbstractTaskType
 from .base import (
@@ -79,9 +79,12 @@ class TestTaskTypes(BaseTest):
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_import_tasks(self):
         tasks = [{'name': '1'}, {'name': '2'}, {'name': '3'}]
-        FakeType({}).import_tasks(tasks, 'default')
+        repo = FakeType({})
+
+        repo.import_tasks(tasks, 'default')
 
         self.assertEqual(_collection.tasks.count(), len(tasks))
+        self.assertEquals(repo.task_model.objects.count(), 3)
 
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_import_tasks_not_dict(self):
@@ -96,6 +99,26 @@ class TestTaskTypes(BaseTest):
                           lambda: FakeType({}).import_tasks(
                               {'name': '1'},
                               'default'))
+
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    def test_import_fails_when_overwriting(self):
+        tasks = [{'name': '0'}, {'name': '1'}, {'name': '1'}, {'name': '2'}]
+        repo = FakeType({})
+
+        self.assertRaises(TaskImportError,
+                          lambda: repo.import_tasks(tasks, 'default'))
+        self.assertEqual(repo.task_model.objects.count(), 2)
+
+
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    def test_skip_raises_not_found(self):
+        self.assertRaises(TaskNotFoundError,
+                          lambda: FakeType({}).skip_task('fake_id', {}))
+
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    def test_on_done_raises_not_found(self):
+        self.assertRaises(TaskNotFoundError,
+                          lambda: FakeType({}).on_task_done({}, 'fake_id', {}))
 
 
 if __name__ == '__main__':
