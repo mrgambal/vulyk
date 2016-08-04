@@ -1,7 +1,27 @@
 # -*- coding: utf-8 -*-
 import os.path
-from flask_assets import Environment, Bundle
-from flask_collect import Collect
+
+from flask.ext.assets import Environment, Bundle
+from flask.ext.collect import Collect
+
+__all__ = ['init']
+
+
+def get_files_for_settings(app, assets_key):
+    """
+    :type app: flask.Flask
+    :type assets_key: str
+    :rtype: str
+    """
+    result = []
+
+    if assets_key in app.config and len(app.config[assets_key]) > 0:
+        result = [
+            os.path.join(app.static_folder, static_file)
+            for static_file in app.config[assets_key]
+            ]
+
+    return result
 
 
 def init(app):
@@ -21,27 +41,18 @@ def init(app):
         collect.collect()
         app.static_folder = app.config['COLLECT_STATIC_ROOT']
 
-    if 'JS_ASSETS' in app.config and len(app.config['JS_ASSETS']) > 0:
-        files_to_watch += [
-            os.path.join(app.static_folder, js_file)
-            for js_file in app.config['JS_ASSETS']
-        ]
+    for key in ['js', 'css']:
+        assets_key = '%s_ASSETS' % key.upper()
+        build_files = app.config[assets_key]
 
-        js = Bundle(*app.config['JS_ASSETS'],
-                    output=app.config['JS_ASSETS_OUTPUT'],
-                    filters=app.config['JS_ASSETS_FILTERS'])
-        assets.register('js_all', js)
+        files_to_watch.extend(get_files_for_settings(app, assets_key))
 
-    if 'CSS_ASSETS' in app.config and len(app.config['CSS_ASSETS']) > 0:
-        files_to_watch += [
-            os.path.join(app.static_folder, css_file)
-            for css_file in app.config['CSS_ASSETS']
-        ]
+        bundle = Bundle(*build_files,
+                        output=app.config['%s_OUTPUT' % assets_key],
+                        filters=app.config['%s_FILTERS' % assets_key]
+                        )
 
-        css = Bundle(*app.config['CSS_ASSETS'],
-                     output=app.config['CSS_ASSETS_OUTPUT'],
-                     filters=app.config['CSS_ASSETS_FILTERS'])
-        assets.register('css_all', css)
+        assets.register('%s_all' % key, bundle)
 
     app.assets = assets
     app._base_files_to_watch = files_to_watch

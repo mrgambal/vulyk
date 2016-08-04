@@ -109,7 +109,6 @@ class TestTaskTypes(BaseTest):
                           lambda: repo.import_tasks(tasks, 'default'))
         self.assertEqual(repo.task_model.objects.count(), 2)
 
-
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_skip_raises_not_found(self):
         self.assertRaises(TaskNotFoundError,
