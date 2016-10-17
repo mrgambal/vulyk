@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Die Hauptstadt of our little project. Just an usual Flask application."""
+
 import ujson as json
 
 import flask
@@ -6,26 +8,20 @@ from flask import (Flask, Response)
 import flask_login as login
 from flask_mongoengine import MongoEngine
 
-from vulyk import cli
-from vulyk.assets import init as assets_init
+from vulyk import cli, assets, tasks, users
 from vulyk.models.exc import TaskNotFoundError
-from vulyk.tasks import init_tasks
-from vulyk.users import init_social_login
 from vulyk.utils import resolve_task_type, HTTPStatus, get_template_path
 
-"""
-Die Hauptstadt of our little project. Just an usual Flask application.
-"""
-
+# region Init
 app = Flask(__name__)
 app.config.from_object('vulyk.settings')
 app.config.from_object('local_settings')
 db = MongoEngine(app)
 
-assets_init(app)
-init_social_login(app, db)
+assets.init(app)
+users.init_social_login(app, db)
 
-TASKS_TYPES = init_tasks(app)
+TASKS_TYPES = tasks.init_plugins(app)
 
 
 def _json_response(result, template='', errors=None, status=HTTPStatus.OK):
@@ -63,6 +59,7 @@ def _json_response(result, template='', errors=None, status=HTTPStatus.OK):
 
 _no_tasks = _json_response({}, '', ['There is no task having type like this'],
                            HTTPStatus.NOT_FOUND)
+# endregion Init
 
 
 # region Views
