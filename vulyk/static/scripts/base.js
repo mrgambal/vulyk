@@ -37,7 +37,7 @@ var Vulyk = Vulyk || {
             var vus = Vulyk.State;
 
             $.get(
-                "/type/" + vus.task_type + "/next_page",
+                "/type/" + vus.task_type + "/next",
                 function (data) {
                     vus.task_id = data.result.task.id;
                     vus.body.trigger("vulyk.next", data);

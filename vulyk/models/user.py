@@ -113,10 +113,11 @@ class User(Document, UserMixin):
                 document.groups = [Group.objects.get(id='default')]
             except Group.DoesNotExist:
                 raise Group.DoesNotExist('Please run \'manage.py init ...\'')
+        return document
 
 
 class Anonymous(AnonymousUserMixin):
     name = 'Anonymous'
 
 
-signals.post_save.connect(User.pre_save, sender=User)
+signals.pre_save.connect(User.pre_save, sender=User)

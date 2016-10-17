@@ -16,24 +16,28 @@ from mongoengine.errors import (
     ValidationError
 )
 
-from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
-from vulyk.models.user import User
+from vulyk.ext.worksession import WorksessionManager
 from vulyk.models.exc import (
     TaskImportError,
     TaskSaveError,
     TaskSkipError,
     TaskValidationError,
-    TaskNotFoundError,
-    WorkSessionLookUpError
+    TaskNotFoundError
 )
 from vulyk.models.stats import WorkSession
+from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
+from vulyk.models.user import User
 from vulyk.utils import get_tb
 
 
 class AbstractTaskType:
+    # models
     answer_model = None
     task_model = None
+    # managers
+    _work_session_manager = WorksessionManager(WorkSession)
 
+    # properties
     _name = ''
     _description = ''
 
@@ -53,6 +57,9 @@ class AbstractTaskType:
 
         assert issubclass(self.answer_model, AbstractAnswer), \
             'You should define answer_model property'
+
+        assert isinstance(self._work_session_manager, WorksessionManager), \
+            'You should define _work_session_manager property'
 
         assert self.type_name, 'You should define type_name (underscore)'
         assert self.template, 'You should define template'
@@ -175,7 +182,7 @@ class AbstractTaskType:
 
         if task is not None:
             # Not sure if we should do that here on GET requests
-            self._start_work_session(task, user.id)
+            self._work_session_manager.start_work_session(task, user.id)
 
             return task.as_dict()
         else:
@@ -248,7 +255,7 @@ class AbstractTaskType:
             task = self.task_model.objects.get(
                 id=task_id, task_type=self.type_name)
             task.update(add_to_set__users_skipped=user)
-            self._del_work_session(task, user)
+            self._work_session_manager.delete_work_session(task, user.id)
         except self.task_model.DoesNotExist:
             raise TaskNotFoundError()
         except NotUniqueError as err:
@@ -286,7 +293,6 @@ class AbstractTaskType:
             answer = self.answer_model.objects \
                 .get(task=task,
                      created_by=user.id,
-                     created_at=datetime.now(),
                      task_type=self.type_name)
         except self.answer_model.DoesNotExist:
             answer = self.answer_model.objects.create(
@@ -302,7 +308,7 @@ class AbstractTaskType:
             # update user
             user.update(inc__processed=1)
             # update stats record
-            self._end_work_session(task, user.id, answer)
+            self._work_session_manager.end_work_session(task, user, answer)
 
             if closed and task.batch is not None:
                 batch_id = task.batch.id
@@ -352,64 +358,6 @@ class AbstractTaskType:
         task.save()
 
         return closed
-
-    # TODO: make up something prettier than that mess
-    def _start_work_session(self, task, user):
-        """
-        Starts new WorkSession
-
-        :param task: Given task
-        :type task: AbstractTask
-        :param user: an instance of User model who gets new task
-        :type user: models.User
-        """
-        WorkSession.objects.create(user=user, task=task)
-
-    def _end_work_session(self, task, user, answer):
-        """
-        Ends current WorkSession
-
-        :param task: Given task
-        :type task: AbstractTask
-        :param user: an instance of User model who gets new task
-        :type user: models.User
-        :param answer: Given answer
-        :type answer: AbstractAnswer
-
-        :raises: WorkSessionLookUpError - if session was not found
-        """
-        # TODO: store id of active session in cookies or elsewhere
-        rs = WorkSession.objects(user=user, task=task).order_by('-start_time')
-
-        if rs.count() > 0:
-            rs.first().update(
-                set__end_time=datetime.now(),
-                set__answer=answer,
-                set__corrections=answer.corrections)
-        else:
-            msg = 'No session was found for {0}'.format(answer)
-
-            raise WorkSessionLookUpError(msg)
-
-    def _del_work_session(self, task, user):
-        """
-        Deletes current WorkSession if skipped
-
-        :param task: Given task
-        :type task: AbstractTask
-        :param user: an instance of User model who gets new task
-        :type user: models.User
-
-        :raises: WorkSessionLookUpError - if session was not found
-        """
-        rs = WorkSession.objects(user=user, task=task).order_by('-start_time')
-
-        if rs.count() > 0:
-            rs.first().delete()
-        else:
-            msg = 'No session was found for {0} & {1}'.format(user, task.id)
-
-            raise WorkSessionLookUpError(msg)
 
     def to_dict(self):
         return {
