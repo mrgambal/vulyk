@@ -84,7 +84,7 @@ class TestTaskTypes(BaseTest):
         repo.import_tasks(tasks, 'default')
 
         self.assertEqual(_collection.tasks.count(), len(tasks))
-        self.assertEquals(repo.task_model.objects.count(), 3)
+        self.assertEqual(repo.task_model.objects.count(), 3)
 
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_import_tasks_not_dict(self):
