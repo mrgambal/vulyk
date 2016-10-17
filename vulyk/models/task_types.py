@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Module contains all models related to task type (plugin root) entity."""
+
 from collections import defaultdict
 from datetime import datetime
 from operator import itemgetter
@@ -16,7 +18,7 @@ from mongoengine.errors import (
     ValidationError
 )
 
-from vulyk.ext.worksession import WorksessionManager
+from vulyk.ext.worksession import WorkSessionManager
 from vulyk.models.exc import (
     TaskImportError,
     TaskSaveError,
@@ -29,13 +31,26 @@ from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
 from vulyk.models.user import User
 from vulyk.utils import get_tb
 
+__all__ = [
+    'AbstractTaskType'
+]
+
 
 class AbstractTaskType:
+    """
+    The main entity in the application. Contains all the logic we need to handle
+    task emission/accounting.
+
+    Could be overridden in plugins to fit your needs.
+
+    The simplest and most common scenario of being overridden is to have own
+     task type name and description to separate your tasks from any other.
+    """
     # models
     answer_model = None
     task_model = None
     # managers
-    _work_session_manager = WorksessionManager(WorkSession)
+    _work_session_manager = WorkSessionManager(WorkSession)
 
     # properties
     _name = ''
@@ -50,6 +65,13 @@ class AbstractTaskType:
     CSS_ASSETS = []
 
     def __init__(self, settings):
+        """
+        Constructor.
+
+        :param settings: We pass global settings dictionary into the constructor
+         when instantiating plugins. Could be useful for plugins.
+        :type settings: dict
+        """
         self._logger = logging.getLogger(self.__class__.__name__)
 
         assert issubclass(self.task_model, AbstractTask), \
@@ -58,7 +80,7 @@ class AbstractTaskType:
         assert issubclass(self.answer_model, AbstractAnswer), \
             'You should define answer_model property'
 
-        assert isinstance(self._work_session_manager, WorksessionManager), \
+        assert isinstance(self._work_session_manager, WorkSessionManager), \
             'You should define _work_session_manager property'
 
         assert self.type_name, 'You should define type_name (underscore)'
@@ -66,10 +88,22 @@ class AbstractTaskType:
 
     @property
     def name(self):
+        """
+        Human-readable name of the plugin.
+
+        :return: Name of the task type.
+         :rtype: str
+        """
         return self._name if len(self._name) > 0 else self.type_name
 
     @property
     def description(self):
+        """
+        Explicit description of the plugin.
+
+        :return: Plugin description.
+        :rtype: str
+        """
         return self._description if len(self._description) > 0 else ''
 
     def import_tasks(self, tasks, batch):
@@ -135,7 +169,7 @@ class AbstractTaskType:
         """Return sorted list of tuples (user_id, tasks_done)
 
         :returns: list of tuples (user_id, tasks_done)
-        :rtype: list[tuple]
+        :rtype: list[tuple[bson.ObjectId, int]]
         """
         scores = self.answer_model \
             .objects(task_type=self.type_name) \
@@ -360,6 +394,12 @@ class AbstractTaskType:
         return closed
 
     def to_dict(self):
+        """
+        Prepare simplified dict that contains basic info about the task type.
+
+        :return: distilled dict with basic info
+        :rtype: dict
+        """
         return {
             'name': self.name,
             'description': self.description,

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Module contains all models directly related to the main entity - tasks."""
+
 from flask_mongoengine import Document
 from mongoengine import (
     BooleanField,
@@ -15,6 +17,9 @@ from vulyk.models.user import User
 
 
 class Batch(Document):
+    """
+    Helper category to group tasks.
+    """
     id = StringField(max_length=50, primary_key=True)
     task_type = StringField(max_length=50, required=True, db_field='taskType')
     tasks_count = IntField(default=0, required=True, db_field='tasksCount')

@@ -4,14 +4,22 @@ import os.path
 from flask.ext.assets import Environment, Bundle
 from flask.ext.collect import Collect
 
-__all__ = ['init']
+__all__ = [
+    'init'
+]
 
 
-def get_files_for_settings(app, assets_key):
+def _get_files_for_settings(app, assets_key):
     """
+    Extract a list of full paths to given assets group.
+
+    :param app: Main application instance
     :type app: flask.Flask
+    :param assets_key: Key which maps to a certain list of assets in settings.
     :type assets_key: str
-    :rtype: str
+
+    :returns: list of paths to assets
+    :rtype: list[str]
     """
     result = []
 
@@ -26,8 +34,9 @@ def get_files_for_settings(app, assets_key):
 
 def init(app):
     """
-    Bundle projects assets
+    Bundle projects assets.
 
+    :param app: Main application instance
     :type app: flask.Flask
     """
     assets = Environment(app)
@@ -45,7 +54,7 @@ def init(app):
         assets_key = '%s_ASSETS' % key.upper()
         build_files = app.config[assets_key]
 
-        files_to_watch.extend(get_files_for_settings(app, assets_key))
+        files_to_watch.extend(_get_files_for_settings(app, assets_key))
 
         bundle = Bundle(*build_files,
                         output=app.config['%s_OUTPUT' % assets_key],

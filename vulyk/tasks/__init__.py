@@ -1,4 +1,4 @@
-# -*- coding=utf-8 -*-
+# -*- coding: utf-8 -*-
 import os.path
 
 import jinja2
@@ -6,9 +6,14 @@ from flask_assets import Bundle
 from werkzeug.utils import import_string
 
 
+__all__ = [
+    'init_tasks'
+]
+
+
 def init_tasks(app):
     """
-    Extracts modules (task types) from global configuration
+    Extracts modules (task types) from global configuration.
 
     :param app: Current Flask application instance
     :type app: flask.Flask
@@ -25,19 +30,19 @@ def init_tasks(app):
         task_settings = import_string(
             '{plugin_name}.settings'.format(plugin_name=plugin)
         )
-        plugin_instance = import_string(
+        plugin_type = import_string(
             '{plugin_name}'.format(plugin_name=plugin))
-        settings = plugin_instance.configure(task_settings)
+        settings = plugin_type.configure(task_settings)
 
-        task_instance = import_string(
+        task_type = import_string(
             '{plugin_name}.models.task_types.{task}'.format(
                 plugin_name=plugin, task=task)
         )
 
-        loaders[task_instance.type_name] = jinja2.PackageLoader(plugin)
-        task_types[task_instance.type_name] = task_instance(settings=settings)
+        loaders[task_type.type_name] = jinja2.PackageLoader(plugin)
+        task_types[task_type.type_name] = task_type(settings=settings)
 
-        default_static_path = plugin_instance.__path__[0]
+        default_static_path = plugin_type.__path__[0]
         # if Flask-Collect is enabled - get files from collected dir
         if 'COLLECT_STATIC_ROOT' in app.config:
             # all plugin static goes stored in a dir may have prefixed name
@@ -49,27 +54,27 @@ def init_tasks(app):
         else:
             static_path = default_static_path
 
-        js_name = 'plugin_js_{task}'.format(task=task_instance.type_name)
-        css_name = 'plugin_css_{task}'.format(task=task_instance.type_name)
+        js_name = 'plugin_js_{task}'.format(task=task_type.type_name)
+        css_name = 'plugin_css_{task}'.format(task=task_type.type_name)
 
-        if len(task_instance.JS_ASSETS) > 0:
+        if len(task_type.JS_ASSETS) > 0:
             files_to_watch += map(
                 lambda x: os.path.join(default_static_path, x),
-                task_instance.JS_ASSETS)
+                task_type.JS_ASSETS)
 
             js = Bundle(*map(lambda x: os.path.join(static_path, x),
-                             task_instance.JS_ASSETS),
+                             task_type.JS_ASSETS),
                         output='scripts/{name}.js'.format(name=js_name),
                         filters=app.config.get('JS_ASSETS_FILTERS', ''))
             app.assets.register(js_name, js)
 
-        if len(task_instance.CSS_ASSETS) > 0:
+        if len(task_type.CSS_ASSETS) > 0:
             files_to_watch += map(
                 lambda x: os.path.join(default_static_path, x),
-                task_instance.CSS_ASSETS)
+                task_type.CSS_ASSETS)
 
             css = Bundle(*map(lambda x: os.path.join(static_path, x),
-                              task_instance.CSS_ASSETS),
+                              task_type.CSS_ASSETS),
                          output='styles/{name}.css'.format(name=css_name),
                          filters=app.config.get('CSS_ASSETS_FILTERS', ''))
 

@@ -1,4 +1,6 @@
 # -*- coding=utf-8 -*-
+"""Module contains stuff related to interoperability with PSA."""
+
 import datetime
 
 from flask import g
@@ -9,8 +11,20 @@ from social.apps.flask_app.template_filters import backends
 
 from vulyk.models.user import User
 
+__all__ = [
+    'init_social_login'
+]
+
 
 def init_social_login(app, db):
+    """
+    Login manager initialisation.
+
+    :param app: Main application instance
+    :type app: flask.Flask
+    :param db: MongoDB wrapper instance
+    :type db: flask_mongoengine.MongoEngine
+    """
     app.register_blueprint(social_auth)
     init_social(app, db)
 
