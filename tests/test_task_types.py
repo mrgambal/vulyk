@@ -8,27 +8,15 @@ import unittest
 from unittest.mock import patch, Mock
 
 from vulyk.models.exc import TaskImportError, TaskNotFoundError
-from vulyk.models.tasks import AbstractTask, AbstractAnswer
 from vulyk.models.task_types import AbstractTaskType
+from vulyk.models.tasks import AbstractTask, AbstractAnswer
+
 from .base import (
     _collection,
     BaseTest,
     mocked_get_connection,
 )
-
-
-class FakeModel(AbstractTask):
-    pass
-
-
-class FakeType(AbstractTaskType):
-    task_model = FakeModel
-    answer_model = AbstractAnswer
-    type_name = 'FakeTaskType'
-    template = 'tmpl.html'
-
-    _name = 'Fake name'
-    _description = 'Fake description'
+from .fixtures import FakeType
 
 
 class TestTaskTypes(BaseTest):

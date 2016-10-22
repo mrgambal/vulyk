@@ -54,12 +54,6 @@ class User(Document, UserMixin):
     def is_admin(self):
         return self.admin or False
 
-    def __unicode__(self):
-        return self.username
-
-    def __str__(self):
-        return self.__unicode__()
-
     def is_eligible_for(self, task_type):
         """
         Check that user is authorized to work with this tasks type
@@ -141,6 +135,12 @@ class User(Document, UserMixin):
                 raise Group.DoesNotExist('Please run \'manage.py init ...\'')
 
         return document
+
+    def __unicode__(self):
+        return self.username
+
+    def __str__(self):
+        return self.__unicode__()
 
 
 class Anonymous(AnonymousUserMixin):
