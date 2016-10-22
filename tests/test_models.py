@@ -127,6 +127,11 @@ class TestUser(BaseTest):
             }
         )
 
+        # a little cleaning
+        _collection.reports.drop()
+        _collection.tasks.drop()
+        _collection.batches.drop()
+
     def tearDown(self):
         self.USERS.drop()
         self.GROUPS.drop()
