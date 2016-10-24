@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Package contains CLI tools related to managing batches of tasks."""
+
 import click
 
 from vulyk.models.tasks import Batch

@@ -145,6 +145,7 @@ class TestBatches(BaseTest):
             batches.validate_batch(None, None, not_exists,
                                    self.DEFAULT_BATCH))
 
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_validate_batch_exists(self):
         exists = '3'
         batches.add_batch('1', 10, 'declaration_task', self.DEFAULT_BATCH)

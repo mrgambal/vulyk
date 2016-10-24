@@ -22,9 +22,8 @@ from .fixtures import FakeType
 
 class TestUser(BaseTest):
     TASK_TYPE = 'test'
-    USERS = _collection.user
-    GROUPS = _collection.groups
 
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def setUp(self):
         super().setUp()
 
@@ -77,6 +76,7 @@ class TestUser(BaseTest):
             }
         )
 
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_get_stats(self):
         """
         Really slow garbage. Uses PyExecJs to emulate Map-Reduce in MongoDB.
@@ -127,14 +127,15 @@ class TestUser(BaseTest):
             }
         )
 
-        # a little cleaning
+    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    def tearDown(self):
+        super().tearDown()
+
+        _collection.user.drop()
+        _collection.groups.drop()
         _collection.reports.drop()
         _collection.tasks.drop()
         _collection.batches.drop()
-
-    def tearDown(self):
-        self.USERS.drop()
-        self.GROUPS.drop()
 
 
 if __name__ == '__main__':

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Every project must have a package called `utils`."""
+import os
 import sys
 from itertools import islice
 
@@ -8,10 +10,6 @@ if sys.version_info.minor <= 4:  # PY 3.4
     import http.client as HTTPStatus
 else:
     from http import HTTPStatus
-
-"""
-Every project must have a package called `utils`.
-"""
 
 __all__ = [
     'chunked',
@@ -115,6 +113,6 @@ def get_template_path(app, name):
     """
     for x in app.jinja_loader.list_templates():
         for folder in app.config.get('TEMPLATE_BASE_FOLDERS', []):
-            if folder and '%s/base/%s' % (folder, name) == x:
+            if folder and os.path.join(folder, 'base', name) == x:
                 return x
-    return "base/%s" % name
+    return 'base/%s' % name
