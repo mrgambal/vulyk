@@ -1,4 +1,4 @@
-# -*- coding=utf-8 -*-
+# -*- coding: utf-8 -*-
 """Module contains stuff related to interoperability with PSA."""
 
 import datetime
