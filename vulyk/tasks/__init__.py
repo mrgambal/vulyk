@@ -1,4 +1,6 @@
-# -*- coding=utf-8 -*-
+# -*- coding: utf-8 -*-
+"""Module contains code that performs plugins initialisation."""
+
 import os.path
 
 import jinja2
@@ -6,15 +8,62 @@ from flask_assets import Bundle
 from werkzeug.utils import import_string
 
 
-def init_tasks(app):
+__all__ = [
+    'init_plugins'
+]
+
+
+def _init_plugin_assets(app, task_type, static_path):
     """
-    Extracts modules (task types) from global configuration
+    Bundle plugin static files.
+
+    :param app: Main application instance.
+    :type app: flask.Flask
+    :param task_type: Plugin root instance.
+    :type task_type: vulyk.models.task_types.AbstractTaskType
+    :param static_path: Path to plugin's static folder.
+    :type static_path: str
+
+    :return: List of paths to plugin's asset files.
+    :rtype: list[str]
+    """
+    files_to_watch = []
+    assets_location_map = {
+        'js': task_type.JS_ASSETS,
+        'css': task_type.CSS_ASSETS
+    }
+
+    for key in assets_location_map.keys():
+        name = 'plugin_{key}_{task}'.format(key=key, task=task_type.type_name)
+        assets_list = assets_location_map[key]
+
+        if len(assets_list) > 0:
+            files_to_watch += map(lambda x: os.path.join(static_path, x),
+                                  assets_list)
+
+            folder = ['scripts', 'styles'][key == 'css']
+            filters_name = '{key}_ASSETS_FILTERS'.format(key=key.upper())
+            output_path = '{folder}/{name}.{key}'.format(folder=folder,
+                                                         name=name,
+                                                         key=key)
+            bundle = Bundle(*map(lambda x: os.path.join(static_path, x),
+                                 assets_list),
+                            output=output_path,
+                            filters=app.config.get(filters_name, ''))
+            app.assets.register(name, bundle)
+
+    return files_to_watch
+
+
+def init_plugins(app):
+    """
+    Extracts modules (task types) from global configuration.
 
     :param app: Current Flask application instance
     :type app: flask.Flask
 
     :return: Dictionary with instantiated *TaskType objects
-    :rtype: dict
+    :rtype: dict[str, vulyk.models.task_types.AbstractTaskType]
     """
     task_types = {}
     loaders = {}
@@ -25,19 +74,19 @@ def init_tasks(app):
         task_settings = import_string(
             '{plugin_name}.settings'.format(plugin_name=plugin)
         )
-        plugin_instance = import_string(
+        plugin_type = import_string(
             '{plugin_name}'.format(plugin_name=plugin))
-        settings = plugin_instance.configure(task_settings)
+        settings = plugin_type.configure(task_settings)
 
-        task_instance = import_string(
+        task_type = import_string(
             '{plugin_name}.models.task_types.{task}'.format(
                 plugin_name=plugin, task=task)
         )
 
-        loaders[task_instance.type_name] = jinja2.PackageLoader(plugin)
-        task_types[task_instance.type_name] = task_instance(settings=settings)
+        loaders[task_type.type_name] = jinja2.PackageLoader(plugin)
+        task_types[task_type.type_name] = task_type(settings=settings)
 
-        default_static_path = plugin_instance.__path__[0]
+        default_static_path = plugin_type.__path__[0]
         # if Flask-Collect is enabled - get files from collected dir
         if 'COLLECT_STATIC_ROOT' in app.config:
             # all plugin static goes stored in a dir may have prefixed name
@@ -49,31 +98,10 @@ def init_tasks(app):
         else:
             static_path = default_static_path
 
-        js_name = 'plugin_js_{task}'.format(task=task_instance.type_name)
-        css_name = 'plugin_css_{task}'.format(task=task_instance.type_name)
-
-        if len(task_instance.JS_ASSETS) > 0:
-            files_to_watch += map(
-                lambda x: os.path.join(default_static_path, x),
-                task_instance.JS_ASSETS)
-
-            js = Bundle(*map(lambda x: os.path.join(static_path, x),
-                             task_instance.JS_ASSETS),
-                        output='scripts/{name}.js'.format(name=js_name),
-                        filters=app.config.get('JS_ASSETS_FILTERS', ''))
-            app.assets.register(js_name, js)
-
-        if len(task_instance.CSS_ASSETS) > 0:
-            files_to_watch += map(
-                lambda x: os.path.join(default_static_path, x),
-                task_instance.CSS_ASSETS)
-
-            css = Bundle(*map(lambda x: os.path.join(static_path, x),
-                              task_instance.CSS_ASSETS),
-                         output='styles/{name}.css'.format(name=css_name),
-                         filters=app.config.get('CSS_ASSETS_FILTERS', ''))
-
-            app.assets.register(css_name, css)
+        files_to_watch.extend(_init_plugin_assets(
+            app=app,
+            task_type=task_type,
+            static_path=static_path))
 
     app.jinja_loader = jinja2.ChoiceLoader([
         app.jinja_loader,

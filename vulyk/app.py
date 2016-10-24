@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Die Hauptstadt of our little project. Just an usual Flask application."""
+
 import ujson as json
 
 import flask
@@ -6,39 +8,25 @@ from flask import (Flask, Response)
 import flask_login as login
 from flask_mongoengine import MongoEngine
 
-from vulyk import cli
-from vulyk.assets import init as assets_init
+from vulyk import cli, assets, tasks, users
 from vulyk.models.exc import TaskNotFoundError
-from vulyk.tasks import init_tasks
-from vulyk.users import init_social_login
 from vulyk.utils import resolve_task_type, HTTPStatus, get_template_path
 
+# region Init
 app = Flask(__name__)
 app.config.from_object('vulyk.settings')
 app.config.from_object('local_settings')
 db = MongoEngine(app)
 
-assets_init(app)
-init_social_login(app, db)
+assets.init(app)
+users.init_social_login(app, db)
 
-TASKS_TYPES = init_tasks(app)
-
-
-@app.template_filter('app_template')
-def app_template_filter(s):
-    return get_template_path(app, s)
-
-
-@app.context_processor
-def is_initialized():
-    return {
-        'init': cli.is_initialized()
-    }
+TASKS_TYPES = tasks.init_plugins(app)
 
 
 def _json_response(result, template='', errors=None, status=HTTPStatus.OK):
     """
-    Handy helper to prepare unified responses
+    Handy helper to prepare unified responses.
 
     :param result: Data to be sent
     :type result: dict
@@ -71,12 +59,17 @@ def _json_response(result, template='', errors=None, status=HTTPStatus.OK):
 
 _no_tasks = _json_response({}, '', ['There is no task having type like this'],
                            HTTPStatus.NOT_FOUND)
+# endregion Init
 
 
+# region Views
 @app.route('/', methods=['GET'])
 def index():
     """
-    Main site view
+    Main site view.
+
+    :returns: Prepared response.
+    :rtype: werkzeug.wrappers.Response
     """
     task_types = []
     user = flask.g.user
@@ -95,6 +88,12 @@ def index():
 
 @app.route('/logout', methods=['POST'])
 def logout():
+    """
+    An action-view, signs the user out and redirects to the homepage.
+
+    :returns: Prepared response.
+    :rtype: werkzeug.wrappers.Response
+    """
     login.logout_user()
 
     return flask.redirect(flask.url_for('index'))
@@ -110,6 +109,9 @@ def next_page(type_name):
 
     :param type_name: Task type name
     :type type_name: str
+
+    :returns: Prepared response.
+    :rtype: werkzeug.wrappers.Response
     """
     user = flask.g.user
     task_type = resolve_task_type(type_name, TASKS_TYPES, user)
@@ -138,6 +140,9 @@ def task_home(type_name):
     """
     :param type_name: Task type name
     :type type_name: str
+
+    :returns: Prepared response.
+    :rtype: werkzeug.wrappers.Response
     """
     task_type = resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
 
@@ -152,8 +157,13 @@ def task_home(type_name):
 @login.login_required
 def leaders(type_name):
     """
+    Display a list of most effective participants.
+
     :param type_name: Task type name
     :type type_name: str
+
+    :returns: Prepared response.
+    :rtype: werkzeug.wrappers.Response
     """
     task_type = resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
 
@@ -176,6 +186,9 @@ def skip(type_name, task_id):
     :type type_name: str
     :param task_id: Task ID
     :type task_id: str
+
+    :returns: Prepared response.
+    :rtype: werkzeug.wrappers.Response
     """
     user = flask.g.user
     task_type = resolve_task_type(type_name, TASKS_TYPES, user)
@@ -202,6 +215,9 @@ def done(type_name, task_id):
     :type type_name: str
     :param task_id: Task ID
     :type task_id: str
+
+    :returns: Prepared response.
+    :rtype: werkzeug.wrappers.Response
     """
     user = flask.g.user
     task_type = resolve_task_type(type_name, TASKS_TYPES, user)
@@ -218,8 +234,50 @@ def done(type_name, task_id):
         return _no_tasks
 
     return _json_response({'done': True})
+# endregion Views
 
 
+# region Filters
 @app.template_filter('strip_email')
 def strip_email(s):
+    """
+    Filter which extracts the first part of an email to make an shorthand
+    for user.
+
+    :param s: Input email (or any string).
+    :type s: str
+    :return: A shorthand extracted.
+    :rtype: str
+    """
     return s.split('@', 1)[0]
+
+
+@app.template_filter('app_template')
+def app_template_filter(s):
+    """
+    Looks for the full path for given template.
+
+    :param s: Template name.
+    :type s: str
+
+    :return: Full path to the template
+    :rtype: str
+    """
+    return get_template_path(app, s)
+# endregion Filters
+
+
+# region Context processors
+@app.context_processor
+def is_initialized():
+    """
+    Extends the context with the flag showing that the application DB was
+    successfully initialized.
+
+    :return: a dict with the `init` flag
+    :rtype: dict
+    """
+    return {
+        'init': cli.is_initialized()
+    }
+# endregion Context processors

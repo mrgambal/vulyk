@@ -8,27 +8,15 @@ import unittest
 from unittest.mock import patch, Mock
 
 from vulyk.models.exc import TaskImportError, TaskNotFoundError
-from vulyk.models.tasks import AbstractTask, AbstractAnswer
 from vulyk.models.task_types import AbstractTaskType
+from vulyk.models.tasks import AbstractTask, AbstractAnswer
+
 from .base import (
     _collection,
     BaseTest,
     mocked_get_connection,
 )
-
-
-class FakeModel(AbstractTask):
-    pass
-
-
-class FakeType(AbstractTaskType):
-    task_model = FakeModel
-    answer_model = AbstractAnswer
-    type_name = 'FakeTaskType'
-    template = 'tmpl.html'
-
-    _name = 'Fake name'
-    _description = 'Fake description'
+from .fixtures import FakeType
 
 
 class TestTaskTypes(BaseTest):
@@ -84,7 +72,7 @@ class TestTaskTypes(BaseTest):
         repo.import_tasks(tasks, 'default')
 
         self.assertEqual(_collection.tasks.count(), len(tasks))
-        self.assertEquals(repo.task_model.objects.count(), 3)
+        self.assertEqual(repo.task_model.objects.count(), 3)
 
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_import_tasks_not_dict(self):
@@ -108,7 +96,6 @@ class TestTaskTypes(BaseTest):
         self.assertRaises(TaskImportError,
                           lambda: repo.import_tasks(tasks, 'default'))
         self.assertEqual(repo.task_model.objects.count(), 2)
-
 
     @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def test_skip_raises_not_found(self):

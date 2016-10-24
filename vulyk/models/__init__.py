@@ -2,6 +2,8 @@
 from bson import ObjectId
 from mongoengine.base.fields import ObjectIdField
 
+__all__ = []
+
 
 # Monkey Patch for allowing queryset with unicode objects instead ObjectId
 def to_python(self, value):

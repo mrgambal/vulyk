@@ -1,39 +1,62 @@
 # -*- coding: utf-8 -*-
 import click
 
-from vulyk.app import app
 from vulyk.models.tasks import Batch
 
 
-def add_batch(batch, count, task_type):
+def add_batch(batch_id, count, task_type, default_batch):
     """
-    Updates or creates new batch after loading new dataset
+    Updates or creates new batch after loading new dataset.
+    Only default batch may be extended.
 
-    :type batch: str | unicode
+    :param batch_id: Name of the batch
+    :type batch_id: str
+    :param count: Number of tasks to load
     :type count: int
-    :type task_type: str | unicode
+    :param task_type: Type of tasks loaded into the batch
+    :type task_type: str
+    :param default_batch: Name of the default batch
+    :type default_batch: str
+
+    :raise: click.BadParameter
     """
-    if batch == app.config['DEFAULT_BATCH']:
-        batch, _ = Batch.objects.get_or_create(id=batch)
+    try:
+        batch = Batch.objects.get(id=batch_id)
+
+        if batch.task_type != task_type:
+            raise click.BadParameter(
+                'Batch {batch} doesn\'t support {task_type}'.format(
+                    batch=batch_id,
+                    task_type=task_type))
+        elif batch_id != default_batch:
+            raise click.BadParameter(
+                'Only default batch could be extended')
+
         batch.update(inc__tasks_count=count)
-    else:
-        Batch.objects.create(id=batch, task_type=task_type, tasks_count=count)
+    except Batch.DoesNotExist:
+        Batch.objects.create(id=batch_id,
+                             task_type=task_type,
+                             tasks_count=count)
 
 
-def validate_batch(ctx, param, value):
+def validate_batch(ctx, param, value, default_batch):
     """
     Refuses your attempts to add tasks to existing batch (except 'default')
 
     :param ctx: Click context
+
     :param param: Name of parameter (`batch`)
+    :type param: str
     :param value: Value of `batch` parameter
+    :type value: str
+    :param default_batch: Name of the default batch
+    :type default_batch: str
 
     :return: true if value passes
 
-    :raise click.BadParameter:
+    :raise: click.BadParameter
     """
-    if value != app.config['DEFAULT_BATCH'] and \
-            value in Batch.objects.scalar('id'):
+    if value != default_batch and value in Batch.objects.scalar('id'):
         raise click.BadParameter(
             'Batch with id {id} already exists'.format(id=value))
     else:

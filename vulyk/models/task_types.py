@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Module contains all models related to task type (plugin root) entity."""
+
 from collections import defaultdict
 from datetime import datetime
 from operator import itemgetter
@@ -16,24 +18,41 @@ from mongoengine.errors import (
     ValidationError
 )
 
-from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
-from vulyk.models.user import User
+from vulyk.ext.worksession import WorkSessionManager
 from vulyk.models.exc import (
     TaskImportError,
     TaskSaveError,
     TaskSkipError,
     TaskValidationError,
-    TaskNotFoundError,
-    WorkSessionLookUpError
+    TaskNotFoundError
 )
 from vulyk.models.stats import WorkSession
+from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
+from vulyk.models.user import User
 from vulyk.utils import get_tb
+
+__all__ = [
+    'AbstractTaskType'
+]
 
 
 class AbstractTaskType:
+    """
+    The main entity in the application. Contains all the logic we need to handle
+    task emission/accounting.
+
+    Could be overridden in plugins to fit your needs.
+
+    The simplest and most common scenario of being overridden is to have own
+     task type name and description to separate your tasks from any other.
+    """
+    # models
     answer_model = None
     task_model = None
+    # managers
+    _work_session_manager = WorkSessionManager(WorkSession)
 
+    # properties
     _name = ''
     _description = ''
 
@@ -46,6 +65,13 @@ class AbstractTaskType:
     CSS_ASSETS = []
 
     def __init__(self, settings):
+        """
+        Constructor.
+
+        :param settings: We pass global settings dictionary into the constructor
+         when instantiating plugins. Could be useful for plugins.
+        :type settings: dict
+        """
         self._logger = logging.getLogger(self.__class__.__name__)
 
         assert issubclass(self.task_model, AbstractTask), \
@@ -54,15 +80,30 @@ class AbstractTaskType:
         assert issubclass(self.answer_model, AbstractAnswer), \
             'You should define answer_model property'
 
+        assert isinstance(self._work_session_manager, WorkSessionManager), \
+            'You should define _work_session_manager property'
+
         assert self.type_name, 'You should define type_name (underscore)'
         assert self.template, 'You should define template'
 
     @property
     def name(self):
+        """
+        Human-readable name of the plugin.
+
+        :return: Name of the task type.
+         :rtype: str
+        """
         return self._name if len(self._name) > 0 else self.type_name
 
     @property
     def description(self):
+        """
+        Explicit description of the plugin.
+
+        :return: Plugin description.
+        :rtype: str
+        """
         return self._description if len(self._description) > 0 else ''
 
     def import_tasks(self, tasks, batch):
@@ -128,7 +169,7 @@ class AbstractTaskType:
         """Return sorted list of tuples (user_id, tasks_done)
 
         :returns: list of tuples (user_id, tasks_done)
-        :rtype: list[tuple]
+        :rtype: list[tuple[bson.ObjectId, int]]
         """
         scores = self.answer_model \
             .objects(task_type=self.type_name) \
@@ -175,7 +216,7 @@ class AbstractTaskType:
 
         if task is not None:
             # Not sure if we should do that here on GET requests
-            self._start_work_session(task, user.id)
+            self._work_session_manager.start_work_session(task, user.id)
 
             return task.as_dict()
         else:
@@ -248,7 +289,7 @@ class AbstractTaskType:
             task = self.task_model.objects.get(
                 id=task_id, task_type=self.type_name)
             task.update(add_to_set__users_skipped=user)
-            self._del_work_session(task, user)
+            self._work_session_manager.delete_work_session(task, user.id)
         except self.task_model.DoesNotExist:
             raise TaskNotFoundError()
         except NotUniqueError as err:
@@ -286,7 +327,6 @@ class AbstractTaskType:
             answer = self.answer_model.objects \
                 .get(task=task,
                      created_by=user.id,
-                     created_at=datetime.now(),
                      task_type=self.type_name)
         except self.answer_model.DoesNotExist:
             answer = self.answer_model.objects.create(
@@ -302,7 +342,7 @@ class AbstractTaskType:
             # update user
             user.update(inc__processed=1)
             # update stats record
-            self._end_work_session(task, user.id, answer)
+            self._work_session_manager.end_work_session(task, user, answer)
 
             if closed and task.batch is not None:
                 batch_id = task.batch.id
@@ -353,65 +393,13 @@ class AbstractTaskType:
 
         return closed
 
-    # TODO: make up something prettier than that mess
-    def _start_work_session(self, task, user):
-        """
-        Starts new WorkSession
-
-        :param task: Given task
-        :type task: AbstractTask
-        :param user: an instance of User model who gets new task
-        :type user: models.User
-        """
-        WorkSession.objects.create(user=user, task=task)
-
-    def _end_work_session(self, task, user, answer):
-        """
-        Ends current WorkSession
-
-        :param task: Given task
-        :type task: AbstractTask
-        :param user: an instance of User model who gets new task
-        :type user: models.User
-        :param answer: Given answer
-        :type answer: AbstractAnswer
-
-        :raises: WorkSessionLookUpError - if session was not found
-        """
-        # TODO: store id of active session in cookies or elsewhere
-        rs = WorkSession.objects(user=user, task=task).order_by('-start_time')
-
-        if rs.count() > 0:
-            rs.first().update(
-                set__end_time=datetime.now(),
-                set__answer=answer,
-                set__corrections=answer.corrections)
-        else:
-            msg = 'No session was found for {0}'.format(answer)
-
-            raise WorkSessionLookUpError(msg)
-
-    def _del_work_session(self, task, user):
-        """
-        Deletes current WorkSession if skipped
-
-        :param task: Given task
-        :type task: AbstractTask
-        :param user: an instance of User model who gets new task
-        :type user: models.User
-
-        :raises: WorkSessionLookUpError - if session was not found
-        """
-        rs = WorkSession.objects(user=user, task=task).order_by('-start_time')
-
-        if rs.count() > 0:
-            rs.first().delete()
-        else:
-            msg = 'No session was found for {0} & {1}'.format(user, task.id)
-
-            raise WorkSessionLookUpError(msg)
-
     def to_dict(self):
+        """
+        Prepare simplified dict that contains basic info about the task type.
+
+        :return: distilled dict with basic info
+        :rtype: dict
+        """
         return {
             'name': self.name,
             'description': self.description,

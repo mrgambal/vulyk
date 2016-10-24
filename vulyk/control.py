@@ -76,14 +76,21 @@ def db():
                 nargs=-1)
 @click.option('--batch',
               default=app.config['DEFAULT_BATCH'],
-              callback=_batches.validate_batch,
+              callback=lambda ctx, param, value: _batches.validate_batch(
+                  ctx, param, value,
+                  app.config['DEFAULT_BATCH']
+              ),
               help='Specify the batch id tasks should be loaded into')
 def load(task_type, path, batch):
     """Refills tasks collection from json."""
     count = _db.load_tasks(TASKS_TYPES[task_type], path, batch)
 
     if batch is not None and count > 0:
-        _batches.add_batch(batch, count, task_type)
+        _batches.add_batch(
+            batch_id=batch,
+            count=count,
+            task_type=task_type,
+            default_batch=app.config['DEFAULT_BATCH'])
 
 
 @db.command('export')
@@ -102,6 +109,7 @@ def export(task_type, path, batch, export_all):
     """Exports answers to chosen tasks to json."""
     _db.export_reports(TASKS_TYPES[task_type], path, batch, not export_all)
 # endregion DB (export/import)
+
 
 # region Group
 @cli.group('group')

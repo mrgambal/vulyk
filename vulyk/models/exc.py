@@ -1,8 +1,18 @@
 # -*- coding: utf-8 -*-
+"""
+Module contains all exception classes could be raised during work with
+the DB.
+"""
 
-__all__ = ['TaskImportError', 'TaskNotFoundError', 'TaskSaveError',
-           'TaskPermissionError', 'TaskSkipError', 'TaskValidationError',
-           'WorkSessionLookUpError']
+__all__ = [
+    'TaskImportError',
+    'TaskNotFoundError',
+    'TaskSaveError',
+    'TaskPermissionError',
+    'TaskSkipError',
+    'TaskValidationError',
+    'WorkSessionLookUpError'
+]
 
 
 class TaskImportError(Exception):

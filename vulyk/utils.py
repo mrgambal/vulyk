@@ -1,51 +1,54 @@
-# -*- coding=utf-8 -*-
+# -*- coding: utf-8 -*-
 import sys
-from functools import wraps
 from itertools import islice
 
-from flask import jsonify, abort
+from flask import abort
 
 if sys.version_info.minor <= 4:  # PY 3.4
     import http.client as HTTPStatus
 else:
     from http import HTTPStatus
 
+"""
+Every project must have a package called `utils`.
+"""
+
+__all__ = [
+    'chunked',
+    'get_tb',
+    'get_template_path',
+    'resolve_task_type'
+    'unique'
+]
+
 
 # Soooo lame
-def unique(a):
+def unique(source):
     """
-    Returns unique values from the list preserving order of initial list
+    Returns unique values from the list preserving order of initial list.
+
+    :param source: An iterable.
+    :type source: list
+
+    :returns: List with unique values.
+    :rtype: list
     """
     seen = set()
-    return [seen.add(x) or x for x in a if x not in seen]
-
-
-def handle_exception_as_json(exc=Exception):
-    if isinstance(exc, Exception):
-        exc = Exception
-
-    def decorator(fn):
-        @wraps(fn)
-        def wrapper(*args, **kwargs):
-            try:
-                fn(*args, **kwargs)
-                return jsonify({'result': True})
-            except exc as e:
-                return jsonify({'result': False, 'reason': e})
-
-        return wrapper
-
-    return decorator
+    return [seen.add(x) or x for x in source if x not in seen]
 
 
 def resolve_task_type(type_id, tasks, user):
     """
-    Looks for `type_id` in TASK_TYPES list
+    Looks for `type_id` in TASK_TYPES map.
 
-    :type type_id: str | basestring
+    :param type_id: ID of the TaskType in the map.
+    :type type_id: str
+    :param tasks: map of `task type id -> task type instance`
     :type tasks: dict
+    :param user: Current user.
     :type user: vulyk.models.user.User
 
+    :returns: Correct TaskType instance or throws an exception.
     :rtype: vulyk.models.task_types.AbstractTaskType
     """
     task_type = None
@@ -72,6 +75,13 @@ def chunked(iterable, n):
     >>> chunked([1, 2, 3, 4, 5], 2)
     [(1, 2), (3, 4), (5,)]
 
+    :param iterable: Source we need to chop up.
+    :type iterable: list, tuple, set
+    :param n: Slice length
+    :type n: int
+
+    :returns: Sequence of tuples of given size.
+    :rtype: __generator[tuple]
     """
     iterable = iter(iterable)
     while 1:
@@ -92,6 +102,17 @@ def get_tb():
 
 
 def get_template_path(app, name):
+    """
+    Finds the path to the template.
+
+    :param app: Flask application instance.
+    :type app: flask.Flask
+    :param name: Name of the template.
+    :type name: str
+
+    :return: Full path to the template.
+    :rtype: str
+    """
     for x in app.jinja_loader.list_templates():
         for folder in app.config.get('TEMPLATE_BASE_FOLDERS', []):
             if folder and '%s/base/%s' % (folder, name) == x:
