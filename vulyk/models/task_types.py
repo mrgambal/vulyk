@@ -18,6 +18,7 @@ from mongoengine.errors import (
     ValidationError
 )
 
+from vulyk.ext.leaderboard import LeaderBoardManager
 from vulyk.ext.worksession import WorkSessionManager
 from vulyk.models.exc import (
     TaskImportError,
@@ -49,12 +50,6 @@ class AbstractTaskType:
     # models
     answer_model = None
     task_model = None
-    # managers
-    _work_session_manager = WorkSessionManager(WorkSession)
-
-    # properties
-    _name = ''
-    _description = ''
 
     template = ''
     helptext_template = ''
@@ -63,6 +58,14 @@ class AbstractTaskType:
     redundancy = 3
     JS_ASSETS = []
     CSS_ASSETS = []
+
+    # properties
+    _name = ''
+    _description = ''
+
+    # managers
+    _work_session_manager = WorkSessionManager(WorkSession)
+    _leaderboard_manager = None
 
     def __init__(self, settings):
         """
@@ -73,15 +76,18 @@ class AbstractTaskType:
         :type settings: dict
         """
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._leaderboard_manager = LeaderBoardManager(self.type_name,
+                                                       self.answer_model, User)
 
         assert issubclass(self.task_model, AbstractTask), \
             'You should define task_model property'
-
         assert issubclass(self.answer_model, AbstractAnswer), \
             'You should define answer_model property'
 
         assert isinstance(self._work_session_manager, WorkSessionManager), \
             'You should define _work_session_manager property'
+        assert isinstance(self._leaderboard_manager, LeaderBoardManager), \
+            'You should define _leaderboard_manager property'
 
         assert self.type_name, 'You should define type_name (underscore)'
         assert self.template, 'You should define template'
@@ -171,11 +177,7 @@ class AbstractTaskType:
         :returns: list of tuples (user_id, tasks_done)
         :rtype: list[tuple[bson.ObjectId, int]]
         """
-        scores = self.answer_model \
-            .objects(task_type=self.type_name) \
-            .item_frequencies('created_by')
-
-        return sorted(scores.items(), key=itemgetter(1), reverse=True)
+        return self._leaderboard_manager.get_leaders()
 
     def get_leaderboard(self, limit=10):
         """Find users who contributed the most
@@ -186,21 +188,7 @@ class AbstractTaskType:
         :returns: List of dicts {user: user_obj, freq: count}
         :rtype: list[dict]
         """
-        result = []
-        top = defaultdict(list)
-
-        [top[e[1]].append(e) for e in self.get_leaders() if len(top) < limit]
-
-        sorted_top = sorted(top.values(), key=lambda r: r[0][1], reverse=True)
-
-        for i, el in enumerate(sorted_top):
-            for v in el:
-                result.append({
-                    'rank': i + 1,
-                    'user': User.objects.get(id=v[0]),
-                    'freq': v[1]})
-
-        return result
+        return self._leaderboard_manager.get_leaderboard(limit)
 
     def get_next(self, user):
         """

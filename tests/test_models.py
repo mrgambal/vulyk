@@ -13,9 +13,8 @@ from vulyk.models.tasks import Batch
 from vulyk.models.user import User, Group
 
 from .base import (
-    _collection,
     BaseTest,
-    mocked_get_connection
+    MongoTestHelpers
 )
 from .fixtures import FakeType
 
@@ -23,14 +22,14 @@ from .fixtures import FakeType
 class TestUser(BaseTest):
     TASK_TYPE = 'test'
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
     def setUp(self):
         super().setUp()
 
         Group.objects.create(
             description='test', id='default', allowed_types=[self.TASK_TYPE])
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
     def test_add_default_group(self):
         User(username='1', email='1@email.com', admin=True).save()
         User(username='2', email='2@email.com', admin=False).save()
@@ -55,7 +54,7 @@ class TestUser(BaseTest):
         self.assertTrue(admin.is_admin(), 'Admin is shown as regular user')
         self.assertFalse(regular.is_admin(), 'Regular user is shown as admin')
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
     def test_is_eligible_for(self):
         another_task_type = 'task_type_2'
         u1 = User(username='1', email='1@email.com', admin=True).save()
@@ -76,7 +75,7 @@ class TestUser(BaseTest):
             }
         )
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
     def test_get_stats(self):
         """
         Really slow garbage. Uses PyExecJs to emulate Map-Reduce in MongoDB.
@@ -127,15 +126,14 @@ class TestUser(BaseTest):
             }
         )
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
     def tearDown(self):
         super().tearDown()
 
-        _collection.user.drop()
-        _collection.groups.drop()
-        _collection.reports.drop()
-        _collection.tasks.drop()
-        _collection.batches.drop()
+        MongoTestHelpers.collection.user.drop()
+        MongoTestHelpers.collection.groups.drop()
+        MongoTestHelpers.collection.reports.drop()
+        MongoTestHelpers.collection.tasks.drop()
+        MongoTestHelpers.collection.batches.drop()
 
 
 if __name__ == '__main__':
