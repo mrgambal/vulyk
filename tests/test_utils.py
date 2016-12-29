@@ -10,13 +10,13 @@ from vulyk.models.user import User, Group
 
 from .base import (
     BaseTest,
-    MongoTestHelpers
+    DBTestHelpers
 )
 from .fixtures import FakeType
 
 
 class TestUtils(BaseTest):
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def setUp(self):
         super().setUp()
 
@@ -29,7 +29,7 @@ class TestUtils(BaseTest):
         self.assertEqual([2, 4, 6, 8], utils.unique([2, 2, 4, 2, 6, 4, 8]),
                          'Unique function returns duplicates')
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_resolve_task_type_ok(self):
         task_type = FakeType({})
         tasks = {task_type.type_name: task_type}
@@ -41,7 +41,7 @@ class TestUtils(BaseTest):
             'Task type should have been resolved, but hasn\'t'
         )
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_resolve_task_type_not_found(self):
         tasks = {}
         user = User(username='1', email='1@email.com').save()
@@ -52,7 +52,7 @@ class TestUtils(BaseTest):
         self.assertEqual(he.exception.code, utils.HTTPStatus.NOT_FOUND,
                          'Http 404 exception didn\'t fire')
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_resolve_task_type_forbidden(self):
         task_type = FakeType({})
         user = User(username='1', email='1@email.com').save()
@@ -98,5 +98,5 @@ class TestUtils(BaseTest):
         )
 
     def tearDown(self):
-        MongoTestHelpers.collection.user.drop()
-        MongoTestHelpers.collection.groups.drop()
+        DBTestHelpers.collections.user.drop()
+        DBTestHelpers.collections.groups.drop()

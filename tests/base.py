@@ -18,12 +18,12 @@ class BaseTest(unittest.TestCase):
         pass
 
 
-class MongoTestHelpers:
-    collection = mongomock.MongoClient().db.collection
+class DBTestHelpers:
+    collections = mongomock.MongoClient().db.collection
 
     @staticmethod
     def connection(alias):
-        return {alias: MongoTestHelpers.collection}
+        return {alias: DBTestHelpers.collections}
 
 
 if __name__ == '__main__':

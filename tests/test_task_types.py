@@ -13,15 +13,15 @@ from vulyk.models.tasks import AbstractTask, AbstractAnswer
 
 from .base import (
     BaseTest,
-    MongoTestHelpers
+    DBTestHelpers
 )
 from .fixtures import FakeType
 
 
 class TestTaskTypes(BaseTest):
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def tearDown(self):
-        MongoTestHelpers.collection.tasks.drop()
+        DBTestHelpers.collections.tasks.drop()
 
     def test_init_task_inheritance(self):
         class NoTask(AbstractTaskType):
@@ -51,7 +51,7 @@ class TestTaskTypes(BaseTest):
 
         self.assertRaises(AssertionError, lambda: NoTemplateName({}))
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     @patch('mongoengine.queryset.base.BaseQuerySet.count', lambda *a: 22)
     def test_to_dict(self):
         got = {
@@ -63,31 +63,31 @@ class TestTaskTypes(BaseTest):
 
         self.assertDictEqual(FakeType({}).to_dict(), got)
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_tasks(self):
         tasks = [{'name': '1'}, {'name': '2'}, {'name': '3'}]
         repo = FakeType({})
 
         repo.import_tasks(tasks, 'default')
 
-        self.assertEqual(MongoTestHelpers.collection.tasks.count(), len(tasks))
+        self.assertEqual(DBTestHelpers.collections.tasks.count(), len(tasks))
         self.assertEqual(repo.task_model.objects.count(), 3)
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_tasks_not_dict(self):
         tasks = [{'name': '1'}, tuple(), {'name': '3'}]
 
         self.assertRaises(TaskImportError,
                           lambda: FakeType({}).import_tasks(tasks, 'default'))
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_tasks_not_list(self):
         self.assertRaises(TaskImportError,
                           lambda: FakeType({}).import_tasks(
                               {'name': '1'},
                               'default'))
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_fails_when_overwriting(self):
         tasks = [{'name': '0'}, {'name': '1'}, {'name': '1'}, {'name': '2'}]
         repo = FakeType({})
@@ -96,12 +96,12 @@ class TestTaskTypes(BaseTest):
                           lambda: repo.import_tasks(tasks, 'default'))
         self.assertEqual(repo.task_model.objects.count(), 2)
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_skip_raises_not_found(self):
         self.assertRaises(TaskNotFoundError,
                           lambda: FakeType({}).skip_task('fake_id', {}))
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_on_done_raises_not_found(self):
         self.assertRaises(TaskNotFoundError,
                           lambda: FakeType({}).on_task_done({}, 'fake_id', {}))

@@ -17,13 +17,13 @@ from vulyk.models.tasks import Batch
 
 from .base import (
     BaseTest,
-    MongoTestHelpers
+    DBTestHelpers
 )
 
 
 class TestAdmin(BaseTest):
-    user_collection = MongoTestHelpers.collection.user
-    group_collection = MongoTestHelpers.collection.groups
+    user_collection = DBTestHelpers.collections.user
+    group_collection = DBTestHelpers.collections.groups
 
     def setUp(self):
         super().setUp()
@@ -42,7 +42,7 @@ class TestAdmin(BaseTest):
         for obj in self.groups:
             obj['_id'] = self.group_collection.insert_one(obj)
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_toggle_admin(self):
         admin.toggle_admin('1@email.com', False)
         admin.toggle_admin('2@email.com', True)
@@ -72,14 +72,14 @@ class TestDB(BaseTest):
 
 
 class TestBatches(BaseTest):
-    batch_collection = MongoTestHelpers.collection.batches
+    batch_collection = DBTestHelpers.collections.batches
     DEFAULT_BATCH = settings.DEFAULT_BATCH
     TASK_TYPE = 'declaration_task'
 
     def tearDown(self):
         self.batch_collection.drop()
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_add_default_batch(self):
         batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
                           self.DEFAULT_BATCH)
@@ -89,7 +89,7 @@ class TestBatches(BaseTest):
         self.assertEqual(batch.tasks_count, 10)
         self.assertEqual(batch.tasks_processed, 0)
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_add_new_tasks_to_default(self):
         batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
                           self.DEFAULT_BATCH)
@@ -100,7 +100,7 @@ class TestBatches(BaseTest):
         self.assertEqual(batch.task_type, self.TASK_TYPE)
         self.assertEqual(batch.tasks_count, 30)
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_add_wrong_task_type(self):
         batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
                           self.DEFAULT_BATCH)
@@ -111,7 +111,7 @@ class TestBatches(BaseTest):
                                       'new_task',
                                       self.DEFAULT_BATCH))
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_add_second_batch(self):
         batch_name = 'new_batch'
         batches.add_batch(batch_name, 10, self.TASK_TYPE,
@@ -122,7 +122,7 @@ class TestBatches(BaseTest):
         self.assertEqual(batch.tasks_count, 10)
         self.assertEqual(batch.tasks_processed, 0)
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_extend_not_default_batch(self):
         batch_name = 'new_batch'
         batches.add_batch(batch_name, 10, self.TASK_TYPE,
@@ -132,7 +132,7 @@ class TestBatches(BaseTest):
             lambda: batches.add_batch(batch_name, 20, self.TASK_TYPE,
                                       self.DEFAULT_BATCH))
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_validate_batch(self):
         not_exists = '4'
         batches.add_batch('1', 10, 'declaration_task', self.DEFAULT_BATCH)
@@ -144,7 +144,7 @@ class TestBatches(BaseTest):
             batches.validate_batch(None, None, not_exists,
                                    self.DEFAULT_BATCH))
 
-    @patch('mongoengine.connection.get_connection', MongoTestHelpers.connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_validate_batch_exists(self):
         exists = '3'
         batches.add_batch('1', 10, 'declaration_task', self.DEFAULT_BATCH)

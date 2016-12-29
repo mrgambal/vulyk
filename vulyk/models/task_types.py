@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module contains all models related to task type (plugin root) entity."""
 
-from collections import defaultdict
 from datetime import datetime
-from operator import itemgetter
 from hashlib import sha1
 import logging
 import random
@@ -64,7 +62,7 @@ class AbstractTaskType:
     _description = ''
 
     # managers
-    _work_session_manager = WorkSessionManager(WorkSession)
+    _work_session_manager = None
     _leaderboard_manager = None
 
     def __init__(self, settings):
@@ -76,8 +74,13 @@ class AbstractTaskType:
         :type settings: dict
         """
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._leaderboard_manager = LeaderBoardManager(self.type_name,
-                                                       self.answer_model, User)
+
+        self._leaderboard_manager = \
+            self._leaderboard_manager or LeaderBoardManager(self.type_name,
+                                                            self.answer_model,
+                                                            User)
+        self._work_session_manager = \
+            self._work_session_manager or WorkSessionManager(WorkSession)
 
         assert issubclass(self.task_model, AbstractTask), \
             'You should define task_model property'
@@ -195,7 +198,7 @@ class AbstractTaskType:
         Finds given user a new task and starts new WorkSession
 
         :param user: an instance of User model
-        :type user: models.User
+        :type user: vulyk.models.user.User
 
         :returns: Prepared dictionary of model, or empty dictionary
         :rtype: dict

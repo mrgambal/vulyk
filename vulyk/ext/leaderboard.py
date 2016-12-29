@@ -9,6 +9,14 @@ __all__ = [
 
 class LeaderBoardManager:
     def __init__(self, task_type_name, answer_model, user_model):
+        """
+        :param task_type_name: Current task type name
+        :type task_type_name: str
+        :param answer_model: Current answer model
+        :type answer_model: vulyk.models.tasks.AbstractAnswer
+        :param user_model: Active user model
+        :type user_model: vulyk.models.user.User
+        """
         self._task_type_name = task_type_name
         self._answer_model = answer_model
         self._user_model = user_model
