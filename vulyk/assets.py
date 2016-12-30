@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import os.path
 
-from flask.ext.assets import Environment, Bundle
-from flask.ext.collect import Collect
+from flask_assets import Environment, Bundle
+from flask_collect import Collect
 
 __all__ = [
     'init'

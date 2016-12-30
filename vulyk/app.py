@@ -4,7 +4,6 @@
 import ujson as json
 
 import flask
-from flask import (Flask, Response)
 import flask_login as login
 from flask_mongoengine import MongoEngine
 
@@ -13,7 +12,7 @@ from vulyk.models.exc import TaskNotFoundError
 from vulyk.utils import resolve_task_type, HTTPStatus, get_template_path
 
 # region Init
-app = Flask(__name__)
+app = flask.Flask(__name__)
 app.config.from_object('vulyk.settings')
 app.config.from_object('local_settings')
 db = MongoEngine(app)
@@ -48,7 +47,7 @@ def _json_response(result, template='', errors=None, status=HTTPStatus.OK):
         'template': template,
         'errors': errors})
 
-    return Response(
+    return flask.Response(
         data, status, mimetype='application/json',
         headers=[
             ('Cache-Control', 'no-cache, no-store, must-revalidate'),

@@ -2,20 +2,17 @@
 # -*- coding: utf-8 -*-
 
 """
-test_models
+test_user_model
 """
-from datetime import datetime
 import unittest
 
 from unittest.mock import patch
 
-from vulyk.models.tasks import Batch
 from vulyk.models.user import User, Group
 
 from .base import (
-    _collection,
     BaseTest,
-    mocked_get_connection
+    DBTestHelpers
 )
 from .fixtures import FakeType
 
@@ -23,14 +20,14 @@ from .fixtures import FakeType
 class TestUser(BaseTest):
     TASK_TYPE = 'test'
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def setUp(self):
         super().setUp()
 
         Group.objects.create(
             description='test', id='default', allowed_types=[self.TASK_TYPE])
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_add_default_group(self):
         User(username='1', email='1@email.com', admin=True).save()
         User(username='2', email='2@email.com', admin=False).save()
@@ -55,7 +52,7 @@ class TestUser(BaseTest):
         self.assertTrue(admin.is_admin(), 'Admin is shown as regular user')
         self.assertFalse(regular.is_admin(), 'Regular user is shown as admin')
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_is_eligible_for(self):
         another_task_type = 'task_type_2'
         u1 = User(username='1', email='1@email.com', admin=True).save()
@@ -76,66 +73,56 @@ class TestUser(BaseTest):
             }
         )
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_get_stats(self):
-        """
-        Really slow garbage. Uses PyExecJs to emulate Map-Reduce in MongoDB.
-        """
         task_type = FakeType({})
-        users = [
-            User(username='user%s' % i, email='user%s@email.com' % i).save()
-            for i in range(2)
-        ]
+        user = User(username='mutumba', email='mutumba@email.com').save()
+        leaders = [(user.id, 4), ("user0", 2)]
+        task_type.get_leaders = lambda: leaders
 
-        batch = Batch(id='default',
-                      task_type=task_type.type_name,
-                      tasks_count=4,
-                      tasks_processed=2).save()
-        tasks = [
-            task_type.task_model(
-                id='task%s' % i,
-                task_type=task_type.type_name,
-                batch=batch,
-                users_count=2,
-                users_processed=users[i % 2:],
-                task_data={'data': 'data'}
-            ).save() for i in range(4)
-        ]
-
-        for i in range(len(tasks)):
-            for u in users[i % 2:]:
-                task_type.answer_model(
-                    task=tasks[i],
-                    created_by=u,
-                    created_at=datetime.now(),
-                    task_type=task_type.type_name,
-                    result={}
-                ).save()
-
-        self.assertDictEqual(
-            users[0].get_stats(task_type),
-            {
-                'total': 2,
-                'position': 2
-            }
-        )
-        self.assertDictEqual(
-            users[1].get_stats(task_type),
+        self.assertEqual(
+            user.get_stats(task_type),
             {
                 'total': 4,
                 'position': 1
             }
         )
 
-    @patch('mongoengine.connection.get_connection', mocked_get_connection)
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_get_stats_share_place_if_same_count(self):
+        task_type = FakeType({})
+        user = User(username='mutumba', email='mutumba@email.com').save()
+        leaders = [("user0", 12), (user.id, 4), ("user1", 4)]
+        task_type.get_leaders = lambda: leaders
+
+        self.assertEqual(
+            user.get_stats(task_type),
+            {
+                'total': 4,
+                'position': 2
+            }
+        )
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_get_stats_others_share_place_if_same_count(self):
+        task_type = FakeType({})
+        user = User(username='mutumba', email='mutumba@email.com').save()
+        leaders = [("user0", 12), ("user1", 4), ("user2", 4), (user.id, 3)]
+        task_type.get_leaders = lambda: leaders
+
+        self.assertEqual(
+            user.get_stats(task_type),
+            {
+                'total': 3,
+                'position': 3
+            }
+        )
+
     def tearDown(self):
         super().tearDown()
 
-        _collection.user.drop()
-        _collection.groups.drop()
-        _collection.reports.drop()
-        _collection.tasks.drop()
-        _collection.batches.drop()
+        DBTestHelpers.collections.user.drop()
+        DBTestHelpers.collections.groups.drop()
 
 
 if __name__ == '__main__':

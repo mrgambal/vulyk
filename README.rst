@@ -2,7 +2,7 @@ Crowdsourcing platform for various tasks
 ========================================
 
 .. image:: https://badge.fury.io/py/vulyk.png
-    :target: http://badge.fury.io/py/vulyk
+        :target: http://badge.fury.io/py/vulyk
 
 .. image:: https://travis-ci.org/mrgambal/vulyk.png?branch=master
         :target: https://travis-ci.org/mrgambal/vulyk
@@ -10,6 +10,9 @@ Crowdsourcing platform for various tasks
 .. image:: https://readthedocs.org/projects/vulyk/badge/?version=latest
         :target: https://vulyk.readthedocs.org/en/latest/
 
+.. image:: https://codeclimate.com/github/mrgambal/vulyk/badges/gpa.svg
+        :target: https://codeclimate.com/github/mrgambal/vulyk
+        :alt: Code Climate
 
 License
 -------
@@ -20,8 +23,8 @@ License
 What is it?
 -----------
 
-We have a lot of tasks that can only be done manually. 
-Those includes digitizing of scanned assets declarations, 
+We have a lot of tasks that can only be done manually.
+Those includes digitizing of scanned assets declarations,
 manual verification of results produced by different NLP software, stalking and so on.
 So, we decided to generalize those tasks a bit and build a platform with basic support for crowdsourcing using
 knowledge and chunks of code from the `unshred.it <http://unshred.it>`__
@@ -56,7 +59,7 @@ But, God, how?
 --------------
 
 We provide some kind of playground where any interested (or
-procrastination-addicted) person could spent some time doing some manual tasks. 
+procrastination-addicted) person could spent some time doing some manual tasks.
 Site will show you, mr. Solver, some tasks of a given type, which you'll need to solve
 
 In the best case we'll add some gamification (badges, achievement... you
@@ -134,7 +137,7 @@ Then you should be able to init the app using CLI, load some tasks and run it lo
 
     cp `which manage.py` .  # FUgly, I know!
     python ./manage.py  init declaration_task tagging_task
-    
+
 That'll create default user group and give users of this group an access to two task types that we've installed before.
 
 Then:
@@ -157,7 +160,7 @@ And finally you should create run.py and put some stuff into it:
 .. code:: bash
 
     python run.py
-    
+
 Then open http://localhost:5000 and you are set!
 
 Easy, isn't it?! Well, we'll smoothen some rough edges soon, we promise.

@@ -4,27 +4,26 @@
 """
 test_cli
 """
-
 import unittest
 import mongomock
 
 from mongoengine.connection import register_connection
 
 
-_collection = mongomock.MongoClient().db.collection
-
-
-def mocked_get_connection(alias):
-    return {alias: _collection}
-
-
 class BaseTest(unittest.TestCase):
-
     def setUp(self):
         register_connection('default', name='default')
 
     def tearDown(self):
         pass
+
+
+class DBTestHelpers:
+    collections = mongomock.MongoClient().db.collection
+
+    @staticmethod
+    def connection(alias):
+        return {alias: DBTestHelpers.collections}
 
 
 if __name__ == '__main__':

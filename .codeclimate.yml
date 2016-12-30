@@ -1,0 +1,33 @@
+---
+engines:
+  csslint:
+    enabled: true
+  duplication:
+    enabled: true
+    exclude_fingerprints:
+        # similar chunks of code in CLI params
+      - 7f318aec1cc96f61f9d1d3225b2bf781
+      - 0d0ddb909051a440e0ed339a503bc9bb
+      - ed0eea60571cf068acec565d2058b303
+      - 2cecc1dc870e37fd28afbd49477dd711
+      - f38dddedbf09cd6b51f94f7a1e603bf1
+    config:
+      languages:
+        - javascript
+        - python
+  eslint:
+    enabled: true
+  fixme:
+    enabled: true
+  pep8:
+    enabled: true
+  radon:
+    enabled: true
+ratings:
+  paths:
+    - "**.css"
+    - "**.js"
+    - "**.py"
+exclude_paths:
+  - tests/
+  - vulyk/static/vendor/

@@ -76,7 +76,7 @@ class AbstractTask(Document):
         """
         Converts the model-instance into a safe and lightweight dictionary.
 
-        :rtype : dict
+        :rtype: dict
         """
         return {
             'id': self.id,
@@ -142,7 +142,7 @@ class AbstractAnswer(Document):
         Converts the model-instance into a safe that will include also task
         and user.
 
-        :rtype : dict
+        :rtype: dict
         """
         return {
             'task': self.task.as_dict(),
