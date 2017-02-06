@@ -77,7 +77,7 @@ class TestUser(BaseTest):
     def test_get_stats(self):
         task_type = FakeType({})
         user = User(username='mutumba', email='mutumba@email.com').save()
-        leaders = [(user.id, 4), ("user0", 2)]
+        leaders = [(user.id, 4), ('user0', 2)]
         task_type.get_leaders = lambda: leaders
 
         self.assertEqual(
@@ -92,7 +92,7 @@ class TestUser(BaseTest):
     def test_get_stats_share_place_if_same_count(self):
         task_type = FakeType({})
         user = User(username='mutumba', email='mutumba@email.com').save()
-        leaders = [("user0", 12), (user.id, 4), ("user1", 4)]
+        leaders = [('user0', 12), (user.id, 4), ('user1', 4)]
         task_type.get_leaders = lambda: leaders
 
         self.assertEqual(
@@ -107,7 +107,7 @@ class TestUser(BaseTest):
     def test_get_stats_others_share_place_if_same_count(self):
         task_type = FakeType({})
         user = User(username='mutumba', email='mutumba@email.com').save()
-        leaders = [("user0", 12), ("user1", 4), ("user2", 4), (user.id, 3)]
+        leaders = [('user0', 12), ('user1', 4), ('user2', 4), (user.id, 3)]
         task_type.get_leaders = lambda: leaders
 
         self.assertEqual(

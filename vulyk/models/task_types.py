@@ -120,7 +120,7 @@ class AbstractTaskType:
         io is left out of scope here.
 
         :param tasks: An iterable over dicts
-        :type tasks: list[dict]
+        :type tasks: tuple[dict]
         :param batch: Batch ID (optional)
         :type batch: str
 

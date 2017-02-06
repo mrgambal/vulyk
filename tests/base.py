@@ -7,7 +7,7 @@ test_cli
 import unittest
 import mongomock
 
-from mongoengine.connection import register_connection
+from mongoengine.connection import register_connection, disconnect
 
 
 class BaseTest(unittest.TestCase):
@@ -15,7 +15,7 @@ class BaseTest(unittest.TestCase):
         register_connection('default', name='default')
 
     def tearDown(self):
-        pass
+        disconnect('default')
 
 
 class DBTestHelpers:

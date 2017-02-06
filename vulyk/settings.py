@@ -83,13 +83,13 @@ SITE_MOTTO = 'Vulyk: crowdsourcing platform'
 
 DEFAULT_BATCH = 'default'
 
-WARM_WELCOME = u"""
+WARM_WELCOME = """
 <h3>Вас вітає Канцелярська сотня.</h3>
 """
 
 SITE_LOGO = ENV('SITE_LOGO', '/static/images/logo.png')
-SITE_TITLE = ENV('SITE_TITLE', u'Канцелярская сотня представляет!')
+SITE_TITLE = ENV('SITE_TITLE', 'Канцелярская сотня представляет!')
 
 TEMPLATE_BASE_FOLDERS = []
 
-THANKS_TASK_MESSAGE = u'Спасибо за помощь, сознательный гражданин!'
+THANKS_TASK_MESSAGE = 'Спасибо за помощь, сознательный гражданин!'

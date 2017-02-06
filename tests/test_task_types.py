@@ -4,9 +4,11 @@
 """
 test_task_types
 """
+from bson import ObjectId
 import unittest
 from unittest.mock import patch, Mock
 
+from vulyk.ext.leaderboard import LeaderBoardManager
 from vulyk.models.exc import TaskImportError, TaskNotFoundError
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractTask, AbstractAnswer
@@ -105,6 +107,31 @@ class TestTaskTypes(BaseTest):
     def test_on_done_raises_not_found(self):
         self.assertRaises(TaskNotFoundError,
                           lambda: FakeType({}).on_task_done({}, 'fake_id', {}))
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_proxy_leaderboard_get_leaders(self):
+        fake_type = FakeType({})
+        fake_manager = Mock(spec=LeaderBoardManager)
+        answer = [(ObjectId(), 15), (ObjectId, 2)]
+        fake_manager.get_leaders = lambda: answer
+        fake_type._leaderboard_manager = fake_manager
+
+        self.assertEqual(fake_type.get_leaders(), answer,
+                         'AbstractTaskType should not change leaders list')
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_proxy_leaderboard_get_leaderboard(self):
+        fake_type = FakeType({})
+        fake_manager = Mock(spec=LeaderBoardManager)
+        answer = [
+            {'username': 'user1', 'freq': 12},
+            {'username': 'user2', 'freq': 10}
+        ]
+        fake_manager.get_leaderboard = lambda limit: answer
+        fake_type._leaderboard_manager = fake_manager
+
+        self.assertEqual(fake_type.get_leaderboard(), answer,
+                         'AbstractTaskType should not change leaderboard')
 
 
 if __name__ == '__main__':
