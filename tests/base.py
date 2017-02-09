@@ -4,8 +4,8 @@
 """
 test_cli
 """
-import unittest
 import mongomock
+import unittest
 
 from mongoengine.connection import register_connection, disconnect
 
@@ -22,8 +22,25 @@ class DBTestHelpers:
     collections = mongomock.MongoClient().db.collection
 
     @staticmethod
-    def connection(alias):
-        return {alias: DBTestHelpers.collections}
+    def dereference(this, value):
+        """
+        Hack for mongomock collection that cannot deal with ReferenceField
+
+        :type this: mongomock.collection.Collection
+        :type value: bson.DBRef
+
+        :rtype: mongoengine.document.Document | None
+        """
+        return this[value.collection].find_one(value.id)
+
+    @classmethod
+    def connection(cls, alias):
+        """
+        :type alias: str
+        """
+        mongomock.collection.Collection.dereference = cls.dereference
+
+        return {alias: cls.collections}
 
 
 if __name__ == '__main__':

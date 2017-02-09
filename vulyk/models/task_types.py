@@ -157,7 +157,7 @@ class AbstractTaskType:
         :type qs: QuerySet
 
         :returns: Generator of lists of dicts with results
-        :rtype: __generator[list[dict]]
+        :rtype: __generator[dict]
         """
         if qs is None:
             query = Q()
@@ -171,8 +171,8 @@ class AbstractTaskType:
             qs = self.task_model.objects(query)
 
         for task in qs:
-            yield [answer.as_dict()
-                   for answer in self.answer_model.objects(task=task)]
+            yield from map(lambda a: a.as_dict(),
+                           self.answer_model.objects(task=task))
 
     def get_leaders(self):
         """Return sorted list of tuples (user_id, tasks_done)

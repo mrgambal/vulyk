@@ -4,6 +4,8 @@
 """
 test_task_types
 """
+from datetime import datetime
+
 from bson import ObjectId
 import unittest
 from unittest.mock import patch, Mock
@@ -11,7 +13,8 @@ from unittest.mock import patch, Mock
 from vulyk.ext.leaderboard import LeaderBoardManager
 from vulyk.models.exc import TaskImportError, TaskNotFoundError
 from vulyk.models.task_types import AbstractTaskType
-from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
+from vulyk.models.user import User, Group
 
 from .base import (
     BaseTest,
@@ -21,9 +24,23 @@ from .fixtures import FakeType
 
 
 class TestTaskTypes(BaseTest):
+    TASK_TYPE = 'test'
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def setUp(self):
+        super().setUp()
+
+        Group.objects.create(
+            description='test', id='default', allowed_types=[self.TASK_TYPE])
+
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def tearDown(self):
+        super().tearDown()
+        DBTestHelpers.collections.batches.drop()
         DBTestHelpers.collections.tasks.drop()
+        DBTestHelpers.collections.reports.drop()
+        DBTestHelpers.collections.groups.drop()
+        DBTestHelpers.collections.users.drop()
 
     def test_init_task_inheritance(self):
         class NoTask(AbstractTaskType):
@@ -65,15 +82,16 @@ class TestTaskTypes(BaseTest):
 
         self.assertDictEqual(FakeType({}).to_dict(), got)
 
+    # region Import tasks
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_tasks(self):
-        tasks = [{'name': '1'}, {'name': '2'}, {'name': '3'}]
+        tasks = ({'name': '1'}, {'name': '2'}, {'name': '3'})
         repo = FakeType({})
 
         repo.import_tasks(tasks, 'default')
 
         self.assertEqual(DBTestHelpers.collections.tasks.count(), len(tasks))
-        self.assertEqual(repo.task_model.objects.count(), 3)
+        self.assertEqual(repo.task_model.objects.count(), len(tasks))
 
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_tasks_not_dict(self):
@@ -97,6 +115,183 @@ class TestTaskTypes(BaseTest):
         self.assertRaises(TaskImportError,
                           lambda: repo.import_tasks(tasks, 'default'))
         self.assertEqual(repo.task_model.objects.count(), 2)
+    # endregion Import tasks
+
+    # region Export reports
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_export_reports_normal(self):
+        reports = []
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        batch = Batch(id='default',
+                      task_type=task_type.type_name,
+                      tasks_count=2,
+                      tasks_processed=0).save()
+        tasks = [
+            task_type.task_model(
+                id='task%s' % i,
+                task_type=task_type.type_name,
+                batch=batch,
+                closed=True,
+                users_count=2,
+                users_processed=[user],
+                task_data={'data': 'data'}
+            ).save() for i in range(2)
+        ]
+        for i in range(len(tasks)):
+            report = task_type.answer_model(
+                task=tasks[i],
+                created_by=user,
+                created_at=datetime.now(),
+                task_type=task_type.type_name,
+                result={}
+            ).save()
+            reports.append(report.as_dict())
+
+        self.assertCountEqual(task_type.export_reports(batch=batch),
+                              reports)
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_export_reports_batch(self):
+        reports = []
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        batches = [
+            Batch(id='batch%i' % i,
+                  task_type=task_type.type_name,
+                  tasks_count=1,
+                  tasks_processed=0).save()
+            for i in range(2)
+        ]
+        tasks = [
+            task_type.task_model(
+                id='task%s' % i,
+                task_type=task_type.type_name,
+                batch=batches[i],
+                closed=True,
+                users_count=2,
+                users_processed=[user],
+                task_data={'data': 'data'}
+            ).save() for i in range(2)
+        ]
+        for i in range(len(tasks)):
+            report = task_type.answer_model(
+                task=tasks[i],
+                created_by=user,
+                created_at=datetime.now(),
+                task_type=task_type.type_name,
+                result={}
+            ).save()
+            reports.append(report.as_dict())
+
+        self.assertCountEqual(task_type.export_reports(batch=batches[1]),
+                              reports[1:])
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_export_reports_batch_with_no_closed(self):
+        """
+        The case when we export the batch where no task is closed.
+        Yield must be empty.
+        """
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        batches = [
+            Batch(id='batch%i' % i,
+                  task_type=task_type.type_name,
+                  tasks_count=1,
+                  tasks_processed=0).save()
+            for i in range(2)
+        ]
+        tasks = [
+            task_type.task_model(
+                id='task%s' % i,
+                task_type=task_type.type_name,
+                batch=batches[i],
+                closed=not bool(i),
+                users_count=2,
+                users_processed=[user],
+                task_data={'data': 'data'}
+            ).save() for i in range(2)
+        ]
+        for i in range(len(tasks)):
+            task_type.answer_model(
+                task=tasks[i],
+                created_by=user,
+                created_at=datetime.now(),
+                task_type=task_type.type_name,
+                result={}
+            ).save()
+
+        self.assertCountEqual(task_type.export_reports(batch=batches[1]), [])
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_export_reports_one_is_closed(self):
+        reports = []
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        batch = Batch(id='default',
+                      task_type=task_type.type_name,
+                      tasks_count=2,
+                      tasks_processed=0).save()
+        tasks = [
+            task_type.task_model(
+                id='task%s' % i,
+                task_type=task_type.type_name,
+                batch=batch,
+                closed=bool(i),
+                users_count=2,
+                users_processed=[user],
+                task_data={'data': 'data'}
+            ).save() for i in range(2)
+        ]
+        for i in range(len(tasks)):
+            report = task_type.answer_model(
+                task=tasks[i],
+                created_by=user,
+                created_at=datetime.now(),
+                task_type=task_type.type_name,
+                result={}
+            ).save()
+            reports.append(report.as_dict())
+
+        self.assertCountEqual(task_type.export_reports(batch=batch),
+                              reports[1:])
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_export_all_reports(self):
+        reports = []
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        batch = Batch(id='default',
+                      task_type=task_type.type_name,
+                      tasks_count=2,
+                      tasks_processed=0).save()
+        tasks = [
+            task_type.task_model(
+                id='task%s' % i,
+                task_type=task_type.type_name,
+                batch=batch,
+                closed=bool(i),
+                users_count=2,
+                users_processed=[user],
+                task_data={'data': 'data'}
+            ).save() for i in range(2)
+        ]
+        for i in range(len(tasks)):
+            report = task_type.answer_model(
+                task=tasks[i],
+                created_by=user,
+                created_at=datetime.now(),
+                task_type=task_type.type_name,
+                result={}
+            ).save()
+            reports.append(report.as_dict())
+
+        self.assertCountEqual(
+            task_type.export_reports(batch=batch, closed=False),
+            reports)
+
+    # endregion Export reports
 
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_skip_raises_not_found(self):
