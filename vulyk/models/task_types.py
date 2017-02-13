@@ -225,7 +225,7 @@ class AbstractTaskType:
         """
         rs = None
         base_q = Q(task_type=self.type_name) \
-            & Q(users_processed__ne=user.id) \
+            & Q(users_processed__nin=[user]) \
             & Q(closed__ne=True)
 
         for batch in Batch.objects.order_by('id'):
@@ -233,7 +233,7 @@ class AbstractTaskType:
                 continue
 
             rs = self.task_model.objects(base_q
-                                         & Q(users_skipped__ne=user.id)
+                                         & Q(users_skipped__nin=[user])
                                          & Q(batch=batch.id))
 
             if rs.count() == 0:
@@ -243,9 +243,9 @@ class AbstractTaskType:
             if rs.count() > 0:
                 break
         else:
-            # Now searching in default batch
+            # Now searching w/o batch restriction
             rs = self.task_model.objects(base_q
-                                         & Q(users_skipped__ne=user.id))
+                                         & Q(users_skipped__nin=[user]))
 
             if rs.count() == 0:
                 del rs

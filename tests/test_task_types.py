@@ -24,7 +24,7 @@ from .fixtures import FakeType
 
 
 class TestTaskTypes(BaseTest):
-    TASK_TYPE = 'test'
+    TASK_TYPE = FakeType.type_name
 
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def setUp(self):
@@ -35,12 +35,13 @@ class TestTaskTypes(BaseTest):
 
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def tearDown(self):
-        super().tearDown()
         DBTestHelpers.collections.batches.drop()
         DBTestHelpers.collections.tasks.drop()
         DBTestHelpers.collections.reports.drop()
         DBTestHelpers.collections.groups.drop()
-        DBTestHelpers.collections.users.drop()
+        DBTestHelpers.collections.user.drop()
+
+        super().tearDown()
 
     def test_init_task_inheritance(self):
         class NoTask(AbstractTaskType):
@@ -292,6 +293,178 @@ class TestTaskTypes(BaseTest):
             reports)
 
     # endregion Export reports
+
+    # region Next task
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_batches_are_complete(self):
+        task_type = FakeType({})
+        Batch(id='default',
+              task_type=task_type.type_name,
+              tasks_count=2,
+              tasks_processed=2).save()
+        user = User(username='user0', email='user0@email.com').save()
+        [
+            task_type.task_model(
+                id='task%s' % i,
+                task_type=task_type.type_name,
+                batch='default',
+                closed=True,
+                users_count=0,
+                users_processed=[],
+                task_data={'data': 'data'}
+            ).save() for i in range(2)
+        ]
+
+        self.assertEqual(task_type.get_next(user), {},
+                         'Should return an empty dict if all is done')
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_not_return_processed(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        [
+            task_type.task_model(
+                id='task%s' % i,
+                task_type=task_type.type_name,
+                batch='default',
+                closed=False,
+                users_count=1,
+                users_processed=[user],
+                task_data={'data': 'data'}
+            ).save() for i in range(2)
+        ]
+
+        self.assertEqual(task_type.get_next(user), {},
+                         'Should return an empty dict if user passed all tasks')
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_return_proper_type(self):
+        class NewFakeModel(AbstractTask):
+            pass
+
+        class NewFakeAnswer(AbstractAnswer):
+            pass
+
+        class NewFakeType(AbstractTaskType):
+            task_model = NewFakeModel
+            answer_model = NewFakeAnswer
+            type_name = 'NewFakeTaskType'
+            template = 'tmpl.html'
+
+            _name = 'New Fake name'
+            _description = 'New Fake description'
+
+        old_task_type = FakeType({})
+        task_type = NewFakeType({})
+
+        group = Group(
+            description='test',
+            id='test',
+            allowed_types=[self.TASK_TYPE, task_type.type_name]).save()
+        user = User(
+            username='user0',
+            email='user0@email.com',
+            groups=[group]).save()
+        task_type.task_model(
+            id='task1',
+            task_type=task_type.type_name,
+            batch='default',
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            task_data={'data': 'data'}
+        ).save()
+
+        self.assertEqual(old_task_type.get_next(user), {},
+                         'Should return no task of another type')
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_not_show_skipped_until_nothing_else_left(self):
+        task_type = FakeType({})
+        batch = Batch(id='default',
+                      task_type=task_type.type_name,
+                      tasks_count=2,
+                      tasks_processed=0).save()
+        user = User(username='user0', email='user0@email.com').save()
+        tasks = [
+            task_type.task_model(
+                id='task%s' % i,
+                task_type=task_type.type_name,
+                batch=batch,
+                closed=False,
+                users_count=0,
+                users_processed=[],
+                users_skipped=[user][:i % 2],
+                task_data={'data': 'data'}
+            ).save() for i in range(2)
+        ]
+        # that's how we deal with randomized yield
+        for _ in range(5):
+            self.assertEqual(task_type.get_next(user), tasks[0].as_dict(),
+                             'Should return only task that isn\'t skipped')
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_return_skipped_if_none_else_left(self):
+        task_type = FakeType({})
+        batch = Batch(id='default',
+                      task_type=task_type.type_name,
+                      tasks_count=1,
+                      tasks_processed=0).save()
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch=batch,
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[user],
+            task_data={'data': 'data'}).save()
+
+        self.assertEqual(task_type.get_next(user), task.as_dict(),
+                         'Should return even skipped task if nothing else'
+                         ' is available')
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_fallback_to_any_batch(self):
+        task_type = FakeType({})
+        batch = Batch(id='default',
+                      task_type=task_type.type_name,
+                      tasks_count=1,
+                      tasks_processed=1).save()
+        user = User(username='user0', email='user0@email.com').save()
+        tasks = [task_type.task_model(
+            id='task%s' % i,
+            task_type=task_type.type_name,
+            batch=[batch, 'default'][i],
+            closed=not bool(i),
+            users_count=1 - i,
+            users_processed=[user][:1 - i],
+            users_skipped=[],
+            task_data={'data': 'data'}).save() for i in range(2)]
+
+        for _ in range(5):
+            self.assertEqual(task_type.get_next(user), tasks[1].as_dict(),
+                             'Should return only task that isn\'t skipped')
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_return_skipped_if_none_else_left_no_batch(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch='any_batch',
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[user],
+            task_data={'data': 'data'}).save()
+
+        self.assertEqual(task_type.get_next(user), task.as_dict(),
+                         'Should return even skipped task if nothing else'
+                         ' is available')
+    # endregion Next task
 
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_skip_raises_not_found(self):
