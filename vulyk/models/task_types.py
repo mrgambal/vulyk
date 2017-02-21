@@ -17,7 +17,7 @@ from mongoengine.errors import (
 )
 
 from vulyk.ext.leaderboard import LeaderBoardManager
-from vulyk.ext.worksession import WorkSessionManager
+from vulyk.ext.worksession import WorkSessionManager, WorkSessionLookUpError
 from vulyk.models.exc import (
     TaskImportError,
     TaskSaveError,
@@ -279,6 +279,7 @@ class AbstractTaskType:
         try:
             task = self.task_model.objects.get(
                 id=task_id, task_type=self.type_name)
+
             task.update(add_to_set__users_skipped=user)
             self._work_session_manager.delete_work_session(task, user.id)
         except self.task_model.DoesNotExist:
@@ -287,6 +288,9 @@ class AbstractTaskType:
             raise TaskSkipError(err)
         except OperationError as err:
             raise TaskSkipError('Can not skip the task: {0}'.format(err))
+        except WorkSessionLookUpError:
+            # TODO: logging
+            pass
 
     def on_task_done(self, user, task_id, result):
         """

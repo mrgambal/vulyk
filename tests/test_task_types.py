@@ -43,6 +43,7 @@ class TestTaskTypes(BaseTest):
 
         super().tearDown()
 
+    # region Task type
     def test_init_task_inheritance(self):
         class NoTask(AbstractTaskType):
             task_model = Mock
@@ -82,6 +83,7 @@ class TestTaskTypes(BaseTest):
         }
 
         self.assertDictEqual(FakeType({}).to_dict(), got)
+    # endregion Task type
 
     # region Import tasks
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
@@ -466,10 +468,53 @@ class TestTaskTypes(BaseTest):
                          ' is available')
     # endregion Next task
 
+    # region Skip task
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_skip_task_normal(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch='any_batch',
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+
+        task_type.skip_task(task.id, user)
+
+        task = task_type.task_model.objects.get(id=task.id)
+
+        self.assertEqual(task.users_skipped, [user])
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_skip_task_twice(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch='any_batch',
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+
+        task_type.skip_task(task.id, user)
+        task_type.skip_task(task.id, user)
+
+        task = task_type.task_model.objects.get(id=task.id)
+
+        self.assertEqual(task.users_skipped, [user])
+
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_skip_raises_not_found(self):
         self.assertRaises(TaskNotFoundError,
                           lambda: FakeType({}).skip_task('fake_id', {}))
+    # endregion Skip task
 
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_on_done_raises_not_found(self):
