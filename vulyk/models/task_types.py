@@ -294,14 +294,13 @@ class AbstractTaskType:
 
     def on_task_done(self, user, task_id, result):
         """
-        Saves user's answers for a given task
-        Assumes that user is eligible for this kind of tasks
-        Covers both, add and update (when user is editing his results) cases
+        Saves user's answers for a given task.
+        Assumes that user is eligible for this kind of tasks.
 
         :param task_id: Given task ID
-        :type task_id: basestring
+        :type task_id: str
         :param user: an instance of User model who provided an answer
-        :type user: models.User
+        :type user: vulyk.models.user.User
         :param result: Task solving result
         :type result: dict
 
@@ -309,29 +308,24 @@ class AbstractTaskType:
         :raises: TaskValidationError - in case of validation problems
         """
 
-        # create new answer or modify existing one
         answer = None
         try:
             task = self.task_model.objects.get(
                 id=task_id,
                 task_type=self.type_name)
         except self.task_model.DoesNotExist:
-            raise TaskNotFoundError()
+            raise TaskNotFoundError('Task with ID {id} not found while '
+                                    'trying to save an answer from {user!r}'
+                                    .format(id=task_id, user=user))
 
         try:
-            answer = self.answer_model.objects \
-                .get(task=task,
-                     created_by=user.id,
-                     task_type=self.type_name)
-        except self.answer_model.DoesNotExist:
             answer = self.answer_model.objects.create(
                 task=task,
-                created_by=user.id,
+                created_by=user,
                 created_at=datetime.now(),
-                task_type=self.type_name)
+                task_type=self.type_name,
+                result=result)
 
-        try:
-            answer.update(set__result=result)
             # update task
             closed = self._update_task_on_answer(task, answer, user)
             # update user
@@ -342,6 +336,10 @@ class AbstractTaskType:
             if closed and task.batch is not None:
                 batch_id = task.batch.id
                 Batch.objects(id=batch_id).update_one(inc__tasks_processed=1)
+        except NotUniqueError:
+            raise TaskValidationError('Attempt to save over the existing '
+                                      'answer for task {id} by user {user!r}'
+                                      .format(id=task_id, user=user))
         except ValidationError as err:
             raise TaskValidationError(err, get_tb())
         except (OperationError, LookUpError, InvalidQueryError) as err:

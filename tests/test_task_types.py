@@ -11,7 +11,8 @@ import unittest
 from unittest.mock import patch, Mock
 
 from vulyk.ext.leaderboard import LeaderBoardManager
-from vulyk.models.exc import TaskImportError, TaskNotFoundError
+from vulyk.models.exc import (
+    TaskImportError, TaskNotFoundError, TaskValidationError)
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
 from vulyk.models.user import User, Group
@@ -516,16 +517,123 @@ class TestTaskTypes(BaseTest):
                           lambda: FakeType({}).skip_task('fake_id', {}))
     # endregion Skip task
 
+    # region On task done
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_on_done_ok(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch=None,
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+        task_type._work_session_manager.start_work_session(task, user)
+
+        task_type.on_task_done(user, task.id, {'result': 'result'})
+
+        task = task_type.task_model.objects.get(id=task.id)
+        ws = task_type._work_session_manager.work_session.objects.get(
+            user=user,
+            task=task)
+        answer = task_type.answer_model.objects.get(created_by=user, task=task)
+        user = User.objects.get(id=user.id)
+
+        self.assertEqual(task.users_count, 1)
+        self.assertEqual(task.users_processed, [user])
+        self.assertEqual(ws.answer, answer)
+        self.assertEqual(ws.answer, answer)
+        self.assertEqual(user.processed, 1)
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_on_done_twice_fires_exception(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch=None,
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+        task_type._work_session_manager.start_work_session(task, user)
+
+        task_type.on_task_done(user, task.id, {'result': 'result'})
+
+        self.assertRaises(TaskValidationError,
+                          lambda: task_type.on_task_done(user,
+                                                         task.id,
+                                                         {'result': 'result2'})
+                          )
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_on_done_close_task(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch=None,
+            closed=False,
+            users_count=2,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+        task_type._work_session_manager.start_work_session(task, user)
+
+        task_type.on_task_done(user, task.id, {'result': 'result'})
+
+        task = task_type.task_model.objects.get(id=task.id)
+
+        self.assertTrue(task.closed)
+
+    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def test_on_done_alter_batch(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        batch = Batch(
+            id='default',
+            task_type=task_type.type_name,
+            tasks_count=1,
+            tasks_processed=0).save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch=batch,
+            closed=False,
+            users_count=2,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+        task_type._work_session_manager.start_work_session(task, user)
+
+        task_type.on_task_done(user, task.id, {'result': 'result'})
+
+        batch = Batch.objects.get(id=batch.id)
+
+        self.assertEqual(batch.tasks_processed, 1)
+
+    # endregion On task done
+
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_on_done_raises_not_found(self):
         self.assertRaises(TaskNotFoundError,
-                          lambda: FakeType({}).on_task_done({}, 'fake_id', {}))
+                          lambda: FakeType({}).on_task_done(
+                              User(username='user0', email='user0@email.com'),
+                              'fake_id',
+                              {})
+                          )
 
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_proxy_leaderboard_get_leaders(self):
         fake_type = FakeType({})
         fake_manager = Mock(spec=LeaderBoardManager)
-        answer = [(ObjectId(), 15), (ObjectId, 2)]
+        answer = [(ObjectId(), 15), (ObjectId(), 2)]
         fake_manager.get_leaders = lambda: answer
         fake_type._leaderboard_manager = fake_manager
 

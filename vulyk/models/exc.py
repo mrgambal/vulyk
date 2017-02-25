@@ -35,9 +35,9 @@ class TaskPermissionError(Exception):
     pass
 
 
-class WorkSessionLookUpError(Exception):
+class TaskNotFoundError(Exception):
     pass
 
 
-class TaskNotFoundError(Exception):
+class WorkSessionLookUpError(Exception):
     pass
