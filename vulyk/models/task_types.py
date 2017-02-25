@@ -17,7 +17,7 @@ from mongoengine.errors import (
 )
 
 from vulyk.ext.leaderboard import LeaderBoardManager
-from vulyk.ext.worksession import WorkSessionManager
+from vulyk.ext.worksession import WorkSessionManager, WorkSessionLookUpError
 from vulyk.models.exc import (
     TaskImportError,
     TaskSaveError,
@@ -120,7 +120,7 @@ class AbstractTaskType:
         io is left out of scope here.
 
         :param tasks: An iterable over dicts
-        :type tasks: list[dict]
+        :type tasks: tuple[dict]
         :param batch: Batch ID (optional)
         :type batch: str
 
@@ -157,7 +157,7 @@ class AbstractTaskType:
         :type qs: QuerySet
 
         :returns: Generator of lists of dicts with results
-        :rtype: __generator[list[dict]]
+        :rtype: __generator[dict]
         """
         if qs is None:
             query = Q()
@@ -171,8 +171,8 @@ class AbstractTaskType:
             qs = self.task_model.objects(query)
 
         for task in qs:
-            yield [answer.as_dict()
-                   for answer in self.answer_model.objects(task=task)]
+            yield from map(lambda a: a.as_dict(),
+                           self.answer_model.objects(task=task))
 
     def get_leaders(self):
         """Return sorted list of tuples (user_id, tasks_done)
@@ -225,7 +225,7 @@ class AbstractTaskType:
         """
         rs = None
         base_q = Q(task_type=self.type_name) \
-            & Q(users_processed__ne=user.id) \
+            & Q(users_processed__nin=[user]) \
             & Q(closed__ne=True)
 
         for batch in Batch.objects.order_by('id'):
@@ -233,7 +233,7 @@ class AbstractTaskType:
                 continue
 
             rs = self.task_model.objects(base_q
-                                         & Q(users_skipped__ne=user.id)
+                                         & Q(users_skipped__nin=[user])
                                          & Q(batch=batch.id))
 
             if rs.count() == 0:
@@ -243,9 +243,9 @@ class AbstractTaskType:
             if rs.count() > 0:
                 break
         else:
-            # Now searching in default batch
+            # Now searching w/o batch restriction
             rs = self.task_model.objects(base_q
-                                         & Q(users_skipped__ne=user.id))
+                                         & Q(users_skipped__nin=[user]))
 
             if rs.count() == 0:
                 del rs
@@ -279,6 +279,7 @@ class AbstractTaskType:
         try:
             task = self.task_model.objects.get(
                 id=task_id, task_type=self.type_name)
+
             task.update(add_to_set__users_skipped=user)
             self._work_session_manager.delete_work_session(task, user.id)
         except self.task_model.DoesNotExist:
@@ -287,17 +288,19 @@ class AbstractTaskType:
             raise TaskSkipError(err)
         except OperationError as err:
             raise TaskSkipError('Can not skip the task: {0}'.format(err))
+        except WorkSessionLookUpError:
+            # TODO: logging
+            pass
 
     def on_task_done(self, user, task_id, result):
         """
-        Saves user's answers for a given task
-        Assumes that user is eligible for this kind of tasks
-        Covers both, add and update (when user is editing his results) cases
+        Saves user's answers for a given task.
+        Assumes that user is eligible for this kind of tasks.
 
         :param task_id: Given task ID
-        :type task_id: basestring
+        :type task_id: str
         :param user: an instance of User model who provided an answer
-        :type user: models.User
+        :type user: vulyk.models.user.User
         :param result: Task solving result
         :type result: dict
 
@@ -305,29 +308,24 @@ class AbstractTaskType:
         :raises: TaskValidationError - in case of validation problems
         """
 
-        # create new answer or modify existing one
         answer = None
         try:
             task = self.task_model.objects.get(
                 id=task_id,
                 task_type=self.type_name)
         except self.task_model.DoesNotExist:
-            raise TaskNotFoundError()
+            raise TaskNotFoundError('Task with ID {id} not found while '
+                                    'trying to save an answer from {user!r}'
+                                    .format(id=task_id, user=user))
 
         try:
-            answer = self.answer_model.objects \
-                .get(task=task,
-                     created_by=user.id,
-                     task_type=self.type_name)
-        except self.answer_model.DoesNotExist:
             answer = self.answer_model.objects.create(
                 task=task,
-                created_by=user.id,
+                created_by=user,
                 created_at=datetime.now(),
-                task_type=self.type_name)
+                task_type=self.type_name,
+                result=result)
 
-        try:
-            answer.update(set__result=result)
             # update task
             closed = self._update_task_on_answer(task, answer, user)
             # update user
@@ -338,6 +336,10 @@ class AbstractTaskType:
             if closed and task.batch is not None:
                 batch_id = task.batch.id
                 Batch.objects(id=batch_id).update_one(inc__tasks_processed=1)
+        except NotUniqueError:
+            raise TaskValidationError('Attempt to save over the existing '
+                                      'answer for task {id} by user {user!r}'
+                                      .format(id=task_id, user=user))
         except ValidationError as err:
             raise TaskValidationError(err, get_tb())
         except (OperationError, LookUpError, InvalidQueryError) as err:

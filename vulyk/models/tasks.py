@@ -113,7 +113,11 @@ class AbstractAnswer(Document):
         'indexes': [
             'task',
             'created_by',
-            'created_at'
+            'created_at',
+            {
+                'fields': ['created_by', 'task'],
+                'unique': True
+            }
         ]
     }
 

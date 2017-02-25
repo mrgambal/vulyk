@@ -25,7 +25,7 @@ class TestUserLogin(BaseTest):
     @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     @patch('flask_login.current_user', USER)
     def test_injected_in_request(self):
-        app = flask.Flask("test")
+        app = flask.Flask('test')
         app.config.from_object('vulyk.settings')
         db = mongomock.MongoClient().get_database('vulyk')
         db.Document = Document
@@ -50,7 +50,7 @@ class TestUserLogin(BaseTest):
         users.init_social_login(app, db)
 
         def fake_route():
-            return flask.render_template_string("{{user}}")
+            return flask.render_template_string('{{user}}')
 
         app.route('/test', methods=['GET'])(fake_route)
         resp = app.test_client().get('/test')
