@@ -15,7 +15,7 @@ __all__ = [
     'chunked',
     'get_tb',
     'get_template_path',
-    'resolve_task_type'
+    'resolve_task_type',
     'unique'
 ]
 
