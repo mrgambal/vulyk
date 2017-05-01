@@ -7,30 +7,33 @@ test_leaderboard
 from datetime import datetime
 import unittest
 
-from unittest.mock import patch
 
-from vulyk.models.tasks import Batch
 from vulyk.ext.leaderboard import LeaderBoardManager
+from vulyk.models.tasks import Batch, AbstractAnswer, AbstractTask
 from vulyk.models.user import User, Group
 
-from .base import (
-    BaseTest,
-    DBTestHelpers
-)
+from .base import BaseTest
 from .fixtures import FakeType
 
 
 class TestLeaderBoard(BaseTest):
     TASK_TYPE = 'test'
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def setUp(self):
         super().setUp()
 
         Group.objects.create(
             description='test', id='default', allowed_types=[self.TASK_TYPE])
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def tearDown(self):
+        User.objects.delete()
+        Group.objects.delete()
+        AbstractTask.objects.delete()
+        AbstractAnswer.objects.delete()
+        Batch.objects.delete()
+
+        super().tearDown()
+
     def test_get_leaders_sorted_yield(self):
         """
         Really slow garbage. Uses PyExecJs to emulate Map-Reduce in MongoDB.
@@ -74,7 +77,6 @@ class TestLeaderBoard(BaseTest):
             [(users[1].id, 4), (users[0].id, 2)]
         )
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_get_leaderboard_normal(self):
         users = [
             User(username='user%s' % i, email='user%s@email.com' % i).save()
@@ -96,7 +98,6 @@ class TestLeaderBoard(BaseTest):
             ]
         )
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_get_leaderboard_if_same_count(self):
         users = [
             User(username='user%s' % i, email='user%s@email.com' % i).save()
@@ -119,15 +120,6 @@ class TestLeaderBoard(BaseTest):
                 {'rank': 3, 'user': users[0], 'freq': 0}
             ]
         )
-
-    def tearDown(self):
-        super().tearDown()
-
-        DBTestHelpers.collections.user.drop()
-        DBTestHelpers.collections.groups.drop()
-        DBTestHelpers.collections.reports.drop()
-        DBTestHelpers.collections.tasks.drop()
-        DBTestHelpers.collections.batches.drop()
 
 
 if __name__ == '__main__':

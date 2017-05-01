@@ -17,30 +17,25 @@ from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
 from vulyk.models.user import User, Group
 
-from .base import (
-    BaseTest,
-    DBTestHelpers
-)
+from .base import BaseTest
 from .fixtures import FakeType
 
 
 class TestTaskTypes(BaseTest):
     TASK_TYPE = FakeType.type_name
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def setUp(self):
         super().setUp()
 
         Group.objects.create(
             description='test', id='default', allowed_types=[self.TASK_TYPE])
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def tearDown(self):
-        DBTestHelpers.collections.batches.drop()
-        DBTestHelpers.collections.tasks.drop()
-        DBTestHelpers.collections.reports.drop()
-        DBTestHelpers.collections.groups.drop()
-        DBTestHelpers.collections.user.drop()
+        User.objects.delete()
+        Group.objects.delete()
+        AbstractTask.objects.delete()
+        AbstractAnswer.objects.delete()
+        Batch.objects.delete()
 
         super().tearDown()
 
@@ -73,7 +68,6 @@ class TestTaskTypes(BaseTest):
 
         self.assertRaises(AssertionError, lambda: NoTemplateName({}))
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     @patch('mongoengine.queryset.base.BaseQuerySet.count', lambda *a: 22)
     def test_to_dict(self):
         got = {
@@ -87,31 +81,27 @@ class TestTaskTypes(BaseTest):
     # endregion Task type
 
     # region Import tasks
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_tasks(self):
         tasks = ({'name': '1'}, {'name': '2'}, {'name': '3'})
         repo = FakeType({})
 
         repo.import_tasks(tasks, 'default')
 
-        self.assertEqual(DBTestHelpers.collections.tasks.count(), len(tasks))
+        self.assertEqual(len(FakeType.task_model.objects()), len(tasks))
         self.assertEqual(repo.task_model.objects.count(), len(tasks))
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_tasks_not_dict(self):
         tasks = [{'name': '1'}, tuple(), {'name': '3'}]
 
         self.assertRaises(TaskImportError,
                           lambda: FakeType({}).import_tasks(tasks, 'default'))
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_tasks_not_list(self):
         self.assertRaises(TaskImportError,
                           lambda: FakeType({}).import_tasks(
                               {'name': '1'},
                               'default'))
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_import_fails_when_overwriting(self):
         tasks = [{'name': '0'}, {'name': '1'}, {'name': '1'}, {'name': '2'}]
         repo = FakeType({})
@@ -122,7 +112,6 @@ class TestTaskTypes(BaseTest):
     # endregion Import tasks
 
     # region Export reports
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_export_reports_normal(self):
         reports = []
         task_type = FakeType({})
@@ -155,7 +144,6 @@ class TestTaskTypes(BaseTest):
         self.assertCountEqual(task_type.export_reports(batch=batch),
                               reports)
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_export_reports_batch(self):
         reports = []
         task_type = FakeType({})
@@ -191,7 +179,6 @@ class TestTaskTypes(BaseTest):
         self.assertCountEqual(task_type.export_reports(batch=batches[1]),
                               reports[1:])
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_export_reports_batch_with_no_closed(self):
         """
         The case when we export the batch where no task is closed.
@@ -228,7 +215,6 @@ class TestTaskTypes(BaseTest):
 
         self.assertCountEqual(task_type.export_reports(batch=batches[1]), [])
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_export_reports_one_is_closed(self):
         reports = []
         task_type = FakeType({})
@@ -261,7 +247,6 @@ class TestTaskTypes(BaseTest):
         self.assertCountEqual(task_type.export_reports(batch=batch),
                               reports[1:])
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_export_all_reports(self):
         reports = []
         task_type = FakeType({})
@@ -298,7 +283,6 @@ class TestTaskTypes(BaseTest):
     # endregion Export reports
 
     # region Next task
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_batches_are_complete(self):
         task_type = FakeType({})
         Batch(id='default',
@@ -321,7 +305,6 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(task_type.get_next(user), {},
                          'Should return an empty dict if all is done')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_not_return_processed(self):
         task_type = FakeType({})
         user = User(username='user0', email='user0@email.com').save()
@@ -340,7 +323,6 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(task_type.get_next(user), {},
                          'Should return an empty dict if user passed all tasks')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_return_proper_type(self):
         class NewFakeModel(AbstractTask):
             pass
@@ -381,7 +363,6 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(old_task_type.get_next(user), {},
                          'Should return no task of another type')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_not_show_skipped_until_nothing_else_left(self):
         task_type = FakeType({})
         batch = Batch(id='default',
@@ -406,7 +387,6 @@ class TestTaskTypes(BaseTest):
             self.assertEqual(task_type.get_next(user), tasks[0].as_dict(),
                              'Should return only task that isn\'t skipped')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_return_skipped_if_none_else_left(self):
         task_type = FakeType({})
         batch = Batch(id='default',
@@ -428,7 +408,6 @@ class TestTaskTypes(BaseTest):
                          'Should return even skipped task if nothing else'
                          ' is available')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_fallback_to_any_batch(self):
         task_type = FakeType({})
         batch = Batch(id='default',
@@ -450,7 +429,6 @@ class TestTaskTypes(BaseTest):
             self.assertEqual(task_type.get_next(user), tasks[1].as_dict(),
                              'Should return only task that isn\'t skipped')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_return_skipped_if_none_else_left_no_batch(self):
         task_type = FakeType({})
         user = User(username='user0', email='user0@email.com').save()
@@ -470,7 +448,6 @@ class TestTaskTypes(BaseTest):
     # endregion Next task
 
     # region Skip task
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_skip_task_normal(self):
         task_type = FakeType({})
         user = User(username='user0', email='user0@email.com').save()
@@ -490,7 +467,6 @@ class TestTaskTypes(BaseTest):
 
         self.assertEqual(task.users_skipped, [user])
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_skip_task_twice(self):
         task_type = FakeType({})
         user = User(username='user0', email='user0@email.com').save()
@@ -511,14 +487,12 @@ class TestTaskTypes(BaseTest):
 
         self.assertEqual(task.users_skipped, [user])
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_skip_raises_not_found(self):
         self.assertRaises(TaskNotFoundError,
                           lambda: FakeType({}).skip_task('fake_id', {}))
     # endregion Skip task
 
     # region On task done
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_on_done_ok(self):
         task_type = FakeType({})
         user = User(username='user0', email='user0@email.com').save()
@@ -548,7 +522,6 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(ws.answer, answer)
         self.assertEqual(user.processed, 1)
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_on_done_twice_fires_exception(self):
         task_type = FakeType({})
         user = User(username='user0', email='user0@email.com').save()
@@ -571,7 +544,6 @@ class TestTaskTypes(BaseTest):
                                                          {'result': 'result2'})
                           )
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_on_done_close_task(self):
         task_type = FakeType({})
         user = User(username='user0', email='user0@email.com').save()
@@ -592,7 +564,6 @@ class TestTaskTypes(BaseTest):
 
         self.assertTrue(task.closed)
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_on_done_alter_batch(self):
         task_type = FakeType({})
         user = User(username='user0', email='user0@email.com').save()
@@ -620,7 +591,6 @@ class TestTaskTypes(BaseTest):
 
     # endregion On task done
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_on_done_raises_not_found(self):
         self.assertRaises(TaskNotFoundError,
                           lambda: FakeType({}).on_task_done(
@@ -629,7 +599,6 @@ class TestTaskTypes(BaseTest):
                               {})
                           )
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_proxy_leaderboard_get_leaders(self):
         fake_type = FakeType({})
         fake_manager = Mock(spec=LeaderBoardManager)
@@ -640,7 +609,6 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(fake_type.get_leaders(), answer,
                          'AbstractTaskType should not change leaders list')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_proxy_leaderboard_get_leaderboard(self):
         fake_type = FakeType({})
         fake_manager = Mock(spec=LeaderBoardManager)

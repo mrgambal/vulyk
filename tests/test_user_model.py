@@ -6,28 +6,28 @@ test_user_model
 """
 import unittest
 
-from unittest.mock import patch
 
 from vulyk.models.user import User, Group
 
-from .base import (
-    BaseTest,
-    DBTestHelpers
-)
+from .base import BaseTest
 from .fixtures import FakeType
 
 
 class TestUser(BaseTest):
     TASK_TYPE = 'test'
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def setUp(self):
         super().setUp()
 
         Group.objects.create(
             description='test', id='default', allowed_types=[self.TASK_TYPE])
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+    def tearDown(self):
+        User.objects.delete()
+        Group.objects.delete()
+
+        super().tearDown()
+
     def test_add_default_group(self):
         User(username='1', email='1@email.com', admin=True).save()
         User(username='2', email='2@email.com', admin=False).save()
@@ -52,7 +52,6 @@ class TestUser(BaseTest):
         self.assertTrue(admin.is_admin(), 'Admin is shown as regular user')
         self.assertFalse(regular.is_admin(), 'Regular user is shown as admin')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_is_eligible_for(self):
         another_task_type = 'task_type_2'
         u1 = User(username='1', email='1@email.com', admin=True).save()
@@ -73,7 +72,6 @@ class TestUser(BaseTest):
             }
         )
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_get_stats(self):
         task_type = FakeType({})
         user = User(username='mutumba', email='mutumba@email.com').save()
@@ -88,7 +86,6 @@ class TestUser(BaseTest):
             }
         )
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_get_stats_share_place_if_same_count(self):
         task_type = FakeType({})
         user = User(username='mutumba', email='mutumba@email.com').save()
@@ -103,7 +100,6 @@ class TestUser(BaseTest):
             }
         )
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_get_stats_others_share_place_if_same_count(self):
         task_type = FakeType({})
         user = User(username='mutumba', email='mutumba@email.com').save()
@@ -117,12 +113,6 @@ class TestUser(BaseTest):
                 'position': 3
             }
         )
-
-    def tearDown(self):
-        super().tearDown()
-
-        DBTestHelpers.collections.user.drop()
-        DBTestHelpers.collections.groups.drop()
 
 
 if __name__ == '__main__':
