@@ -14,7 +14,12 @@ from vulyk.utils import resolve_task_type, HTTPStatus, get_template_path
 # region Init
 app = flask.Flask(__name__)
 app.config.from_object('vulyk.settings')
-app.config.from_object('local_settings')
+
+try:
+    app.config.from_object('local_settings')
+except ImportError:
+    pass
+
 db = MongoEngine(app)
 
 assets.init(app)

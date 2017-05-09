@@ -8,21 +8,20 @@ from mongoengine import Document
 from unittest.mock import patch
 
 from vulyk import users
-from vulyk.models.user import User
+from vulyk.models.user import Group, User
 
-from .base import (
-    BaseTest,
-    DBTestHelpers)
+from .base import BaseTest
 
 
 class TestUserLogin(BaseTest):
     USER = User(username='SuperUsername', email='1@email.com', admin=True)
 
     def tearDown(self):
-        DBTestHelpers.collections.user.drop()
-        DBTestHelpers.collections.groups.drop()
+        User.objects.delete()
+        Group.objects.delete()
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
+        super().tearDown()
+
     @patch('flask_login.current_user', USER)
     def test_injected_in_request(self):
         app = flask.Flask('test')
@@ -39,7 +38,6 @@ class TestUserLogin(BaseTest):
         app.route('/test', methods=['GET'])(fake_route)
         app.test_client().get('/test')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     @patch('flask_login.current_user', USER)
     def test_injected_in_template(self):
         app = flask.Flask('test')

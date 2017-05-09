@@ -2,21 +2,17 @@
 """
 test_utils
 """
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 from werkzeug.exceptions import HTTPException
 
 from vulyk import utils
 from vulyk.models.user import User, Group
 
-from .base import (
-    BaseTest,
-    DBTestHelpers
-)
+from .base import BaseTest
 from .fixtures import FakeType
 
 
 class TestUtils(BaseTest):
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def setUp(self):
         super().setUp()
 
@@ -25,11 +21,16 @@ class TestUtils(BaseTest):
             description='test',
             allowed_types=[FakeType.type_name])
 
+    def tearDown(self):
+        User.objects.delete()
+        Group.objects.delete()
+
+        super().tearDown()
+
     def test_unique(self):
         self.assertEqual([2, 4, 6, 8], utils.unique([2, 2, 4, 2, 6, 4, 8]),
                          'Unique function returns duplicates')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_resolve_task_type_ok(self):
         task_type = FakeType({})
         tasks = {task_type.type_name: task_type}
@@ -41,7 +42,6 @@ class TestUtils(BaseTest):
             'Task type should have been resolved, but hasn\'t'
         )
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_resolve_task_type_not_found(self):
         tasks = {}
         user = User(username='1', email='1@email.com').save()
@@ -52,7 +52,6 @@ class TestUtils(BaseTest):
         self.assertEqual(he.exception.code, utils.HTTPStatus.NOT_FOUND,
                          'Http 404 exception didn\'t fire')
 
-    @patch('mongoengine.connection.get_connection', DBTestHelpers.connection)
     def test_resolve_task_type_forbidden(self):
         task_type = FakeType({})
         user = User(username='1', email='1@email.com').save()
@@ -96,7 +95,3 @@ class TestUtils(BaseTest):
             utils.get_template_path(app, 'shekel.html'),
             'base/shekel.html'
         )
-
-    def tearDown(self):
-        DBTestHelpers.collections.user.drop()
-        DBTestHelpers.collections.groups.drop()

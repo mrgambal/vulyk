@@ -62,7 +62,7 @@ def init_plugins(app):
     :param app: Current Flask application instance
     :type app: flask.Flask
 
-    :return: Dictionary with instantiated *TaskType objects
+    :return: Dictionary with instantiated TaskType objects
     :rtype: dict[str, vulyk.models.task_types.AbstractTaskType]
     """
     task_types = {}

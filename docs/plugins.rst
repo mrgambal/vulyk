@@ -2,18 +2,18 @@
 Writing your plugin for Vulyk
 =============================
 
-Vulyk's plugins are the python package, installable in the same environment where Vulyk is installed.
+Vulyk plugins are the python package, installable in the same environment where Vulyk is installed.
 
-Your plugin for Vyluk should follow the standart structure and rules of writing Python package.
+Your plugin for Vulyk should follow the standard structure and rules of writing Python package.
 
 To create new plugin you can use http://cookiecutter.readthedocs.org/en/latest/ [[!insert link]] app with special template [[!link to plugin template]], by
 
 .. >cookiecutter https://github.com/[[!link to plugin template]]
 
 
------------------
- Plugin structure
------------------
+----------------
+Plugin structure
+----------------
 
 
 - name_of_plugin
@@ -29,14 +29,14 @@ To create new plugin you can use http://cookiecutter.readthedocs.org/en/latest/ 
         - scripts
         - styles
     - templates
-        - *.html
+        - \*.html
 
 Main entrance point to plugin will be ``AbstractTaskType.get_task()``
 
---------------
- Configuration
---------------
+-------------
+Configuration
+-------------
 
-After plugin is installed in Vulyk's environment, you need to enable it in Vulyk's settings, by adding plugin's name to ENABLED_PLUGINS and name of the task to ENABLED_TASKS.
+After plugin is installed in Vulyk environment, you need to enable it in Vulyk settings, by adding plugin's name to ENABLED_PLUGINS and name of the task to ENABLED_TASKS.
 
-After Vulyk's restart, plugin will be enabled.
+After Vulyk restart, plugin will be enabled.

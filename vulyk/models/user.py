@@ -78,8 +78,8 @@ class User(Document, UserMixin):
         :type task_type: vulyk.models.task_types.AbstractTaskType
 
         :return: Dictionary that contains total finished tasks count and the
-         position in the global rank.
-         :rtype: dict[str, int]
+                 position in the global rank.
+        :rtype: dict[str, int]
         """
         leaders = task_type.get_leaders()
         i = 0
@@ -104,8 +104,8 @@ class User(Document, UserMixin):
         Converts the model-instance into a safe dict that will include some
          basic info about member.
 
-        :returns: Reduced set of information about member.
-        :rtype : dict[str, str]
+        :return: Reduced set of information about member.
+        :rtype: dict[str, str]
         """
         return {
             'username': self.username,
@@ -125,7 +125,7 @@ class User(Document, UserMixin):
         :param kwargs: Additional parameters
         :type kwargs: dict
 
-        :returns: Modified User instance.
+        :return: Modified User instance.
         :rtype: User
         """
         if all(map(lambda x: x.id != 'default', document.groups)):
