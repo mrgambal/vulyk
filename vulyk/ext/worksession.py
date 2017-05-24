@@ -28,7 +28,7 @@ class WorkSessionManager:
         Constructor.
 
         :param work_session_model: Underlying mongoDB Document subclass.
-        :type work_session_model: flask_mongoengine.Document
+        :type work_session_model: type
         """
         assert issubclass(work_session_model, Document), \
             'You should define working session model properly'

@@ -4,7 +4,9 @@ import os
 import sys
 from itertools import islice
 
+import flask
 from flask import abort
+import ujson as json
 
 if sys.version_info.minor <= 4:  # PY 3.4
     import http.client as HTTPStatus
@@ -15,6 +17,8 @@ __all__ = [
     'chunked',
     'get_tb',
     'get_template_path',
+    'json_response',
+    'NO_TASKS',
     'resolve_task_type',
     'unique'
 ]
@@ -116,3 +120,42 @@ def get_template_path(app, name):
             if folder and os.path.join(folder, 'base', name) == x:
                 return x
     return 'base/%s' % name
+
+
+def json_response(result, template='', errors=None, status=HTTPStatus.OK):
+    """
+    Handy helper to prepare unified responses.
+
+    :param result: Data to be sent
+    :type result: dict
+    :param template: Template name or id
+    :type template: str
+    :param errors: List of errors
+    :type errors: list | set | tuple | dict
+    :param status: Response http-status
+    :type status: int
+
+    :returns: Jsonified response
+    :rtype: flask.Response
+    """
+    if not errors:
+        errors = []
+
+    data = json.dumps({
+        'result': result,
+        'template': template,
+        'errors': errors})
+
+    return flask.Response(
+        data, status, mimetype='application/json',
+        headers=[
+            ('Cache-Control', 'no-cache, no-store, must-revalidate'),
+            ('Pragma', 'no-cache'),
+            ('Expires', '0'),
+        ])
+
+
+NO_TASKS = json_response({},
+                         '',
+                         ['There is no task having type like this'],
+                         HTTPStatus.NOT_FOUND)
