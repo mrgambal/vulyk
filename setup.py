@@ -28,10 +28,10 @@ setup(
     url='https://github.com/mrgambal/vulyk',
     packages=[
         'vulyk',
+        'vulyk.bootstrap',
         'vulyk.cli',
         'vulyk.ext',
-        'vulyk.models',
-        'vulyk.tasks'
+        'vulyk.models'
     ],
     package_dir={'vulyk': 'vulyk'},
     include_package_data=True,

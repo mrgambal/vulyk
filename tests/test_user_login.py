@@ -7,7 +7,7 @@ import mongomock
 from mongoengine import Document
 from unittest.mock import patch
 
-from vulyk import users
+from vulyk.bootstrap import _social_login as social_login
 from vulyk.models.user import Group, User
 
 from .base import BaseTest
@@ -29,7 +29,7 @@ class TestUserLogin(BaseTest):
         db = mongomock.MongoClient().get_database('vulyk')
         db.Document = Document
 
-        users.init_social_login(app, db)
+        social_login.init_social_login(app, db)
 
         def fake_route():
             self.assertEqual(flask.g.user, self.USER)
@@ -45,7 +45,7 @@ class TestUserLogin(BaseTest):
         db = mongomock.MongoClient().get_database('vulyk')
         db.Document = Document
 
-        users.init_social_login(app, db)
+        social_login.init_social_login(app, db)
 
         def fake_route():
             return flask.render_template_string('{{user}}')

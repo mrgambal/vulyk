@@ -33,11 +33,8 @@ class Batch(Document):
         ]
     }
 
-    def __unicode__(self):
-        return str(self.id)
-
     def __str__(self):
-        return self.__unicode__()
+        return str(self.id)
 
     def __repr__(self):
         return 'Batch [{id}] ({processed}/{count})'.format(
@@ -84,14 +81,11 @@ class AbstractTask(Document):
             'data': self.task_data
         }
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.id)
 
-    def __str__(self):
-        return self.__unicode__()
-
     def __repr__(self):
-        return self.__unicode__()
+        str(self)
 
 
 class AbstractAnswer(Document):
@@ -154,11 +148,8 @@ class AbstractAnswer(Document):
             'user': self.created_by.as_dict()
         }
 
-    def __unicode__(self):
-        return str(self.pk)
-
     def __str__(self):
-        return self.__unicode__()
+        return str(self.pk)
 
     def __repr__(self):
         return 'Report [{} by {}]'.format(self.created_by, self.task)

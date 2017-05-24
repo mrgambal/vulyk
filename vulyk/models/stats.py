@@ -19,7 +19,7 @@ __all__ = [
 
 class WorkSession(Document):
     """
-    Class which represents a timespan during which user was working on the task.
+    Class which represents a timespan during which user was working on the task
     Also it stores links to every entity involved.
     """
     user = ReferenceField(User, reverse_delete_rule=CASCADE, required=True)

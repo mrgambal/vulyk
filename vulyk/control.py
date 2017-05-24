@@ -27,7 +27,6 @@ def cli():
 @cli.command('run')
 def run():
     """Start vulyk"""
-    app.config.from_object('local_settings')
     app.run()
 
 

@@ -21,11 +21,8 @@ class Group(Document):
 
     meta = {'collection': 'groups'}
 
-    def __unicode__(self):
-        return self.id
-
     def __str__(self):
-        return self.__unicode__()
+        return str(self.id)
 
     def __repr__(self):
         return 'Group ID: {id}. Allowed types: {types}'.format(
@@ -136,11 +133,8 @@ class User(Document, UserMixin):
 
         return document
 
-    def __unicode__(self):
-        return self.username
-
     def __str__(self):
-        return self.__unicode__()
+        return self.username
 
 
 class Anonymous(AnonymousUserMixin):

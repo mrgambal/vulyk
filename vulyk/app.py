@@ -1,69 +1,20 @@
 # -*- coding: utf-8 -*-
-"""Die Hauptstadt of our little project. Just an usual Flask application."""
-
-import ujson as json
+"""Die Hauptstadt of our little project. Just a usual Flask application."""
 
 import flask
 import flask_login as login
-from flask_mongoengine import MongoEngine
+import ujson as json
 
-from vulyk import cli, assets, tasks, users
+from vulyk import cli, bootstrap, utils
 from vulyk.models.exc import TaskNotFoundError
-from vulyk.utils import resolve_task_type, HTTPStatus, get_template_path
+from vulyk.utils import NO_TASKS
 
-# region Init
-app = flask.Flask(__name__)
-app.config.from_object('vulyk.settings')
+__all__ = [
+    'app'
+]
 
-try:
-    app.config.from_object('local_settings')
-except ImportError:
-    pass
-
-db = MongoEngine(app)
-
-assets.init(app)
-users.init_social_login(app, db)
-
-TASKS_TYPES = tasks.init_plugins(app)
-
-
-def _json_response(result, template='', errors=None, status=HTTPStatus.OK):
-    """
-    Handy helper to prepare unified responses.
-
-    :param result: Data to be sent
-    :type result: dict
-    :param template: Template name or id
-    :type template: str
-    :param errors: List of errors
-    :type errors: list | set | tuple | dict
-    :param status: Response http-status
-    :type status: int
-
-    :returns: Jsonified response
-    :rtype: Response
-    """
-    if not errors:
-        errors = []
-
-    data = json.dumps({
-        'result': result,
-        'template': template,
-        'errors': errors})
-
-    return flask.Response(
-        data, status, mimetype='application/json',
-        headers=[
-            ('Cache-Control', 'no-cache, no-store, must-revalidate'),
-            ('Pragma', 'no-cache'),
-            ('Expires', '0'),
-        ])
-
-
-_no_tasks = _json_response({}, '', ['There is no task having type like this'],
-                           HTTPStatus.NOT_FOUND)
-# endregion Init
+app = bootstrap.init_app(__name__)
+TASKS_TYPES = bootstrap.init_plugins(app)
 
 
 # region Views
@@ -73,7 +24,7 @@ def index():
     Main site view.
 
     :returns: Prepared response.
-    :rtype: werkzeug.wrappers.Response
+    :rtype: flask.Response
     """
     task_types = []
     user = flask.g.user
@@ -86,7 +37,7 @@ def index():
         return flask.redirect(
             flask.url_for('task_home', type_name=task_types[0]['type']))
 
-    return flask.render_template(get_template_path(app, 'index.html'),
+    return flask.render_template(utils.get_template_path(app, 'index.html'),
                                  task_types=task_types)
 
 
@@ -96,7 +47,7 @@ def logout():
     An action-view, signs the user out and redirects to the homepage.
 
     :returns: Prepared response.
-    :rtype: werkzeug.wrappers.Response
+    :rtype: flask.Response
     """
     login.logout_user()
 
@@ -115,20 +66,20 @@ def next_page(type_name):
     :type type_name: str
 
     :returns: Prepared response.
-    :rtype: werkzeug.wrappers.Response
+    :rtype: flask.Response
     """
     user = flask.g.user
-    task_type = resolve_task_type(type_name, TASKS_TYPES, user)
+    task_type = utils.resolve_task_type(type_name, TASKS_TYPES, user)
 
     if task_type is None:
-        return _no_tasks
+        return NO_TASKS
 
     task = task_type.get_next(user)
 
     if not task:
-        return _no_tasks
+        return NO_TASKS
 
-    return _json_response(
+    return utils.json_response(
         {
             'task': task,
             'stats': user.get_stats(task_type=task_type)
@@ -146,14 +97,14 @@ def task_home(type_name):
     :type type_name: str
 
     :returns: Prepared response.
-    :rtype: werkzeug.wrappers.Response
+    :rtype: flask.Response
     """
-    task_type = resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
+    task_type = utils.resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
 
     if task_type is None:
-        flask.abort(HTTPStatus.NOT_FOUND)
+        flask.abort(utils.HTTPStatus.NOT_FOUND)
 
-    return flask.render_template(get_template_path(app, 'task.html'),
+    return flask.render_template(utils.get_template_path(app, 'task.html'),
                                  task_type=task_type)
 
 
@@ -167,15 +118,15 @@ def leaders(type_name):
     :type type_name: str
 
     :returns: Prepared response.
-    :rtype: werkzeug.wrappers.Response
+    :rtype: flask.Response
     """
-    task_type = resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
+    task_type = utils.resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
 
     if task_type is None:
-        flask.abort(HTTPStatus.NOT_FOUND)
+        flask.abort(utils.HTTPStatus.NOT_FOUND)
 
     return flask.render_template(
-        get_template_path(app, 'leaderboard.html'),
+        utils.get_template_path(app, 'leaderboard.html'),
         task_type=task_type,
         leaders=task_type.get_leaderboard())
 
@@ -192,21 +143,21 @@ def skip(type_name, task_id):
     :type task_id: str
 
     :returns: Prepared response.
-    :rtype: werkzeug.wrappers.Response
+    :rtype: flask.Response
     """
     user = flask.g.user
-    task_type = resolve_task_type(type_name, TASKS_TYPES, user)
+    task_type = utils.resolve_task_type(type_name, TASKS_TYPES, user)
 
     if task_type is None:
-        return _no_tasks
+        return NO_TASKS
 
     try:
         task_type.skip_task(user=user._get_current_object(),
                             task_id=task_id)
     except TaskNotFoundError:
-        return _no_tasks
+        return NO_TASKS
 
-    return _json_response({'done': True})
+    return utils.json_response({'done': True})
 
 
 @app.route('/type/<string:type_name>/done/<string:task_id>', methods=['POST'])
@@ -221,13 +172,13 @@ def done(type_name, task_id):
     :type task_id: str
 
     :returns: Prepared response.
-    :rtype: werkzeug.wrappers.Response
+    :rtype: flask.Response
     """
     user = flask.g.user
-    task_type = resolve_task_type(type_name, TASKS_TYPES, user)
+    task_type = utils.resolve_task_type(type_name, TASKS_TYPES, user)
 
     if task_type is None:
-        return _no_tasks
+        return NO_TASKS
 
     try:
         task_type.on_task_done(
@@ -235,9 +186,9 @@ def done(type_name, task_id):
             user._get_current_object(),
             task_id, json.loads(flask.request.form.get('result')))
     except TaskNotFoundError:
-        return _no_tasks
+        return NO_TASKS
 
-    return _json_response({'done': True})
+    return utils.json_response({'done': True})
 # endregion Views
 
 
@@ -267,7 +218,7 @@ def app_template_filter(s):
     :return: Full path to the template
     :rtype: str
     """
-    return get_template_path(app, s)
+    return utils.get_template_path(app, s)
 # endregion Filters
 
 
