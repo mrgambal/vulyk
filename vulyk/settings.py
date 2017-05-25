@@ -1,5 +1,6 @@
 # -*- coding=utf-8 -*-
 import os
+import logging
 
 ENV = os.environ.get
 
@@ -18,6 +19,12 @@ MONGODB_SETTINGS = {
 
 DEBUG_TB_INTERCEPT_REDIRECTS = ENV('DEBUG_TB_INTERCEPT_REDIRECTS', False)
 SESSION_PROTECTION = ENV('SESSION_PROTECTION', 'strong')
+
+LOGGING_LOCATION = ENV('LOGGING_LOCATION', '/var/log/vulyk/app.log')
+LOGGING_FORMAT = ENV('LOGGING_FORMAT',
+                     '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO
+LOGGING_MAX_FILE_BYTES = ENV('LOGGING_MAX_FILE_BYTES', 10 * 1024 * 1024)
 
 SOCIAL_AUTH_STORAGE = ENV('SOCIAL_AUTH_STORAGE',
                           'social.apps.flask_app.me.models.FlaskStorage')
