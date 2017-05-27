@@ -27,7 +27,7 @@ LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 LOGGING_MAX_FILE_BYTES = ENV('LOGGING_MAX_FILE_BYTES', 10 * 1024 * 1024)
 
 SOCIAL_AUTH_STORAGE = ENV('SOCIAL_AUTH_STORAGE',
-                          'social.apps.flask_app.me.models.FlaskStorage')
+                          'social_flask_mongoengine.models.FlaskStorage')
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = ENV('SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL',
                                          True)
 
@@ -38,10 +38,9 @@ SOCIAL_AUTH_USER_MODEL = ENV('SOCIAL_AUTH_USER_MODEL',
                              'vulyk.models.user.User')
 SOCIAL_AUTH_AUTHENTICATION_BACKENDS = ENV(
     'SOCIAL_AUTH_AUTHENTICATION_BACKENDS', (
-        'social.backends.google.GoogleOAuth2',
-        'social.backends.twitter.TwitterOAuth',
-        'social.backends.facebook.FacebookOAuth2',
-        'social.backends.vk.VKOAuth2',
+        'social_core.backends.google.GoogleOAuth2',
+        'social_core.backends.twitter.TwitterOAuth',
+        'social_core.backends.facebook.FacebookOAuth2'
     ))
 
 # Keypairs for social auth backends
