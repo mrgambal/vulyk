@@ -16,7 +16,7 @@ class WorkSessionManager:
     Every time we give a task to user, a new session record is being created.
     If user skips the task, we mark it as skipped and delete the session.
     When user finishes the task, we close the session having added the timestamp
-     of the event.
+    of the event.
     Thus we're able to perform any kind of data mining and stats counting using
     the data later.
 

@@ -68,6 +68,6 @@ def validate_batch(ctx, param, value, default_batch):
 def batches_list():
     """
     :return: List of batches IDs to validate CLI input
-    :rtype : list[str]
+    :rtype: list[str]
     """
     return list(Batch.objects.scalar('id'))

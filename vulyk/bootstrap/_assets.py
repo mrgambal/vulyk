@@ -63,5 +63,11 @@ def init(app):
 
         assets.register('%s_all' % key, bundle)
 
+        app.logger.debug('Bundling files: %s%s',
+                         os.linesep,
+                         os.linesep.join(build_files))
+
     app.assets = assets
     app._base_files_to_watch = files_to_watch
+
+    app.logger.info('Base assets are collected successfully.')

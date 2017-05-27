@@ -56,3 +56,4 @@ def init_social_login(app, db):
             return {'user': None}
 
     app.context_processor(backends)
+    app.logger.info('Social login subsystem is initialized.')

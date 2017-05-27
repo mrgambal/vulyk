@@ -27,6 +27,8 @@ def _init_plugin_assets(app, task_type, static_path):
     :return: List of paths to plugin's asset files.
     :rtype: list[str]
     """
+    app.logger.debug('Collecting <%s> assets.', task_type.type_name)
+
     files_to_watch = []
     assets_location_map = {
         'js': task_type.JS_ASSETS,
@@ -35,22 +37,26 @@ def _init_plugin_assets(app, task_type, static_path):
 
     for key in assets_location_map.keys():
         name = 'plugin_{key}_{task}'.format(key=key, task=task_type.type_name)
-        assets_list = assets_location_map[key]
+        assets = assets_location_map[key]
 
-        if len(assets_list) > 0:
-            files_to_watch += map(lambda x: os.path.join(static_path, x),
-                                  assets_list)
+        if len(assets) > 0:
+            files = [os.path.join(static_path, x) for x in assets]
+            files_to_watch += files
 
             folder = ['scripts', 'styles'][key == 'css']
             filters_name = '{key}_ASSETS_FILTERS'.format(key=key.upper())
             output_path = '{folder}/{name}.{key}'.format(folder=folder,
                                                          name=name,
                                                          key=key)
-            bundle = Bundle(*map(lambda x: os.path.join(static_path, x),
-                                 assets_list),
+            bundle = Bundle(*files,
                             output=output_path,
                             filters=app.config.get(filters_name, ''))
             app.assets.register(name, bundle)
+            app.logger.debug('Bundling files: %s%s',
+                             os.linesep,
+                             os.linesep.join(files))
+
+    app.logger.debug('Finished collecting <%s> assets.', task_type.type_name)
 
     return files_to_watch
 
@@ -70,7 +76,11 @@ def init_plugins(app):
     enabled_tasks = app.config.get('ENABLED_TASKS', {})
     files_to_watch = []
 
+    app.logger.info('Loading plugins: %s', list(enabled_tasks.keys()))
+
     for plugin, task in enabled_tasks.items():
+        app.logger.debug('Started loading plugin <%s>.', plugin)
+
         task_settings = import_string(
             '{plugin_name}.settings'.format(plugin_name=plugin)
         )
@@ -102,6 +112,8 @@ def init_plugins(app):
             app=app,
             task_type=task_type,
             static_path=static_path))
+
+        app.logger.debug('Finished loading plugin <%s>.', plugin)
 
     app.jinja_loader = jinja2.ChoiceLoader([
         app.jinja_loader,

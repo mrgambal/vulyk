@@ -7,7 +7,7 @@ Contains code not to be used directly after the initialization.
 import flask
 from flask_mongoengine import MongoEngine
 
-from . import _assets, _social_login
+from . import _assets, _logging, _social_login
 from ._tasks import init_plugins
 
 __all__ = [
@@ -36,12 +36,22 @@ def init_app(name):
         except ImportError:
             pass
 
+        _logging.init_logger(app=app)
+        app.logger.info('STARTING.')
+
         db = MongoEngine(app)
+
+        app.logger.debug('Database is available at %s:%s',
+                         app.config['MONGODB_SETTINGS'].get('HOST',
+                                                            'localhost'),
+                         app.config['MONGODB_SETTINGS'].get('PORT', 27017))
 
         _assets.init(app)
         _social_login.init_social_login(app, db)
 
         setattr(init_app, key, app)
+
+        app.logger.info('Vulyk bootstrapping complete.')
 
     return getattr(init_app, key)
 # endregion Init

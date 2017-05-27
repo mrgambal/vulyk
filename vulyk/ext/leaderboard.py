@@ -15,7 +15,7 @@ class LeaderBoardManager:
         :param answer_model: Current answer model
         :type answer_model: vulyk.models.tasks.AbstractAnswer
         :param user_model: Active user model
-        :type user_model: vulyk.models.user.User
+        :type user_model: type
         """
         self._task_type_name = task_type_name
         self._answer_model = answer_model
