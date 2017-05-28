@@ -41,12 +41,36 @@ class WorkSessionManager:
         By default we use `datetime.now` in the underlying model to save in
         `start_time` field.
 
+        A user should finish a certain task only once, that's why we perform
+        an upsert below.
+
         :param task: Given task
         :type task: vulyk.models.tasks.AbstractTask
         :param user_id: ID of user, who gets new task
         :type user_id: bytes, str, bson.ObjectId
         """
-        self.work_session.objects.create(user=user_id, task=task)
+        self.work_session \
+            .objects(user=user_id,
+                     task=task) \
+            .modify(upsert=True,
+                    set__start_time=datetime.now(),
+                    set__activity=0)
+
+    def record_activity(self, task, user_id, seconds):
+        """
+        Update an activity counter.
+
+        :param task: Current task
+        :type task: vulyk.models.tasks.AbstractTask
+        :param user_id: ID of user, who gets new task
+        :type user_id: bytes, str, bson.ObjectId
+        :param seconds: User was active for
+        :type seconds: int
+        """
+        self.work_session \
+            .objects(user=user_id,
+                     task=task) \
+            .modify(inc__activity=seconds)
 
     def end_work_session(self, task, user_id, answer):
         """
@@ -72,8 +96,7 @@ class WorkSessionManager:
         if rs.count() > 0:
             rs.first().update(
                 set__end_time=datetime.now(),
-                set__answer=answer,
-                set__corrections=answer.corrections)
+                set__answer=answer)
         else:
             msg = 'No session was found for {0}'.format(answer)
 

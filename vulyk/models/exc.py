@@ -9,6 +9,7 @@ __all__ = [
     'TaskNotFoundError',
     'TaskSaveError',
     'TaskPermissionError',
+    'TaskUpdateError',
     'TaskSkipError',
     'TaskValidationError',
     'WorkSessionLookUpError'
@@ -16,6 +17,10 @@ __all__ = [
 
 
 class TaskImportError(Exception):
+    pass
+
+
+class TaskUpdateError(Exception):
     pass
 
 

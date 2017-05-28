@@ -12,7 +12,11 @@ from unittest.mock import patch, Mock
 
 from vulyk.ext.leaderboard import LeaderBoardManager
 from vulyk.models.exc import (
-    TaskImportError, TaskNotFoundError, TaskValidationError)
+    TaskImportError,
+    TaskSkipError,
+    TaskNotFoundError,
+    TaskValidationError)
+from vulyk.models.stats import WorkSession
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
 from vulyk.models.user import User, Group
@@ -36,6 +40,7 @@ class TestTaskTypes(BaseTest):
         AbstractTask.objects.delete()
         AbstractAnswer.objects.delete()
         Batch.objects.delete()
+        WorkSession.objects.delete()
 
         super().tearDown()
 
@@ -447,6 +452,57 @@ class TestTaskTypes(BaseTest):
                          ' is available')
     # endregion Next task
 
+    # region Record activity
+    def test_update_session_normal(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch='any_batch',
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+        duration = 50
+
+        task_type._work_session_manager.start_work_session(task, user)
+        task_type.record_activity(user.id, task.id, duration)
+
+        session = WorkSession.objects.get(user=user.id, task=task)
+
+        self.assertEqual(session.activity, duration)
+
+    def test_update_session_twice(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch='any_batch',
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+        duration = 50
+
+        task_type._work_session_manager.start_work_session(task, user)
+
+        task_type.record_activity(user.id, task.id, duration)
+        task_type.record_activity(user.id, task.id, duration)
+
+        session = WorkSession.objects.get(user=user.id, task=task)
+
+        self.assertEqual(session.activity, duration * 2)
+
+    def test_update_session_not_found(self):
+        fake_type = FakeType({})
+        self.assertRaises(TaskNotFoundError,
+                          lambda: fake_type.record_activity('fake_id', '', 0))
+    # endregion Record activity
+
     # region Skip task
     def test_skip_task_normal(self):
         task_type = FakeType({})
@@ -461,6 +517,7 @@ class TestTaskTypes(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
+        task_type._work_session_manager.start_work_session(task, user)
         task_type.skip_task(task.id, user)
 
         task = task_type.task_model.objects.get(id=task.id)
@@ -480,8 +537,11 @@ class TestTaskTypes(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
+        task_type._work_session_manager.start_work_session(task, user)
         task_type.skip_task(task.id, user)
-        task_type.skip_task(task.id, user)
+
+        self.assertRaises(TaskSkipError,
+                          lambda: task_type.skip_task(task.id, user))
 
         task = task_type.task_model.objects.get(id=task.id)
 
@@ -518,7 +578,6 @@ class TestTaskTypes(BaseTest):
 
         self.assertEqual(task.users_count, 1)
         self.assertEqual(task.users_processed, [user])
-        self.assertEqual(ws.answer, answer)
         self.assertEqual(ws.answer, answer)
         self.assertEqual(user.processed, 1)
 
@@ -589,8 +648,6 @@ class TestTaskTypes(BaseTest):
 
         self.assertEqual(batch.tasks_processed, 1)
 
-    # endregion On task done
-
     def test_on_done_raises_not_found(self):
         self.assertRaises(TaskNotFoundError,
                           lambda: FakeType({}).on_task_done(
@@ -598,7 +655,9 @@ class TestTaskTypes(BaseTest):
                               'fake_id',
                               {})
                           )
+    # endregion On task done
 
+    # region Leaders
     def test_proxy_leaderboard_get_leaders(self):
         fake_type = FakeType({})
         fake_manager = Mock(spec=LeaderBoardManager)
@@ -621,6 +680,7 @@ class TestTaskTypes(BaseTest):
 
         self.assertEqual(fake_type.get_leaderboard(), answer,
                          'AbstractTaskType should not change leaderboard')
+    # endregion Leaders
 
 
 if __name__ == '__main__':
