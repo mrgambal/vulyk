@@ -15,7 +15,8 @@ from vulyk.models.exc import (
     TaskImportError,
     TaskNotFoundError,
     TaskValidationError,
-    WorkSessionLookUpError)
+    WorkSessionLookUpError,
+    WorkSessionUpdateError)
 from vulyk.models.stats import WorkSession
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
@@ -491,7 +492,7 @@ class TestTaskTypes(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
         duration = 50
-        fake_datetime = datetime.now() - timedelta(seconds=70)
+        fake_datetime = datetime.now() - timedelta(seconds=110)
 
         with patch('vulyk.ext.worksession.datetime') as mock_date:
             mock_date.now = lambda: fake_datetime
@@ -503,6 +504,62 @@ class TestTaskTypes(BaseTest):
         session = WorkSession.objects.get(user=user.id, task=task)
 
         self.assertEqual(session.activity, duration * 2)
+
+    def test_update_session_overdrive(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch='any_batch',
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+        duration = 50
+        fake_datetime = datetime.now() - timedelta(seconds=30)
+
+        with patch('vulyk.ext.worksession.datetime') as mock_date:
+            mock_date.now = lambda: fake_datetime
+            task_type._work_session_manager.start_work_session(task, user)
+
+        self.assertRaises(
+            WorkSessionUpdateError,
+            lambda: task_type.record_activity(user.id, task.id, duration)
+        )
+
+        session = WorkSession.objects.get(user=user.id, task=task)
+
+        self.assertEqual(session.activity, 0)
+
+    def test_update_session_negative(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch='any_batch',
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+        duration = -50
+        fake_datetime = datetime.now() - timedelta(seconds=30)
+
+        with patch('vulyk.ext.worksession.datetime') as mock_date:
+            mock_date.now = lambda: fake_datetime
+            task_type._work_session_manager.start_work_session(task, user)
+
+        self.assertRaises(
+            WorkSessionUpdateError,
+            lambda: task_type.record_activity(user.id, task.id, duration)
+        )
+
+        session = WorkSession.objects.get(user=user.id, task=task)
+
+        self.assertEqual(session.activity, 0)
 
     def test_update_session_not_found(self):
         fake_type = FakeType({})

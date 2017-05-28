@@ -94,7 +94,7 @@ class WorkSessionManager:
                              task=task)
             duration = datetime.now() - session.start_time
 
-            if duration.total_seconds() > seconds > 0:
+            if duration.total_seconds() > seconds + session.activity > 0:
                 session.activity += seconds
                 session.save()
 
