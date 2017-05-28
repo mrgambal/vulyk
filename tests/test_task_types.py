@@ -4,7 +4,7 @@
 """
 test_task_types
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from bson import ObjectId
 import unittest
@@ -13,9 +13,9 @@ from unittest.mock import patch, Mock
 from vulyk.ext.leaderboard import LeaderBoardManager
 from vulyk.models.exc import (
     TaskImportError,
-    TaskSkipError,
     TaskNotFoundError,
-    TaskValidationError)
+    TaskValidationError,
+    WorkSessionLookUpError)
 from vulyk.models.stats import WorkSession
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
@@ -466,8 +466,12 @@ class TestTaskTypes(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
         duration = 50
+        fake_datetime = datetime.now() - timedelta(seconds=70)
 
-        task_type._work_session_manager.start_work_session(task, user)
+        with patch('vulyk.ext.worksession.datetime') as mock_date:
+            mock_date.now = lambda: fake_datetime
+            task_type._work_session_manager.start_work_session(task, user)
+
         task_type.record_activity(user.id, task.id, duration)
 
         session = WorkSession.objects.get(user=user.id, task=task)
@@ -487,8 +491,11 @@ class TestTaskTypes(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
         duration = 50
+        fake_datetime = datetime.now() - timedelta(seconds=70)
 
-        task_type._work_session_manager.start_work_session(task, user)
+        with patch('vulyk.ext.worksession.datetime') as mock_date:
+            mock_date.now = lambda: fake_datetime
+            task_type._work_session_manager.start_work_session(task, user)
 
         task_type.record_activity(user.id, task.id, duration)
         task_type.record_activity(user.id, task.id, duration)
@@ -540,7 +547,7 @@ class TestTaskTypes(BaseTest):
         task_type._work_session_manager.start_work_session(task, user)
         task_type.skip_task(task.id, user)
 
-        self.assertRaises(TaskSkipError,
+        self.assertRaises(WorkSessionLookUpError,
                           lambda: task_type.skip_task(task.id, user))
 
         task = task_type.task_model.objects.get(id=task.id)

@@ -17,11 +17,10 @@ from mongoengine.errors import (
 )
 
 from vulyk.ext.leaderboard import LeaderBoardManager
-from vulyk.ext.worksession import WorkSessionManager, WorkSessionLookUpError
+from vulyk.ext.worksession import WorkSessionManager
 from vulyk.models.exc import (
     TaskImportError,
     TaskSaveError,
-    TaskUpdateError,
     TaskSkipError,
     TaskValidationError,
     TaskNotFoundError
@@ -274,8 +273,7 @@ class AbstractTaskType:
 
     def record_activity(self, user_id, task_id, seconds):
         """
-        Marks given task as a skipped by a given user
-        Assumes that user is eligible for this kind of tasks
+        Increases the counter of activity for current user in given task.
 
         :param task_id: Current task
         :type task_id: str
@@ -292,15 +290,10 @@ class AbstractTaskType:
 
             self._work_session_manager.record_activity(task, user_id, seconds)
 
-            self._logger.debug('recording %s seconds of activity of user %s '
+            self._logger.debug('Recording %s seconds of activity of user %s '
                                'on task %s', seconds, user_id, task_id)
         except self.task_model.DoesNotExist:
             raise TaskNotFoundError()
-        except OperationError as err:
-            raise TaskUpdateError('Can not skip the task: {0}.'.format(err))
-        except WorkSessionLookUpError:
-            raise TaskUpdateError('Haven\'t found a worksession for user %s '
-                                  'and task %s.', user_id, task_id)
 
     def skip_task(self, task_id, user):
         """
@@ -325,13 +318,8 @@ class AbstractTaskType:
             self._logger.debug('User %s skipped the task %s', user.id, task_id)
         except self.task_model.DoesNotExist:
             raise TaskNotFoundError()
-        except NotUniqueError as err:
-            raise TaskSkipError(err)
         except OperationError as err:
             raise TaskSkipError('Can not skip the task: {0}.'.format(err))
-        except WorkSessionLookUpError:
-            raise TaskSkipError('Haven\'t found a worksession for user %s '
-                                'and task %s.', user.id, task_id)
 
     def on_task_done(self, user, task_id, result):
         """
@@ -372,7 +360,7 @@ class AbstractTaskType:
             # update user
             user.update(inc__processed=1)
             # update stats record
-            self._work_session_manager.end_work_session(task, user, answer)
+            self._work_session_manager.end_work_session(task, user.id, answer)
 
             self._logger.debug('User %s has done task %s', user.id, task_id)
 
