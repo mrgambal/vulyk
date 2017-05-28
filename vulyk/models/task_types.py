@@ -17,7 +17,7 @@ from mongoengine.errors import (
 )
 
 from vulyk.ext.leaderboard import LeaderBoardManager
-from vulyk.ext.worksession import WorkSessionManager, WorkSessionLookUpError
+from vulyk.ext.worksession import WorkSessionManager
 from vulyk.models.exc import (
     TaskImportError,
     TaskSaveError,
@@ -73,7 +73,7 @@ class AbstractTaskType:
          when instantiating plugins. Could be useful for plugins.
         :type settings: dict
         """
-        self._logger = logging.getLogger(self.__class__.__name__)
+        self._logger = logging.getLogger('vulyk.app')
 
         self._leaderboard_manager = \
             self._leaderboard_manager or LeaderBoardManager(self.type_name,
@@ -141,6 +141,9 @@ class AbstractTaskType:
                     task_data=task))
 
             self.task_model.objects.insert(bulk)
+
+            self._logger.debug('Inserted %s tasks in batch %s for plugin <%s>',
+                               len(bulk), batch, self.name)
         except errors as e:
             # TODO: review list of exceptions, any fallback actions if needed
             raise TaskImportError('Can\'t load task: {}'.format(e))
@@ -209,8 +212,12 @@ class AbstractTaskType:
             # Not sure if we should do that here on GET requests
             self._work_session_manager.start_work_session(task, user.id)
 
+            self._logger.debug('Assigned task %s to user %s', task.id, user.id)
+
             return task.as_dict()
         else:
+            self._logger.debug('No suitable task found for  user %s', user.id)
+
             return {}
 
     def _get_next_task(self, user):
@@ -264,6 +271,30 @@ class AbstractTaskType:
         else:
             return None
 
+    def record_activity(self, user_id, task_id, seconds):
+        """
+        Increases the counter of activity for current user in given task.
+
+        :param task_id: Current task
+        :type task_id: str
+        :param user_id: ID of user, who gets new task
+        :type user_id: bytes, str, bson.ObjectId
+        :param seconds: User was active for
+        :type seconds: int
+
+        :raises: TaskSkipError, TaskNotFoundError
+        """
+        try:
+            task = self.task_model.objects.get(id=task_id,
+                                               task_type=self.type_name)
+
+            self._work_session_manager.record_activity(task, user_id, seconds)
+
+            self._logger.debug('Recording %s seconds of activity of user %s '
+                               'on task %s', seconds, user_id, task_id)
+        except self.task_model.DoesNotExist:
+            raise TaskNotFoundError()
+
     def skip_task(self, task_id, user):
         """
         Marks given task as a skipped by a given user
@@ -274,23 +305,21 @@ class AbstractTaskType:
         :param user: an instance of User model who provided an answer
         :type user: models.User
 
-        :raises: TaskSkipError
+        :raises: TaskSkipError, TaskNotFoundError
         """
         try:
             task = self.task_model.objects.get(
-                id=task_id, task_type=self.type_name)
+                id=task_id,
+                task_type=self.type_name)
 
             task.update(add_to_set__users_skipped=user)
             self._work_session_manager.delete_work_session(task, user.id)
+
+            self._logger.debug('User %s skipped the task %s', user.id, task_id)
         except self.task_model.DoesNotExist:
             raise TaskNotFoundError()
-        except NotUniqueError as err:
-            raise TaskSkipError(err)
         except OperationError as err:
-            raise TaskSkipError('Can not skip the task: {0}'.format(err))
-        except WorkSessionLookUpError:
-            # TODO: logging
-            pass
+            raise TaskSkipError('Can not skip the task: {0}.'.format(err))
 
     def on_task_done(self, user, task_id, result):
         """
@@ -315,7 +344,7 @@ class AbstractTaskType:
                 task_type=self.type_name)
         except self.task_model.DoesNotExist:
             raise TaskNotFoundError('Task with ID {id} not found while '
-                                    'trying to save an answer from {user!r}'
+                                    'trying to save an answer from {user!r}.'
                                     .format(id=task_id, user=user))
 
         try:
@@ -331,7 +360,9 @@ class AbstractTaskType:
             # update user
             user.update(inc__processed=1)
             # update stats record
-            self._work_session_manager.end_work_session(task, user, answer)
+            self._work_session_manager.end_work_session(task, user.id, answer)
+
+            self._logger.debug('User %s has done task %s', user.id, task_id)
 
             if closed and task.batch is not None:
                 batch_id = task.batch.id

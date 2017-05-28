@@ -42,13 +42,17 @@ var Vulyk = Vulyk || {
                     vus.task_id = data.result.task.id;
                     vus.body.trigger("vulyk.next", data);
                 }
-            ).fail(function(data) {
+            ).fail(function (data) {
                 vus.body.trigger("vulyk.task_error", data.responseJSON);
             });
         },
         skip_task: function () {
             var vu = this,
                 vus = vu.State;
+
+            if (vus.task_id === 0) {
+                return;
+            }
 
             if (typeof(ga) !== "undefined") {
                 ga('send', 'event', 'Task', 'Skip', vus.task_type);
@@ -57,7 +61,7 @@ var Vulyk = Vulyk || {
             $.post(
                 "/type/" + vus.task_type + "/skip/" + vus.task_id,
                 {},
-                function(data){
+                function (data) {
                     vu.load_next();
                 }
             );
@@ -73,7 +77,7 @@ var Vulyk = Vulyk || {
             $.post(
                 "/type/" + vus.task_type + "/done/" + vus.task_id,
                 {result: JSON.stringify(result)},
-                function(data) {
+                function (data) {
                     vu.load_next();
                 });
         },
@@ -96,14 +100,14 @@ var Vulyk = Vulyk || {
                     vu.load_next();
                 }
 
-                vus.body.on("vulyk.next", function(e, data) {
+                vus.body.on("vulyk.next", function (e, data) {
                     $("a#save-button, a#skip-button").removeClass("disabled");
                     vus.stats
                         .find("dd:eq(0)")
-                            .html(data.result.stats.total)
+                        .html(data.result.stats.total)
                         .end()
                         .find("dd:eq(1)")
-                            .html(data.result.stats.position)
+                        .html(data.result.stats.position)
                         .end()
                         .show();
                 });

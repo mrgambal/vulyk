@@ -11,7 +11,8 @@ __all__ = [
     'TaskPermissionError',
     'TaskSkipError',
     'TaskValidationError',
-    'WorkSessionLookUpError'
+    'WorkSessionLookUpError',
+    'WorkSessionUpdateError'
 ]
 
 
@@ -40,4 +41,8 @@ class TaskNotFoundError(Exception):
 
 
 class WorkSessionLookUpError(Exception):
+    pass
+
+
+class WorkSessionUpdateError(Exception):
     pass

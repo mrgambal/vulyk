@@ -27,9 +27,9 @@ class WorkSession(Document):
                           required=True)
     answer = ReferenceField(AbstractAnswer, reverse_delete_rule=CASCADE)
 
-    start_time = DateTimeField(required=True, default=datetime.now())
+    start_time = DateTimeField(required=True)
     end_time = DateTimeField(required=False)
-    corrections = IntField()
+    activity = IntField()
 
     meta = {
         'collection': 'work_sessions',
