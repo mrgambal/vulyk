@@ -4,9 +4,13 @@ Module contains all models used to keep some metadata we could use to perform
 any kind of analysis.
 """
 
-from datetime import datetime
-
-from mongoengine import IntField, DateTimeField, ReferenceField, CASCADE
+from mongoengine import (
+    CASCADE,
+    DateTimeField,
+    IntField,
+    ReferenceField,
+    StringField
+)
 from flask_mongoengine import Document
 
 from vulyk.models.tasks import AbstractTask, AbstractAnswer
@@ -25,6 +29,7 @@ class WorkSession(Document):
     user = ReferenceField(User, reverse_delete_rule=CASCADE, required=True)
     task = ReferenceField(AbstractTask, reverse_delete_rule=CASCADE,
                           required=True)
+    task_type = StringField(max_length=50, required=True, db_field='taskType')
     answer = ReferenceField(AbstractAnswer, reverse_delete_rule=CASCADE)
 
     start_time = DateTimeField(required=True)

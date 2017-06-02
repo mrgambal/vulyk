@@ -36,6 +36,7 @@ class WorkSessionManager:
             'You should define working session model properly'
 
         self._logger = logging.getLogger('vulyk.app')
+
         self.work_session = work_session_model
 
     def start_work_session(self, task, user_id):
@@ -58,7 +59,8 @@ class WorkSessionManager:
         try:
             existing = self.work_session \
                 .objects(user=user_id,
-                         task=task) \
+                         task=task,
+                         task_type=task.task_type) \
                 .modify(upsert=True,
                         set__start_time=datetime.now(),
                         set__activity=0)
