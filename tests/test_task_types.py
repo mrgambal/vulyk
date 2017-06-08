@@ -4,7 +4,7 @@
 """
 test_task_types
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from bson import ObjectId
 import unittest
@@ -15,8 +15,7 @@ from vulyk.models.exc import (
     TaskImportError,
     TaskNotFoundError,
     TaskValidationError,
-    WorkSessionLookUpError,
-    WorkSessionUpdateError)
+    WorkSessionLookUpError)
 from vulyk.models.stats import WorkSession
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
