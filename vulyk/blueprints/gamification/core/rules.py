@@ -4,6 +4,15 @@ Classes within the package are supposed to be intermittent containers between
 JSON sources and final queries. Everything that has anything to do with images,
 representation and other specifications also goes here.
 """
+__all__ = [
+    'Rule',
+    'ProjectRule',
+    'RuleValidationException'
+]
+
+
+class RuleValidationException(Exception):
+    pass
 
 
 class Rule:
@@ -22,6 +31,7 @@ class Rule:
     Also additional bonuses to be given after user gets the achievement are
     included as well as achievement and its badge is.
     """
+
     def __init__(self,
                  badge: str,
                  name: str,
@@ -64,6 +74,25 @@ class Rule:
 
         self._string = string
 
+        self._validate()
+
+    def _validate(self):
+        # no achievements for n tasks closed on m adjacent days/weekends
+        # might be extended later
+        if self._is_adjacent:
+            if self._tasks_number > 0:
+                raise RuleValidationException(
+                    'Counting number of tasks closed in adjacent days/weekends'
+                    ' is not supported.')
+            elif self._days_number == 0:
+
+                raise RuleValidationException(
+                    'Can not set "adjacent" flag with zero days')
+
+        if self._tasks_number == 0 and self._days_number == 0:
+            raise RuleValidationException('There must be at least one '
+                                          'numeric bound')
+
     @property
     def tasks_number(self) -> int:
         return self._tasks_number
@@ -83,13 +112,13 @@ class Rule:
     def __eq__(self, o: object) -> bool:
         if isinstance(o, Rule):
             return o.badge == self.badge \
-                and o.name == self.name \
-                and o.description == self.description \
-                and o.bonus == self.bonus \
-                and o._tasks_number == self._tasks_number \
-                and o._days_number == self._days_number \
-                and o._is_weekend == self._is_weekend \
-                and o._is_adjacent == self._is_adjacent
+                   and o.name == self.name \
+                   and o.description == self.description \
+                   and o.bonus == self.bonus \
+                   and o._tasks_number == self._tasks_number \
+                   and o._days_number == self._days_number \
+                   and o._is_weekend == self._is_weekend \
+                   and o._is_adjacent == self._is_adjacent
         else:
             return False
 
@@ -117,6 +146,7 @@ class ProjectRule(Rule):
     """
     Container for project specific rules.
     """
+
     def __init__(self,
                  task_type_name: str,
                  badge: str,
@@ -205,7 +235,7 @@ class ProjectRule(Rule):
 
     def __str__(self) -> str:
         return 'ProjectRule({name}, {task_type}, {bonus}, {tasks}, {days},' \
-               ' {week}, {adj})'\
+               ' {week}, {adj})' \
             .format(name=self.name,
                     task_type=self._task_type_name,
                     bonus=self.bonus,

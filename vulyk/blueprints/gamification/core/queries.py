@@ -64,16 +64,47 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
         if isinstance(rule, ProjectRule):
             self._filter_first['task_type'] = rule.task_type_name
 
-        # you closed n tasks in m days
-        if rule.days_number > 0 and rule.tasks_number > 0:
-            then = date.today() - timedelta(days=rule.days_number)
+        # we filter out tasks older than given date in these cases:
+        # - n tasks in m days
+        is_tasks_in_days = rule.days_number > 0 and rule.tasks_number > 0
+        # - has been working for m adjacent days/weekends
+        is_adjacent = rule.days_number > 0 and rule.is_adjacent
+
+        if is_tasks_in_days or is_adjacent:
+            days_ago = timedelta(days=rule.days_number)
+
+            if is_adjacent and rule.is_weekend:
+                # multiply by week length
+                days_ago *= 7
+
+            then = date.today() - days_ago
             self._filter_first['end_date'] = {'$gt': then}
 
-        # you closed n tasks on weekends
-        if rule.is_weekend and rule.tasks_number > 0:
-            self._projection = {'dayOfWeek': {'$dayOfWeek': '$end_date'}}
+        # filter by tasks closed on Saturday or Sunday only
+        if rule.is_weekend:
+            self._projection = {
+                'dayOfWeek': {'$dayOfWeek': '$end_date'},
+                'year': {'$year': '$end_date'},
+                'week': {'$week': '$end_date'},
+            }
             # mongoDB aggregation framework takes Sunday as 1 and Saturday as 7
             self._filter_second = {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}
+
+        # count by days with at least one task closed
+        count_by_days = rule.days_number > 0 and rule.tasks_number == 0
+
+        if count_by_days:
+            if rule.is_weekend:
+                self._group = {'_id': {'week': '$week', 'year': '$year'}}
+            else:
+                self._projection = {
+                   'day': {'$day': '$end_date'},
+                   'month': {'$month': '$end_date'},
+                   'year': {'$year': '$end_date'}
+                }
+                self._group = {
+                    '_id': {'day': '$day', 'month': '$month', 'year': '$year'}
+                }
 
     def build(self, user_id: ObjectId) -> list:
         """

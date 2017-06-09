@@ -42,11 +42,11 @@ class JsonRuleParser(RuleParser):
             rule = Rule(parsee['badge'],
                         parsee['name'],
                         parsee['description'],
-                        parsee['bonus'],
-                        parsee['tasks_number'],
-                        parsee['days_number'],
-                        parsee['is_weekend'],
-                        parsee['is_adjacent'],
+                        int(parsee['bonus']),
+                        int(parsee['tasks_number']),
+                        int(parsee['days_number']),
+                        bool(parsee['is_weekend']),
+                        bool(parsee['is_adjacent']),
                         json_string)
 
             if 'task_type' not in parsee:
