@@ -65,6 +65,56 @@ class TestJsonRulesParsing(BaseTest):
 
         self.assertEqual(rule, JsonRuleParser.parse(string))
 
+    def test_parse_limits_tasks(self):
+        image = 'base64 image'
+        name = 'achvm1'
+        descr = 'the very best acvmnt'
+        bonus = 100
+        tasks = 20
+        days = 21
+        weekend = True
+        adjacent = False
+        parsee = {
+            'badge': image,
+            'name': name,
+            'description': descr,
+            'bonus': bonus,
+            'tasks_number': tasks,
+            'days_number': days,
+            'is_weekend': weekend,
+            'is_adjacent': adjacent
+        }
+        string = json.dumps(parsee)
+        rule = Rule(
+            image, name, descr, bonus, tasks, days, weekend, adjacent, string)
+
+        self.assertEqual(rule.limit, tasks)
+
+    def test_parse_limits_days(self):
+        image = 'base64 image'
+        name = 'achvm1'
+        descr = 'the very best acvmnt'
+        bonus = 100
+        tasks = 0
+        days = 21
+        weekend = True
+        adjacent = False
+        parsee = {
+            'badge': image,
+            'name': name,
+            'description': descr,
+            'bonus': bonus,
+            'tasks_number': tasks,
+            'days_number': days,
+            'is_weekend': weekend,
+            'is_adjacent': adjacent
+        }
+        string = json.dumps(parsee)
+        rule = Rule(
+            image, name, descr, bonus, tasks, days, weekend, adjacent, string)
+
+        self.assertEqual(rule.limit, days)
+
     def test_fail_non_json(self):
         string = "<xml></xml>"
 

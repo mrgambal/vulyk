@@ -77,6 +77,12 @@ class Rule:
         self._validate()
 
     def _validate(self):
+        """
+        Verifies that the rule complies to internal invariants. Otherwise –
+        the exception must be thrown.
+
+        :raises: RuleValidationException
+        """
         # no achievements for n tasks closed on m adjacent days/weekends
         # might be extended later
         if self._is_adjacent:
@@ -109,6 +115,12 @@ class Rule:
     def is_adjacent(self) -> bool:
         return self._is_adjacent
 
+    @property
+    def limit(self):
+        return self._tasks_number \
+            if self._tasks_number > 0 \
+            else self._days_number
+
     def __eq__(self, o: object) -> bool:
         if isinstance(o, Rule):
             return o.badge == self.badge \
@@ -140,6 +152,9 @@ class Rule:
             name=self.name,
             descr=self.description[:50] + '...',
         )
+
+    def __hash__(self) -> int:
+        return hash(self._string)[:20]
 
 
 class ProjectRule(Rule):

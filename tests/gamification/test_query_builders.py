@@ -24,7 +24,7 @@ class TestMongoQueryBuilder(BaseTest):
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [{'$match': {'user': user_id}}]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_n_tasks_project(self):
         project = 'fake_tasks'
@@ -45,7 +45,7 @@ class TestMongoQueryBuilder(BaseTest):
             {'$match': {'user': user_id, 'task_type': project}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_n_tasks_m_days(self):
         rule = Rule(
@@ -65,7 +65,7 @@ class TestMongoQueryBuilder(BaseTest):
             {'$match': {'user': user_id, 'end_date': {'$gt': then}}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_n_tasks_m_days_project(self):
         project = 'fake_tasks'
@@ -90,7 +90,7 @@ class TestMongoQueryBuilder(BaseTest):
                 'task_type': project}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_n_tasks_weekends(self):
         rule = Rule(
@@ -114,7 +114,7 @@ class TestMongoQueryBuilder(BaseTest):
             {'$match': {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_n_tasks_weekends_project(self):
         project = 'fake_tasks'
@@ -140,7 +140,7 @@ class TestMongoQueryBuilder(BaseTest):
             {'$match': {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}},
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_m_weekends(self):
         rule = Rule(
@@ -165,7 +165,7 @@ class TestMongoQueryBuilder(BaseTest):
             {'$group': {'_id': {'week': '$week', 'year': '$year'}}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_m_weekends_project(self):
         project = 'fake_tasks'
@@ -192,7 +192,7 @@ class TestMongoQueryBuilder(BaseTest):
             {'$group': {'_id': {'week': '$week', 'year': '$year'}}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_m_weekends_adjacent(self):
         rule = Rule(
@@ -220,7 +220,7 @@ class TestMongoQueryBuilder(BaseTest):
             {'$group': {'_id': {'week': '$week', 'year': '$year'}}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_m_weekends_adjacent_project(self):
         project = 'fake_tasks'
@@ -252,7 +252,7 @@ class TestMongoQueryBuilder(BaseTest):
             {'$group': {'_id': {'week': '$week', 'year': '$year'}}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_m_days_adjacent(self):
         rule = Rule(
@@ -279,7 +279,7 @@ class TestMongoQueryBuilder(BaseTest):
                 '_id': {'day': '$day', 'month': '$month', 'year': '$year'}}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))
 
     def test_m_days_adjacent_project(self):
         project = 'fake_tasks'
@@ -311,4 +311,4 @@ class TestMongoQueryBuilder(BaseTest):
                 '_id': {'day': '$day', 'month': '$month', 'year': '$year'}}}
         ]
 
-        self.assertEqual(expected, builder.build(user_id))
+        self.assertEqual(expected, builder.build_for(user_id))

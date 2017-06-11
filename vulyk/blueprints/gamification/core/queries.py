@@ -7,6 +7,8 @@ from bson import ObjectId
 from datetime import date, timedelta
 from collections import namedtuple
 
+from mongoengine.queryset.base import BaseQuerySet
+
 from .rules import Rule, ProjectRule
 
 __all__ = [
@@ -35,7 +37,7 @@ class RuleQueryBuilder:
         self._filter_second = {}
         self._group = {}
 
-    def build(self, user_id: ObjectId) -> list:
+    def build_for(self, user_id: ObjectId) -> list:
         """
         Prepares a pipeline of actions to be passed to data source.
 
@@ -106,7 +108,7 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
                     '_id': {'day': '$day', 'month': '$month', 'year': '$year'}
                 }
 
-    def build(self, user_id: ObjectId) -> list:
+    def build_for(self, user_id: ObjectId) -> list:
         """
         Prepares a pipeline of actions to be passed to MongoDB Aggregation
         Framework.
@@ -132,8 +134,26 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
 
 
 class MongoRuleExecutor:
-    def __init__(self, rule: Rule) -> None:
+    @staticmethod
+    def achieved(user_id: ObjectId,
+                 rule: Rule,
+                 collection: BaseQuerySet) -> bool:
         """
-        :param rule:
+        Determines if given user has achieved a new prize.
+
+        :param user_id: Current user ID
+        :type user_id: bson.ObjectId
+        :param rule: Rule to be applied
         :type rule: Rule
+        :param collection: WorkSession querySet
+        :type collection: BaseQuerySet
+
+        :return: True if user stats comply to the rule
+        :rtype: bool
         """
+
+        # there is no way to get the size of aggregated batch using pymongo
+        # except explicit cursor dereferencing.
+        query = MongoRuleQueryBuilder(rule).build_for(user_id)
+
+        return sum([1 for _ in collection.aggregate(query)]) >= rule.limit
