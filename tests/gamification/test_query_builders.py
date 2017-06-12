@@ -19,7 +19,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=0,
             is_weekend=False,
             is_adjacent=False,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [{'$match': {'user': user_id}}]
@@ -38,7 +38,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=0,
             is_weekend=False,
             is_adjacent=False,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -57,7 +57,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=7,
             is_weekend=False,
             is_adjacent=False,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         then = date.today() - timedelta(days=7)
@@ -79,7 +79,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=7,
             is_weekend=False,
             is_adjacent=False,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         then = date.today() - timedelta(days=7)
@@ -102,7 +102,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=0,
             is_weekend=True,
             is_adjacent=False,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -128,7 +128,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=0,
             is_weekend=True,
             is_adjacent=False,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -152,7 +152,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=7,
             is_weekend=True,
             is_adjacent=False,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -179,7 +179,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=7,
             is_weekend=True,
             is_adjacent=False,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -204,7 +204,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=5,
             is_weekend=True,
             is_adjacent=True,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         # multiply by week length
@@ -234,7 +234,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=5,
             is_weekend=True,
             is_adjacent=True,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         # multiply by week length
@@ -264,7 +264,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         # multiply by week length
@@ -293,7 +293,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            string='')
+            id=100)
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         # multiply by week length

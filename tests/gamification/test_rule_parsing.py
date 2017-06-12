@@ -34,7 +34,15 @@ class TestJsonRulesParsing(BaseTest):
         }
         string = json.dumps(parsee)
         rule = Rule(
-            image, name, descr, bonus, tasks, days, weekend, adjacent, string)
+            id=hash(string),
+            badge=image,
+            name=name,
+            description=descr,
+            bonus=bonus,
+            tasks_number=tasks,
+            days_number=days,
+            is_weekend=weekend,
+            is_adjacent=adjacent)
 
         self.assertEqual(rule, JsonRuleParser.parse(string))
 
@@ -60,8 +68,16 @@ class TestJsonRulesParsing(BaseTest):
             'is_adjacent': adjacent
         }
         string = json.dumps(parsee)
-        rule = ProjectRule(project, image, name, descr, bonus, tasks, days,
-                           weekend, adjacent, string)
+        rule = ProjectRule(id=hash(string),
+                           task_type_name=project,
+                           badge=image,
+                           name=name,
+                           description=descr,
+                           bonus=bonus,
+                           tasks_number=tasks,
+                           days_number=days,
+                           is_weekend=weekend,
+                           is_adjacent=adjacent)
 
         self.assertEqual(rule, JsonRuleParser.parse(string))
 
@@ -86,7 +102,15 @@ class TestJsonRulesParsing(BaseTest):
         }
         string = json.dumps(parsee)
         rule = Rule(
-            image, name, descr, bonus, tasks, days, weekend, adjacent, string)
+            id=hash(string),
+            badge=image,
+            name=name,
+            description=descr,
+            bonus=bonus,
+            tasks_number=tasks,
+            days_number=days,
+            is_weekend=weekend,
+            is_adjacent=adjacent)
 
         self.assertEqual(rule.limit, tasks)
 
@@ -111,9 +135,40 @@ class TestJsonRulesParsing(BaseTest):
         }
         string = json.dumps(parsee)
         rule = Rule(
-            image, name, descr, bonus, tasks, days, weekend, adjacent, string)
+            id=hash(string),
+            badge=image,
+            name=name,
+            description=descr,
+            bonus=bonus,
+            tasks_number=tasks,
+            days_number=days,
+            is_weekend=weekend,
+            is_adjacent=adjacent)
 
         self.assertEqual(rule.limit, days)
+
+    def test_parse_hash(self):
+        image = 'base64 image'
+        name = 'achvm1'
+        descr = 'the very best acvmnt'
+        bonus = 100
+        tasks = 20
+        days = 21
+        weekend = True
+        adjacent = False
+        parsee = {
+            'badge': image,
+            'name': name,
+            'description': descr,
+            'bonus': bonus,
+            'tasks_number': tasks,
+            'days_number': days,
+            'is_weekend': weekend,
+            'is_adjacent': adjacent
+        }
+        string = json.dumps(parsee)
+
+        self.assertEqual(hash(JsonRuleParser.parse(string)), hash(string))
 
     def test_fail_non_json(self):
         string = "<xml></xml>"

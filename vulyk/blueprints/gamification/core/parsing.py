@@ -9,6 +9,9 @@ from .rules import Rule, ProjectRule
 
 
 class RuleParsingException(Exception):
+    """
+    Basic exception for all types of rule parsing errors
+    """
     pass
 
 
@@ -39,22 +42,23 @@ class JsonRuleParser(RuleParser):
         """
         try:
             parsee = json.loads(json_string)
-            rule = Rule(parsee['badge'],
-                        parsee['name'],
-                        parsee['description'],
-                        int(parsee['bonus']),
-                        int(parsee['tasks_number']),
-                        int(parsee['days_number']),
-                        bool(parsee['is_weekend']),
-                        bool(parsee['is_adjacent']),
-                        json_string)
+            # don't copy objects having same JSON but differently formatted
+            hash_id = hash(json.dumps(parsee))
+            rule = Rule(id=hash_id,
+                        badge=parsee['badge'],
+                        name=parsee['name'],
+                        description=parsee['description'],
+                        bonus=int(parsee['bonus']),
+                        tasks_number=int(parsee['tasks_number']),
+                        days_number=(parsee['days_number']),
+                        is_weekend=bool(parsee['is_weekend']),
+                        is_adjacent=bool(parsee['is_adjacent']))
 
             if 'task_type' not in parsee:
                 return rule
             else:
                 return ProjectRule.from_rule(rule,
-                                             parsee['task_type'],
-                                             json_string)
+                                             parsee['task_type'])
         except ValueError:
             raise RuleParsingException('Can not parse {}'.format(json_string))
         except KeyError as e:

@@ -33,6 +33,7 @@ class Rule:
     """
 
     def __init__(self,
+                 id: int,
                  badge: str,
                  name: str,
                  description: str,
@@ -40,8 +41,7 @@ class Rule:
                  tasks_number: int,
                  days_number: int,
                  is_weekend: bool,
-                 is_adjacent: bool,
-                 string: str) -> None:
+                 is_adjacent: bool) -> None:
         """
         :param badge: Badge image (either base64 or URL)
         :type badge: str
@@ -59,8 +59,8 @@ class Rule:
         :type is_weekend: bool
         :param is_adjacent: Must it be given for work in adjacent days?
         :type is_adjacent: bool
-        :param string: Raw JSON representation.
-        :type string: str
+        :param id: Raw JSON representation hash.
+        :type id: int
         """
         self.badge = badge
         self.name = name
@@ -72,7 +72,7 @@ class Rule:
         self._is_weekend = is_weekend
         self._is_adjacent = is_adjacent
 
-        self._string = string
+        self._hash = id
 
         self._validate()
 
@@ -122,17 +122,7 @@ class Rule:
             else self._days_number
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, Rule):
-            return o.badge == self.badge \
-                   and o.name == self.name \
-                   and o.description == self.description \
-                   and o.bonus == self.bonus \
-                   and o._tasks_number == self._tasks_number \
-                   and o._days_number == self._days_number \
-                   and o._is_weekend == self._is_weekend \
-                   and o._is_adjacent == self._is_adjacent
-        else:
-            return False
+        return isinstance(o, Rule) and self._hash == hash(o)
 
     def __ne__(self, o: object) -> bool:
         return not self == o
@@ -154,7 +144,7 @@ class Rule:
         )
 
     def __hash__(self) -> int:
-        return hash(self._string)[:20]
+        return self._hash
 
 
 class ProjectRule(Rule):
@@ -163,6 +153,7 @@ class ProjectRule(Rule):
     """
 
     def __init__(self,
+                 id: int,
                  task_type_name: str,
                  badge: str,
                  name: str,
@@ -171,9 +162,10 @@ class ProjectRule(Rule):
                  tasks_number: int,
                  days_number: int,
                  is_weekend: bool,
-                 is_adjacent: bool,
-                 string: str) -> None:
+                 is_adjacent: bool) -> None:
         """
+        :param id: Raw JSON representation hash.
+        :type id: int
         :param task_type_name: ID of the project/task type.
         :type task_type_name: str
         :param badge: Badge image (either base64 or URL)
@@ -192,18 +184,16 @@ class ProjectRule(Rule):
         :type is_weekend: bool
         :param is_adjacent: Must it be given for work in adjacent days?
         :type is_adjacent: bool
-        :param string: Raw JSON representation.
-        :type string: str
         """
-        super().__init__(badge,
-                         name,
-                         description,
-                         bonus,
-                         tasks_number,
-                         days_number,
-                         is_weekend,
-                         is_adjacent,
-                         string)
+        super().__init__(id=id,
+                         badge=badge,
+                         name=name,
+                         description=description,
+                         bonus=bonus,
+                         tasks_number=tasks_number,
+                         days_number=days_number,
+                         is_weekend=is_weekend,
+                         is_adjacent=is_adjacent)
 
         self._task_type_name = task_type_name
 
@@ -212,7 +202,7 @@ class ProjectRule(Rule):
         return self._task_type_name
 
     @classmethod
-    def from_rule(cls, rule: Rule, task_type_name: str, string: str) -> Rule:
+    def from_rule(cls, rule: Rule, task_type_name: str) -> Rule:
         """
         Factory method to extend regular Rule and promote it to ProjectRule
 
@@ -220,33 +210,21 @@ class ProjectRule(Rule):
         :type rule: Rule
         :param task_type_name: ID of the project/task type.
         :type task_type_name: str
-        :param string: Raw JSON representation.
-        :type string: str
 
         :return: Fully formed ProjectRule
         :rtype: ProjectRule
         """
         return cls(
-            task_type_name,
-            rule.badge,
-            rule.name,
-            rule.description,
-            rule.bonus,
-            rule.tasks_number,
-            rule.days_number,
-            rule.is_weekend,
-            rule.is_adjacent,
-            string)
-
-    def __eq__(self, o: object) -> bool:
-        if isinstance(o, ProjectRule):
-            return super().__eq__(o) \
-                   and self._task_type_name == o._task_type_name
-        else:
-            return False
-
-    def __ne__(self, o: object) -> bool:
-        return not self == o
+            id=hash(rule),
+            task_type_name=task_type_name,
+            badge=rule.badge,
+            name=rule.name,
+            description=rule.description,
+            bonus=rule.bonus,
+            tasks_number=rule.tasks_number,
+            days_number=rule.days_number,
+            is_weekend=rule.is_weekend,
+            is_adjacent=rule.is_adjacent)
 
     def __str__(self) -> str:
         return 'ProjectRule({name}, {task_type}, {bonus}, {tasks}, {days},' \

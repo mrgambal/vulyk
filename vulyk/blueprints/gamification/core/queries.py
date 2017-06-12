@@ -14,10 +14,9 @@ from .rules import Rule, ProjectRule
 __all__ = [
     'RULES',
     'RuleQueryBuilder',
-    'MongoRuleQueryBuilder'
+    'MongoRuleQueryBuilder',
+    'MongoRuleExecutor'
 ]
-
-RULES = []
 
 
 class RuleQueryBuilder:
