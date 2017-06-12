@@ -43,6 +43,8 @@ class Rule:
                  is_weekend: bool,
                  is_adjacent: bool) -> None:
         """
+        :param id: Raw JSON representation hash.
+        :type id: int
         :param badge: Badge image (either base64 or URL)
         :type badge: str
         :param name: Achievement name
@@ -59,8 +61,6 @@ class Rule:
         :type is_weekend: bool
         :param is_adjacent: Must it be given for work in adjacent days?
         :type is_adjacent: bool
-        :param id: Raw JSON representation hash.
-        :type id: int
         """
         self.badge = badge
         self.name = name
@@ -100,6 +100,10 @@ class Rule:
                                           'numeric bound')
 
     @property
+    def id(self):
+        return self._hash
+
+    @property
     def tasks_number(self) -> int:
         return self._tasks_number
 
@@ -122,7 +126,10 @@ class Rule:
             else self._days_number
 
     def __eq__(self, o: object) -> bool:
-        return isinstance(o, Rule) and self._hash == hash(o)
+        if isinstance(o, Rule):
+            return self._hash == o.id
+        else:
+            return False
 
     def __ne__(self, o: object) -> bool:
         return not self == o
@@ -142,9 +149,6 @@ class Rule:
             name=self.name,
             descr=self.description[:50] + '...',
         )
-
-    def __hash__(self) -> int:
-        return self._hash
 
 
 class ProjectRule(Rule):
@@ -215,7 +219,7 @@ class ProjectRule(Rule):
         :rtype: ProjectRule
         """
         return cls(
-            id=hash(rule),
+            id=rule.id,
             task_type_name=task_type_name,
             badge=rule.badge,
             name=rule.name,
@@ -243,3 +247,12 @@ class ProjectRule(Rule):
             task_type=self._task_type_name,
             descr=self.description[:50] + '...'
         )
+
+    def __eq__(self, o: object) -> bool:
+        if isinstance(o, ProjectRule):
+            return self._hash == o.id
+        else:
+            return False
+
+    def __ne__(self, o: object) -> bool:
+        return not self == o

@@ -34,7 +34,7 @@ class TestJsonRulesParsing(BaseTest):
         }
         string = json.dumps(parsee)
         rule = Rule(
-            id=hash(string),
+            id=hash(name),
             badge=image,
             name=name,
             description=descr,
@@ -68,7 +68,7 @@ class TestJsonRulesParsing(BaseTest):
             'is_adjacent': adjacent
         }
         string = json.dumps(parsee)
-        rule = ProjectRule(id=hash(string),
+        rule = ProjectRule(id=hash(name + project),
                            task_type_name=project,
                            badge=image,
                            name=name,
@@ -102,7 +102,7 @@ class TestJsonRulesParsing(BaseTest):
         }
         string = json.dumps(parsee)
         rule = Rule(
-            id=hash(string),
+            id=hash(name),
             badge=image,
             name=name,
             description=descr,
@@ -133,9 +133,9 @@ class TestJsonRulesParsing(BaseTest):
             'is_weekend': weekend,
             'is_adjacent': adjacent
         }
-        string = json.dumps(parsee)
+
         rule = Rule(
-            id=hash(string),
+            id=hash(name),
             badge=image,
             name=name,
             description=descr,
@@ -168,7 +168,8 @@ class TestJsonRulesParsing(BaseTest):
         }
         string = json.dumps(parsee)
 
-        self.assertEqual(hash(JsonRuleParser.parse(string)), hash(string))
+        self.assertEqual(JsonRuleParser.parse(string).id,
+                         hash(name))
 
     def test_fail_non_json(self):
         string = "<xml></xml>"

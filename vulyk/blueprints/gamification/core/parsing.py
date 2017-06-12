@@ -42,11 +42,13 @@ class JsonRuleParser(RuleParser):
         """
         try:
             parsee = json.loads(json_string)
-            # don't copy objects having same JSON but differently formatted
-            hash_id = hash(json.dumps(parsee))
+            name = parsee['name']
+            task_type_name = parsee.get('task_type', '')
+            hash_id = hash('{}{}'.format(name, task_type_name))
+
             rule = Rule(id=hash_id,
                         badge=parsee['badge'],
-                        name=parsee['name'],
+                        name=name,
                         description=parsee['description'],
                         bonus=int(parsee['bonus']),
                         tasks_number=int(parsee['tasks_number']),
@@ -54,12 +56,12 @@ class JsonRuleParser(RuleParser):
                         is_weekend=bool(parsee['is_weekend']),
                         is_adjacent=bool(parsee['is_adjacent']))
 
-            if 'task_type' not in parsee:
-                return rule
-            else:
+            if task_type_name:
                 return ProjectRule.from_rule(rule,
                                              parsee['task_type'])
+            else:
+                return rule
         except ValueError:
             raise RuleParsingException('Can not parse {}'.format(json_string))
-        except KeyError as e:
+        except (TypeError, KeyError) as e:
             raise RuleParsingException('Invalid JSON passed: {}'.format(e))

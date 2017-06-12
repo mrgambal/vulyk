@@ -12,7 +12,7 @@ class RuleModel(Document):
     id = StringField(required=True, unique=True)
     task_type_name = StringField()
     badge = StringField(required=True)
-    name = StringField(required=True, max_length=255)
+    name = StringField(required=True, max_length=255, unique=True)
     description = StringField(required=True)
     bonus = IntField(min_value=0)
     tasks_number = IntField(min_value=0, db_field='tasksNumber')
@@ -44,7 +44,7 @@ class RuleModel(Document):
             else ''
 
         return cls(
-            id=hash(rule),
+            id=rule.id,
             task_type_name=task_type_name,
             badge=rule.badge,
             name=rule.name,
