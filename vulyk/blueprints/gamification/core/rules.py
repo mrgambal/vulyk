@@ -5,13 +5,16 @@ JSON sources and final queries. Everything that has anything to do with images,
 representation and other specifications also goes here.
 """
 __all__ = [
-    'Rule',
     'ProjectRule',
+    'Rule',
     'RuleValidationException'
 ]
 
 
 class RuleValidationException(Exception):
+    """
+    Basic exception class for all types of rule validation violations
+    """
     pass
 
 
@@ -33,7 +36,7 @@ class Rule:
     """
 
     def __init__(self,
-                 id: int,
+                 rule_id: int,
                  badge: str,
                  name: str,
                  description: str,
@@ -43,8 +46,8 @@ class Rule:
                  is_weekend: bool,
                  is_adjacent: bool) -> None:
         """
-        :param id: Raw JSON representation hash.
-        :type id: int
+        :param rule_id: Unique rule identifier.
+        :type rule_id: int
         :param badge: Badge image (either base64 or URL)
         :type badge: str
         :param name: Achievement name
@@ -72,7 +75,7 @@ class Rule:
         self._is_weekend = is_weekend
         self._is_adjacent = is_adjacent
 
-        self._hash = id
+        self._hash = rule_id
 
         self._validate()
 
@@ -91,7 +94,6 @@ class Rule:
                     'Counting number of tasks closed in adjacent days/weekends'
                     ' is not supported.')
             elif self._days_number == 0:
-
                 raise RuleValidationException(
                     'Can not set "adjacent" flag with zero days')
 
@@ -100,7 +102,7 @@ class Rule:
                                           'numeric bound')
 
     @property
-    def id(self):
+    def id(self) -> id:
         return self._hash
 
     @property
@@ -120,7 +122,23 @@ class Rule:
         return self._is_adjacent
 
     @property
-    def limit(self):
+    def limit(self) -> int:
+        """
+        The vital characteristic of the rule: the limit member should surpass
+        to get the achievement.
+        At current stage the property relies upon two values: tasks done by
+        user and days he spent working on these tasks. The priority is
+        following: if tasks number is specified, it always supersedes days.
+
+        E.g.: if rule has `tasks_number=20` and `days_number=7` – limit is 20.
+        We take the number of tasks done in 7 days, and compare it to 20.
+        Otherwise, if only `days_number=7` is specified, limit is 7. We group
+        all tasks were done not earlier than 7 days ago, group them by day and
+        check if 7 items is returned from aggregation pipeline.
+
+        :return: The value to be compared to aggregation results.
+        :rtype: int
+        """
         return self._tasks_number \
             if self._tasks_number > 0 \
             else self._days_number
@@ -157,7 +175,7 @@ class ProjectRule(Rule):
     """
 
     def __init__(self,
-                 id: int,
+                 rule_id: int,
                  task_type_name: str,
                  badge: str,
                  name: str,
@@ -168,8 +186,8 @@ class ProjectRule(Rule):
                  is_weekend: bool,
                  is_adjacent: bool) -> None:
         """
-        :param id: Raw JSON representation hash.
-        :type id: int
+        :param rule_id: Unique rule identifier.
+        :type rule_id: int
         :param task_type_name: ID of the project/task type.
         :type task_type_name: str
         :param badge: Badge image (either base64 or URL)
@@ -189,7 +207,7 @@ class ProjectRule(Rule):
         :param is_adjacent: Must it be given for work in adjacent days?
         :type is_adjacent: bool
         """
-        super().__init__(id=id,
+        super().__init__(rule_id=rule_id,
                          badge=badge,
                          name=name,
                          description=description,
@@ -219,7 +237,7 @@ class ProjectRule(Rule):
         :rtype: ProjectRule
         """
         return cls(
-            id=rule.id,
+            rule_id=rule.id,
             task_type_name=task_type_name,
             badge=rule.badge,
             name=rule.name,

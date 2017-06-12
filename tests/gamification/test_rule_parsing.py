@@ -34,7 +34,7 @@ class TestJsonRulesParsing(BaseTest):
         }
         string = json.dumps(parsee)
         rule = Rule(
-            id=hash(name),
+            rule_id=hash(name),
             badge=image,
             name=name,
             description=descr,
@@ -68,7 +68,7 @@ class TestJsonRulesParsing(BaseTest):
             'is_adjacent': adjacent
         }
         string = json.dumps(parsee)
-        rule = ProjectRule(id=hash(name + project),
+        rule = ProjectRule(rule_id=hash(name + project),
                            task_type_name=project,
                            badge=image,
                            name=name,
@@ -102,7 +102,7 @@ class TestJsonRulesParsing(BaseTest):
         }
         string = json.dumps(parsee)
         rule = Rule(
-            id=hash(name),
+            rule_id=hash(name),
             badge=image,
             name=name,
             description=descr,
@@ -135,7 +135,7 @@ class TestJsonRulesParsing(BaseTest):
         }
 
         rule = Rule(
-            id=hash(name),
+            rule_id=hash(name),
             badge=image,
             name=name,
             description=descr,

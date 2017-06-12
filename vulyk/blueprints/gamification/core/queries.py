@@ -12,10 +12,9 @@ from mongoengine.queryset.base import BaseQuerySet
 from .rules import Rule, ProjectRule
 
 __all__ = [
-    'RULES',
-    'RuleQueryBuilder',
+    'MongoRuleExecutor',
     'MongoRuleQueryBuilder',
-    'MongoRuleExecutor'
+    'RuleQueryBuilder'
 ]
 
 
@@ -99,9 +98,9 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
                 self._group = {'_id': {'week': '$week', 'year': '$year'}}
             else:
                 self._projection = {
-                   'day': {'$day': '$end_date'},
-                   'month': {'$month': '$end_date'},
-                   'year': {'$year': '$end_date'}
+                    'day': {'$day': '$end_date'},
+                    'month': {'$month': '$end_date'},
+                    'year': {'$year': '$end_date'}
                 }
                 self._group = {
                     '_id': {'day': '$day', 'month': '$month', 'year': '$year'}
@@ -123,11 +122,13 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
 
         result = [{'$match': filter_first}]
 
-        [result.append({statement.key: statement.clause}) for statement in [
+        for statement in [
             self._Pair(key='$project', clause=self._projection),
             self._Pair(key='$match', clause=self._filter_second),
             self._Pair(key='$group', clause=self._group)
-        ] if bool(statement.clause)]
+        ]:
+            if bool(statement.clause):
+                result.append({statement.key: statement.clause})
 
         return result
 
@@ -155,4 +156,4 @@ class MongoRuleExecutor:
         # except explicit cursor dereferencing.
         query = MongoRuleQueryBuilder(rule).build_for(user_id)
 
-        return sum([1 for _ in collection.aggregate(query)]) >= rule.limit
+        return sum(1 for _ in collection.aggregate(query)) >= rule.limit

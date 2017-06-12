@@ -46,7 +46,7 @@ class JsonRuleParser(RuleParser):
             task_type_name = parsee.get('task_type', '')
             hash_id = hash('{}{}'.format(name, task_type_name))
 
-            rule = Rule(id=hash_id,
+            rule = Rule(rule_id=hash_id,
                         badge=parsee['badge'],
                         name=name,
                         description=parsee['description'],

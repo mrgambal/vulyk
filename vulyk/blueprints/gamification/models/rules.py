@@ -4,6 +4,10 @@ from mongoengine import StringField, IntField, BooleanField
 
 from ..core.rules import Rule, ProjectRule
 
+__all__ = [
+    'RuleModel'
+]
+
 
 class RuleModel(Document):
     """
@@ -34,7 +38,8 @@ class RuleModel(Document):
         """
         Rule to DB-specific model converter.
 
-        :param rule:
+        :param rule: Current Rule instance
+        :type rule: Rule
 
         :return: New RuleModel instance
         :rtype: RuleModel
@@ -64,7 +69,7 @@ class RuleModel(Document):
         :rtype: Rule
         """
         rule = Rule(
-            id=self.id,
+            rule_id=self.id,
             badge=self.badge,
             name=self.name,
             description=self.description,
