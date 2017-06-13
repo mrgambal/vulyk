@@ -60,10 +60,6 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 html_theme = 'alabaster'
 
-# If true, SmartyPants will be used to convert quotes and dashes to
-# typographically correct entities.
-html_use_smartypants = True
-
 # If true, "Created using Sphinx" is shown in the HTML footer.
 # Default is True.
 html_show_sphinx = False

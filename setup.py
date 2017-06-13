@@ -28,6 +28,10 @@ setup(
     url='https://github.com/mrgambal/vulyk',
     packages=[
         'vulyk',
+        'vulyk.blueprints',
+        'vulyk.blueprints.gamification',
+        'vulyk.blueprints.gamification.core',
+        'vulyk.blueprints.gamification.models',
         'vulyk.bootstrap',
         'vulyk.cli',
         'vulyk.ext',
