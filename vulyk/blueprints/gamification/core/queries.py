@@ -3,9 +3,10 @@
 The factory of achievements. Classes below allow us to query data source we use
 as a source of truth.
 """
-from bson import ObjectId
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from collections import namedtuple
+
+from bson import ObjectId
 
 from mongoengine.queryset.base import BaseQuerySet
 
@@ -62,7 +63,7 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
         super().__init__(rule)
 
         if isinstance(rule, ProjectRule):
-            self._filter_first['task_type'] = rule.task_type_name
+            self._filter_first['taskType'] = rule.task_type_name
 
         # we filter out tasks older than given date in these cases:
         # - n tasks in m days
@@ -77,15 +78,17 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
                 # multiply by week length
                 days_ago *= 7
 
-            then = date.today() - days_ago
-            self._filter_first['end_date'] = {'$gt': then}
+            then = datetime.combine(date.today() - days_ago,
+                                    datetime.min.time())
+
+            self._filter_first['end_time'] = {'$gt': then}
 
         # filter by tasks closed on Saturday or Sunday only
         if rule.is_weekend:
             self._projection = {
-                'dayOfWeek': {'$dayOfWeek': '$end_date'},
-                'year': {'$year': '$end_date'},
-                'week': {'$week': '$end_date'},
+                'dayOfWeek': {'$dayOfWeek': '$end_time'},
+                'year': {'$year': '$end_time'},
+                'week': {'$week': '$end_time'},
             }
             # mongoDB aggregation framework takes Sunday as 1 and Saturday as 7
             self._filter_second = {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}
@@ -98,12 +101,15 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
                 self._group = {'_id': {'week': '$week', 'year': '$year'}}
             else:
                 self._projection = {
-                    'day': {'$day': '$end_date'},
-                    'month': {'$month': '$end_date'},
-                    'year': {'$year': '$end_date'}
+                    'day': {'$dayOfMonth': '$end_time'},
+                    'month': {'$month': '$end_time'},
+                    'year': {'$year': '$end_time'}
                 }
                 self._group = {
-                    '_id': {'day': '$day', 'month': '$month', 'year': '$year'}
+                    '_id': {
+                        'day': '$day',
+                        'month': '$month',
+                        'year': '$year'}
                 }
 
     def build_for(self, user_id: ObjectId) -> list:
@@ -156,4 +162,4 @@ class MongoRuleExecutor:
         # except explicit cursor dereferencing.
         query = MongoRuleQueryBuilder(rule).build_for(user_id)
 
-        return sum(1 for _ in collection.aggregate(query)) >= rule.limit
+        return sum(1 for _ in collection.aggregate(*query)) >= rule.limit

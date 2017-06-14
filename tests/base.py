@@ -10,7 +10,8 @@ from mongoengine.connection import register_connection
 
 
 class BaseTest(unittest.TestCase):
-    MONGO_URI = 'mongomock://localhost'
+    # MONGO_URI = 'mongomock://localhost'
+    MONGO_URI = 'mongodb://localhost:27017/'
     CONNECTION_NAME = 'default'
 
     register_connection(CONNECTION_NAME, name=CONNECTION_NAME, host=MONGO_URI)

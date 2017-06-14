@@ -37,8 +37,8 @@ __all__ = [
 
 class AbstractTaskType:
     """
-    The main entity in the application. Contains all the logic we need to handle
-    task emission/accounting.
+    The main entity in the application. Contains all the logic we need to
+    handle task emission/accounting.
 
     Could be overridden in plugins to fit your needs.
 
@@ -69,8 +69,8 @@ class AbstractTaskType:
         """
         Constructor.
 
-        :param settings: We pass global settings dictionary into the constructor
-         when instantiating plugins. Could be useful for plugins.
+        :param settings: We pass global settings dictionary into the
+        constructor when instantiating plugins. Could be useful for plugins.
         :type settings: dict
         """
         self._logger = logging.getLogger('vulyk.app')
@@ -145,7 +145,6 @@ class AbstractTaskType:
             self._logger.debug('Inserted %s tasks in batch %s for plugin <%s>',
                                len(bulk), batch, self.name)
         except errors as e:
-            # TODO: review list of exceptions, any fallback actions if needed
             raise TaskImportError('Can\'t load task: {}'.format(e))
 
     def export_reports(self, batch, closed=True, qs=None):
@@ -239,9 +238,8 @@ class AbstractTaskType:
             if batch.tasks_count == batch.tasks_processed:
                 continue
 
-            rs = self.task_model.objects(base_q
-                                         & Q(users_skipped__nin=[user])
-                                         & Q(batch=batch.id))
+            rs = self.task_model.objects(
+                base_q & Q(users_skipped__nin=[user]) & Q(batch=batch.id))
 
             if rs.count() == 0:
                 del rs
