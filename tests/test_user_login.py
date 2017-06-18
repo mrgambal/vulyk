@@ -3,8 +3,7 @@
 test_user_login
 """
 import flask
-import mongomock
-from mongoengine import Document
+from mongoengine import connect, Document
 from unittest.mock import patch
 
 from vulyk.bootstrap import _social_login as social_login
@@ -26,7 +25,7 @@ class TestUserLogin(BaseTest):
     def test_injected_in_request(self):
         app = flask.Flask('test')
         app.config.from_object('vulyk.settings')
-        db = mongomock.MongoClient().get_database('vulyk')
+        db = connect(host='mongodb://localhost:27017').vulyk
         db.Document = Document
 
         social_login.init_social_login(app, db)
@@ -42,7 +41,7 @@ class TestUserLogin(BaseTest):
     def test_injected_in_template(self):
         app = flask.Flask('test')
         app.config.from_object('vulyk.settings')
-        db = mongomock.MongoClient().get_database('vulyk')
+        db = connect(host='mongodb://localhost:27017').vulyk
         db.Document = Document
 
         social_login.init_social_login(app, db)
