@@ -575,7 +575,7 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=True,
             is_adjacent=False,
             rule_id=100)
-        to_sun = timedelta(days=7 - self.NOW.weekday())
+        to_sun = timedelta(days=(self.NOW.weekday() + 1) % 7)
 
         for i in range(1, 22):
             day_i = (self.NOW - to_sun) - self.DAY * 7
@@ -603,7 +603,7 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=True,
             is_adjacent=False,
             rule_id=100)
-        to_sat = timedelta(days=8 - self.NOW.weekday())
+        to_sat = timedelta(days=(self.NOW.weekday() + 1) % 6)
 
         for i in range(1, 22):
             day_i = (self.NOW - to_sat) - self.DAY * 7
@@ -631,10 +631,10 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=True,
             is_adjacent=False,
             rule_id=100)
-        to_sat = timedelta(days=6 - self.NOW.weekday())
+        to_mon = timedelta(days=self.NOW.weekday())
 
         for i in range(1, 22):
-            day_i = (self.NOW - to_sat) - self.DAY * 7
+            day_i = (self.NOW - to_mon) - self.DAY * 7
             WorkSession(user=uid,
                         task=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
@@ -659,7 +659,7 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=True,
             is_adjacent=False,
             rule_id=100)
-        to_sun = timedelta(days=7 - self.NOW.weekday())
+        to_sun = timedelta(days=(self.NOW.weekday() + 1) % 7)
 
         for i in range(1, 8):
             # every second Sunday
@@ -690,7 +690,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=7,
             is_weekend=True,
             is_adjacent=False)
-        to_sun = timedelta(days=7 - self.NOW.weekday())
+        to_sun = timedelta(days=(self.NOW.weekday() + 1) % 7)
 
         for i in range(1, 8):
             # every second Sunday
@@ -719,7 +719,7 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=True,
             is_adjacent=True,
             rule_id=100)
-        to_sun = timedelta(days=7 - self.NOW.weekday())
+        to_sun = timedelta(days=(self.NOW.weekday() + 1) % 7)
 
         for i in range(0, 8):
             # every second Sunday
@@ -750,7 +750,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=7,
             is_weekend=True,
             is_adjacent=True)
-        to_sun = timedelta(days=7 - self.NOW.weekday())
+        to_sun = timedelta(days=(self.NOW.weekday() + 1) % 7)
 
         for i in range(0, 8):
             # every second Sunday
