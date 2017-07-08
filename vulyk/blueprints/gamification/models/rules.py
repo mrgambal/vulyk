@@ -13,7 +13,7 @@ class RuleModel(Document):
     """
     Database-specific rule representation
     """
-    id = StringField(required=True, unique=True)
+    id = StringField(required=True, unique=True, primary_key=True)
     task_type_name = StringField()
     badge = StringField(required=True)
     name = StringField(required=True, max_length=255, unique=True)
@@ -87,3 +87,9 @@ class RuleModel(Document):
             )
         else:
             return rule
+
+    def __str__(self):
+        return str(self.to_rule())
+
+    def __repr__(self):
+        return repr(self.to_rule())
