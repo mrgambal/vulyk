@@ -89,7 +89,7 @@ class RuleModel(Document):
             return rule
 
     def __str__(self):
-        return str(self.to_rule())
+        return 'RuleModel({model})'.format(model=str(self.to_rule()))
 
     def __repr__(self):
-        return repr(self.to_rule())
+        return 'RuleModel({model})'.format(model=repr(self.to_rule()))

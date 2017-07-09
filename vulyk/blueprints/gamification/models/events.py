@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Contains all DB models related to game events.
+"""
 from flask_mongoengine import Document
 from mongoengine import (
     IntField, DateTimeField, ReferenceField, BooleanField, ListField
@@ -67,7 +70,7 @@ class EventModel(Document):
             points_given=self.points_given,
             coins=self.coins,
             achievements=[a.to_rule() for a in self.achievements],
-            acceptor_fund_id=self.acceptor_fund,
+            acceptor_fund_id=self.acceptor_fund.to_fund(),
             level_given=self.level_given,
             viewed=self.viewed
         )
@@ -80,7 +83,7 @@ class EventModel(Document):
         :param event: Source event instance
         :type event: Event
 
-        :return: Full-bodied model
+        :return: New full-bodied model instance
         :rtype: EventModel
         """
         return cls(
@@ -91,7 +94,7 @@ class EventModel(Document):
             coins=event.coins,
             achievements=RuleModel.objects(
                 id__in=[r.id for r in event.achievements]),
-            acceptor_fund_id=event.acceptor_fund_id,
+            acceptor_fund=FundModel.objects.get(id=event.acceptor_fund.id),
             level_given=event.level_given,
             viewed=event.viewed
         )

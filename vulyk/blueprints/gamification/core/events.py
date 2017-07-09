@@ -16,6 +16,8 @@ from bson import ObjectId
 from vulyk.models.tasks import AbstractAnswer
 from vulyk.models.user import User
 
+from ..core.foundations import Fund
+
 __all__ = [
     'InvalidEventException',
     'Event',
@@ -41,6 +43,17 @@ class Event:
     Could reflect different type of events: task is done, user is being given
     points/money/achievements/new level etc, user donates coins to some fund.
     """
+    __slots__ = [
+        'timestamp',
+        'user',
+        'answer',
+        'points_given',
+        'coins',
+        'achievements',
+        'acceptor_fund',
+        'level_given',
+        'viewed'
+    ]
 
     def __init__(self,
                  timestamp: datetime,
@@ -49,7 +62,7 @@ class Event:
                  points_given: int,
                  coins: int,
                  achievements: list,
-                 acceptor_fund_id: ObjectId,
+                 acceptor_fund: Fund,
                  level_given: int,
                  viewed: bool) -> None:
         """
@@ -61,7 +74,7 @@ class Event:
         :type points_given: int
         :type coins: int
         :type achievements: list[Rule]
-        :type acceptor_fund_id: ObjectId | None
+        :type acceptor_fund: Fund
         :type level_given: int
         :type viewed: bool
         """
@@ -71,7 +84,7 @@ class Event:
         self.points_given = points_given
         self.coins = coins
         self.achievements = achievements
-        self.acceptor_fund_id = acceptor_fund_id
+        self.acceptor_fund = acceptor_fund
         self.level_given = level_given
         self.viewed = viewed
 
@@ -82,7 +95,7 @@ class Event:
 
         :raises: InvalidEventException
         """
-        is_donate = self.coins < 0 and self.acceptor_fund_id is not None
+        is_donate = self.coins < 0 and self.acceptor_fund is not None
 
         try:
             assert self.user is not None, 'User should be present.'
@@ -97,7 +110,7 @@ class Event:
                 assert self.viewed, \
                     'Viewed property shall be set to True for donate events'
             else:
-                assert self.acceptor_fund_id is None, \
+                assert self.acceptor_fund is None, \
                     'No acceptor funds are allowed for task events'
                 assert self.coins >= 0, \
                     'No negative amount of coins are allowed for task events'
@@ -144,7 +157,7 @@ class Event:
                 timestamp=timestamp,
                 user=user,
                 coins=coins,
-                acceptor_fund_id=acceptor_fund_id)
+                acceptor_fund=acceptor_fund_id)
         elif level_given is None and len(achievements) == 0:
             return NoAchievementsEvent(
                 timestamp=timestamp,
@@ -206,7 +219,7 @@ class Event:
                    other.achievements == self.achievements and \
                    other.coins == self.coins and \
                    other.level_given == self.level_given and \
-                   other.acceptor_fund_id == self.acceptor_fund_id
+                   other.acceptor_fund == self.acceptor_fund
         else:
             return False
 
@@ -219,6 +232,7 @@ class NoAchievementsEvent(Event):
     Regular 'on task done' event that contains no new level or achievements
     assigned to user.
     """
+    __slots__ = Event.__slots__
 
     def __init__(self,
                  timestamp: datetime,
@@ -241,7 +255,7 @@ class NoAchievementsEvent(Event):
                          points_given=points_given,
                          coins=coins,
                          achievements=[],
-                         acceptor_fund_id=None,
+                         acceptor_fund=None,
                          level_given=0,
                          viewed=viewed)
 
@@ -258,6 +272,7 @@ class AchievementsEvent(Event):
     Regular 'on task done' event that contains only new achievements
     assigned to user.
     """
+    __slots__ = Event.__slots__
 
     def __init__(self,
                  timestamp: datetime,
@@ -282,7 +297,7 @@ class AchievementsEvent(Event):
                          points_given=points_given,
                          coins=coins,
                          achievements=achievements,
-                         acceptor_fund_id=None,
+                         acceptor_fund=None,
                          level_given=None,
                          viewed=viewed)
 
@@ -300,6 +315,7 @@ class LevelEvent(Event):
     """
     Regular 'on task done' event that contains only new level assigned to user.
     """
+    __slots__ = Event.__slots__
 
     def __init__(self,
                  timestamp: datetime,
@@ -325,7 +341,7 @@ class LevelEvent(Event):
                          points_given=points_given,
                          coins=coins,
                          achievements=[],
-                         acceptor_fund_id=None,
+                         acceptor_fund=None,
                          level_given=level_given,
                          viewed=viewed)
 
@@ -343,6 +359,7 @@ class AchievementsLevelEvent(Event):
     Regular 'on task done' event that contains both level and achievements
     assigned to user.
     """
+    __slots__ = Event.__slots__
 
     def __init__(self,
                  timestamp: datetime,
@@ -371,7 +388,7 @@ class AchievementsLevelEvent(Event):
                          points_given=points_given,
                          coins=coins,
                          achievements=achievements,
-                         acceptor_fund_id=None,
+                         acceptor_fund=None,
                          level_given=level_given,
                          viewed=viewed)
 
@@ -392,16 +409,17 @@ class DonateEvent(Event):
     a fund user donated to.
     `Viewed`-field is set to True as user itself triggers the action.
     """
+    __slots__ = Event.__slots__
 
     def __init__(self,
                  timestamp: datetime,
                  user: User,
                  coins: int,
-                 acceptor_fund_id: ObjectId) -> None:
+                 acceptor_fund: Fund) -> None:
         """
         :type timestamp: datetime
         :type user: User
-        :type acceptor_fund_id: ObjectId | None
+        :type acceptor_fund: Fund
         :type coins: int
         """
         super().__init__(timestamp=timestamp,
@@ -410,12 +428,12 @@ class DonateEvent(Event):
                          points_given=0,
                          coins=coins,
                          achievements=[],
-                         acceptor_fund_id=acceptor_fund_id,
+                         acceptor_fund=acceptor_fund,
                          level_given=None,
                          viewed=True)
 
     def __str__(self):
-        return 'DonateEvent({user}, {coins}, {acceptor_fund_id})' \
+        return 'DonateEvent({user}, {coins}, {acceptor_fund})' \
             .format(user=self.user.id,
                     coins=self.coins,
-                    acceptor_fund_id=self.acceptor_fund_id)
+                    acceptor_fund=self.acceptor_fund)
