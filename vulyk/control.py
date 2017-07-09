@@ -88,7 +88,7 @@ def load(task_type, path, batch):
         _batches.add_batch(
             batch_id=batch,
             count=count,
-            task_type=task_type,
+            task_type=TASKS_TYPES[task_type],
             default_batch=app.config['DEFAULT_BATCH'])
 
 

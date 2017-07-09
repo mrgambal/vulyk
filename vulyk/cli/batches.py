@@ -16,7 +16,7 @@ def add_batch(batch_id, count, task_type, default_batch):
     :param count: Number of tasks to load
     :type count: int
     :param task_type: Type of tasks loaded into the batch
-    :type task_type: str
+    :type task_type: vulyk.models.task_types.AbstractTaskType
     :param default_batch: Name of the default batch
     :type default_batch: str
 
@@ -24,21 +24,25 @@ def add_batch(batch_id, count, task_type, default_batch):
     """
     try:
         batch = Batch.objects.get(id=batch_id)
+        task_type_name = task_type.type_name
 
-        if batch.task_type != task_type:
+        if batch.task_type != task_type_name:
             raise click.BadParameter(
-                'Batch {batch} doesn\'t support {task_type}'.format(
+                'Batch {batch} doesn\'t support {task_type_name}'.format(
                     batch=batch_id,
-                    task_type=task_type))
+                    task_type=task_type_name))
         elif batch_id != default_batch:
             raise click.BadParameter(
                 'Only default batch could be extended')
 
         batch.update(inc__tasks_count=count)
     except Batch.DoesNotExist:
-        Batch.objects.create(id=batch_id,
-                             task_type=task_type,
-                             tasks_count=count)
+        Batch.objects.create(
+            id=batch_id,
+            task_type=task_type_name,
+            tasks_count=count,
+            batch_meta=task_type.task_type_meta
+        )
 
 
 def validate_batch(ctx, param, value, default_batch):
