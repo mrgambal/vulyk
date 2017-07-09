@@ -9,7 +9,12 @@ def track_events(sender, answer):
     task = answer.task
     batch = task.batch
 
-    if batch.task_type in TASKS_TYPES and \
-            isinstance(TASKS_TYPES[batch.task_type], AbstractGamifiedTaskType):
+    if not batch:
+        return
+
+    if not batch.task_type in TASKS_TYPES:
+        return
+
+    if isinstance(TASKS_TYPES[batch.task_type], AbstractGamifiedTaskType):
         # I'm going to operate!
         pass

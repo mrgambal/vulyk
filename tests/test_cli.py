@@ -12,7 +12,8 @@ import unittest
 
 from vulyk import settings
 from vulyk.cli import admin, batches, db
-from vulyk.models.tasks import Batch
+from vulyk.models.tasks import Batch, AbstractAnswer, AbstractTask
+from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.user import Group, User
 
 from .base import BaseTest
@@ -64,8 +65,23 @@ class TestDB(BaseTest):
 
 
 class TestBatches(BaseTest):
+    TASK_TYPE_NAME = 'declaration_task'
+
+    class TestTaskType(AbstractTaskType):
+        answer_model = AbstractAnswer
+        task_model = AbstractTask
+        type_name = 'declaration_task'
+        template = 'some_template'
+        _task_type_meta = {
+            "foo": "bar"
+        }
+
+    class AnotherTaskType(TestTaskType):
+        type_name = 'wrong_task'
+
     DEFAULT_BATCH = settings.DEFAULT_BATCH
-    TASK_TYPE = 'declaration_task'
+    TASK_TYPE = TestTaskType({})
+    WRONG_TASK_TYPE = AnotherTaskType({})
 
     def tearDown(self):
         Batch.objects.delete()
@@ -77,9 +93,10 @@ class TestBatches(BaseTest):
                           self.DEFAULT_BATCH)
         batch = Batch.objects.get(id=self.DEFAULT_BATCH)
 
-        self.assertEqual(batch.task_type, self.TASK_TYPE)
+        self.assertEqual(batch.task_type, self.TASK_TYPE_NAME)
         self.assertEqual(batch.tasks_count, 10)
         self.assertEqual(batch.tasks_processed, 0)
+        self.assertEqual(batch.batch_meta, {"foo": "bar"})
 
     def test_add_new_tasks_to_default(self):
         batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
@@ -88,7 +105,7 @@ class TestBatches(BaseTest):
                           self.DEFAULT_BATCH)
         batch = Batch.objects.get(id=self.DEFAULT_BATCH)
 
-        self.assertEqual(batch.task_type, self.TASK_TYPE)
+        self.assertEqual(batch.task_type, self.TASK_TYPE_NAME)
         self.assertEqual(batch.tasks_count, 30)
 
     def test_add_wrong_task_type(self):
@@ -98,7 +115,7 @@ class TestBatches(BaseTest):
             click.exceptions.BadParameter,
             lambda: batches.add_batch(self.DEFAULT_BATCH,
                                       20,
-                                      'new_task',
+                                      self.WRONG_TASK_TYPE,
                                       self.DEFAULT_BATCH))
 
     def test_add_second_batch(self):
@@ -107,9 +124,10 @@ class TestBatches(BaseTest):
                           self.DEFAULT_BATCH)
         batch = Batch.objects.get(id=batch_name)
 
-        self.assertEqual(batch.task_type, self.TASK_TYPE)
+        self.assertEqual(batch.task_type, self.TASK_TYPE_NAME)
         self.assertEqual(batch.tasks_count, 10)
         self.assertEqual(batch.tasks_processed, 0)
+        self.assertEqual(batch.batch_meta, {"foo": "bar"})
 
     def test_extend_not_default_batch(self):
         batch_name = 'new_batch'
@@ -122,9 +140,9 @@ class TestBatches(BaseTest):
 
     def test_validate_batch(self):
         not_exists = '4'
-        batches.add_batch('1', 10, 'declaration_task', self.DEFAULT_BATCH)
-        batches.add_batch('2', 10, 'declaration_task', self.DEFAULT_BATCH)
-        batches.add_batch('3', 10, 'declaration_task', self.DEFAULT_BATCH)
+        batches.add_batch('1', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch('2', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch('3', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
 
         self.assertEqual(
             not_exists,
@@ -133,9 +151,9 @@ class TestBatches(BaseTest):
 
     def test_validate_batch_exists(self):
         exists = '3'
-        batches.add_batch('1', 10, 'declaration_task', self.DEFAULT_BATCH)
-        batches.add_batch('2', 10, 'declaration_task', self.DEFAULT_BATCH)
-        batches.add_batch(exists, 10, 'declaration_task', self.DEFAULT_BATCH)
+        batches.add_batch('1', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch('2', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch(exists, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
 
         self.assertRaises(
             click.BadParameter,

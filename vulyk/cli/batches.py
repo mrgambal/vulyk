@@ -22,15 +22,15 @@ def add_batch(batch_id, count, task_type, default_batch):
 
     :raise: click.BadParameter
     """
+    task_type_name = task_type.type_name
     try:
         batch = Batch.objects.get(id=batch_id)
-        task_type_name = task_type.type_name
 
         if batch.task_type != task_type_name:
             raise click.BadParameter(
                 'Batch {batch} doesn\'t support {task_type_name}'.format(
                     batch=batch_id,
-                    task_type=task_type_name))
+                    task_type_name=task_type_name))
         elif batch_id != default_batch:
             raise click.BadParameter(
                 'Only default batch could be extended')

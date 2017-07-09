@@ -103,7 +103,7 @@ class WorkSessionManager:
 
                 self._logger.debug(
                     'Added %s seconds of activities for user %s and task %s.',
-                    user_id, task.id)
+                    seconds, user_id, task.id)
             else:
                 msg = 'Can not update the session {} for user {}. Value: {}.' \
                     .format(session.id, user_id, seconds)

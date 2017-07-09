@@ -1,4 +1,4 @@
-from vulyk.models.task_types import AbstractAnswer
+from vulyk.models.task_types import AbstractTaskType
 
 
 class AbstractGamifiedTaskType(AbstractTaskType):
