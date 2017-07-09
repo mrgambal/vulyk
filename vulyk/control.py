@@ -73,6 +73,9 @@ def db():
                                 readable=True,
                                 resolve_path=True),
                 nargs=-1)
+@click.options('--meta', multiple=True,
+               type=(str, str),
+               help='Override meta information for the batch')
 @click.option('--batch',
               default=app.config['DEFAULT_BATCH'],
               callback=lambda ctx, param, value: _batches.validate_batch(
@@ -80,16 +83,34 @@ def db():
                   app.config['DEFAULT_BATCH']
               ),
               help='Specify the batch id tasks should be loaded into')
-def load(task_type, path, batch):
+def load(task_type, path, meta, batch):
     """Refills tasks collection from json."""
-    count = _db.load_tasks(TASKS_TYPES[task_type], path, batch)
+    task_type_obj = TASKS_TYPES[task_type]
+    count = _db.load_tasks(task_type_obj, path, batch)
 
     if batch is not None and count > 0:
+        batch_meta = {}
+        for m_key, m_val in meta:
+            if m_key not in task_type_obj.task_type_meta:
+                raise click.BadParameter(
+                    "Meta key {} doesn't exist in task type".format(m_key)
+                )
+
+            try:
+                cast_to = type(task_type_obj.task_type_meta[m_key])
+                batch_meta[m_key] = cast_to(m_val)
+            except ValueError:
+                raise click.BadParameter(
+                    "Value for meta key {} cannot be converted to type {}".format(
+                        m_key, cast_to)
+                )
+
         _batches.add_batch(
             batch_id=batch,
             count=count,
-            task_type=TASKS_TYPES[task_type],
-            default_batch=app.config['DEFAULT_BATCH'])
+            task_type=task_type_obj,
+            default_batch=app.config['DEFAULT_BATCH'],
+            batch_meta=batch_meta)
 
 
 @db.command('export')

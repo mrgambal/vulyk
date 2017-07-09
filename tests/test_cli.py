@@ -98,6 +98,17 @@ class TestBatches(BaseTest):
         self.assertEqual(batch.tasks_processed, 0)
         self.assertEqual(batch.batch_meta, {"foo": "bar"})
 
+    def test_override_meta_information(self):
+        batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
+                          self.DEFAULT_BATCH,
+                          batch_meta={"foo": "barbaz"})
+        batch = Batch.objects.get(id=self.DEFAULT_BATCH)
+
+        self.assertEqual(batch.task_type, self.TASK_TYPE_NAME)
+        self.assertEqual(batch.tasks_count, 10)
+        self.assertEqual(batch.tasks_processed, 0)
+        self.assertEqual(batch.batch_meta, {"foo": "barbaz"})
+
     def test_add_new_tasks_to_default(self):
         batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
                           self.DEFAULT_BATCH)

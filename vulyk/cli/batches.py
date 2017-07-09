@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 """Package contains CLI tools related to managing batches of tasks."""
 
+from copy import deepcopy
+
 import click
 
 from vulyk.models.tasks import Batch
 
 
-def add_batch(batch_id, count, task_type, default_batch):
+def add_batch(batch_id, count, task_type, default_batch,
+              batch_meta=None):
     """
     Updates or creates new batch after loading new dataset.
     Only default batch may be extended.
@@ -19,6 +22,8 @@ def add_batch(batch_id, count, task_type, default_batch):
     :type task_type: vulyk.models.task_types.AbstractTaskType
     :param default_batch: Name of the default batch
     :type default_batch: str
+    :param batch_meta: User params to override default batch meta
+    :type batch_meta: dict|None
 
     :raise: click.BadParameter
     """
@@ -37,11 +42,15 @@ def add_batch(batch_id, count, task_type, default_batch):
 
         batch.update(inc__tasks_count=count)
     except Batch.DoesNotExist:
+        task_type_meta = deepcopy(task_type.task_type_meta)
+        if batch_meta is not None:
+            task_type_meta.update(batch_meta)
+
         Batch.objects.create(
             id=batch_id,
             task_type=task_type_name,
             tasks_count=count,
-            batch_meta=task_type.task_type_meta
+            batch_meta=task_type_meta
         )
 
 
