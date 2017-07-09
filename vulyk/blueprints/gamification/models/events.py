@@ -9,6 +9,7 @@ from vulyk.models.user import User
 
 from .foundations import FundModel
 from .rules import RuleModel
+from ..core.events import Event
 
 __all__ = [
     'EventModel'
@@ -51,3 +52,52 @@ class EventModel(Document):
             'timestamp'
         ]
     }
+
+    def to_event(self) -> Event:
+        """
+        DB-specific model to Event converter.
+
+        :return: New Event instance
+        :rtype: Event
+        """
+        return Event.build(
+            timestamp=self.timestamp,
+            user=self.user,
+            answer=self.answer,
+            points_given=self.points_given,
+            coins=self.coins,
+            achievements=[a.to_rule() for a in self.achievements],
+            acceptor_fund_id=self.acceptor_fund,
+            level_given=self.level_given,
+            viewed=self.viewed
+        )
+
+    @classmethod
+    def from_event(cls, event: Event):
+        """
+        Event to DB-specific model converter.
+
+        :param event: Source event instance
+        :type event: Event
+
+        :return: Full-bodied model
+        :rtype: EventModel
+        """
+        return cls(
+            timestamp=event.timestamp,
+            user=event.user,
+            answer=event.answer,
+            points_given=event.points_given,
+            coins=event.coins,
+            achievements=RuleModel.objects(
+                id__in=[r.id for r in event.achievements]),
+            acceptor_fund_id=event.acceptor_fund_id,
+            level_given=event.level_given,
+            viewed=event.viewed
+        )
+
+    def __str__(self):
+        return 'EventModel({model})'.format(model=str(self.to_event()))
+
+    def __repr__(self):
+        return str(self)
