@@ -80,7 +80,7 @@ class UserStateModel(Document):
         )
 
     def __str__(self):
-        return str(self.to_state())
+        return 'UserStateModel({model})'.format(model=str(self.to_state()))
 
     def __repr__(self):
         return str(self)
