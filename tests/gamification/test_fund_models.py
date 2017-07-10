@@ -15,7 +15,7 @@ from vulyk.blueprints.gamification.models.foundations import FundModel
 from ..base import BaseTest
 
 
-class TestEventModels(BaseTest):
+class TestFundModels(BaseTest):
     def tearDown(self):
         super().tearDown()
 
