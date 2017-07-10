@@ -76,6 +76,26 @@ class FundModel(Document):
 
         return result
 
+    @classmethod
+    def find_by_id(cls, fund_id: str) -> Fund:
+        """
+        Convenience method that returns an optional fund by its ID.
+
+        :param fund_id: Fund's ID
+        :type fund_id: str
+
+        :return: Found
+        :rtype: Fund|None
+        """
+        result = None
+
+        try:
+            result = FundModel.objects.get(id=fund_id).to_fund()
+        except cls.DoesNotExist:
+            pass
+
+        return result
+
     def __str__(self):
         return 'FundModel({model})'.format(model=str(self.to_fund()))
 
