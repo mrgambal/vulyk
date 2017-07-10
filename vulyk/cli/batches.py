@@ -42,9 +42,26 @@ def add_batch(batch_id, count, task_type, default_batch,
 
         batch.update(inc__tasks_count=count)
     except Batch.DoesNotExist:
+        meta = {}
         task_type_meta = deepcopy(task_type.task_type_meta)
-        if batch_meta is not None:
-            task_type_meta.update(batch_meta)
+
+        if batch_meta:
+            for m_key, m_val in batch_meta.items():
+                if m_key not in task_type.task_type_meta:
+                    raise click.BadParameter(
+                        "Meta key {} doesn't exist in task type".format(m_key)
+                    )
+
+                try:
+                    cast_to = type(task_type.task_type_meta[m_key])
+                    meta[m_key] = cast_to(m_val)
+                except ValueError:
+                    raise click.BadParameter(
+                        "Value for meta key {} cannot be converted to type {}".format(
+                            m_key, cast_to)
+                    )
+
+            task_type_meta.update(meta)
 
         Batch.objects.create(
             id=batch_id,
