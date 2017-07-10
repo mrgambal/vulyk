@@ -4,7 +4,7 @@ Contains all DB models related to game events.
 """
 from flask_mongoengine import Document
 from mongoengine import (
-    IntField, DateTimeField, ReferenceField, BooleanField, ListField
+    IntField, ComplexDateTimeField, ReferenceField, BooleanField, ListField
 )
 
 from vulyk.models.tasks import AbstractAnswer
@@ -23,7 +23,7 @@ class EventModel(Document):
     """
     Database-specific gamification system event representation
     """
-    timestamp = DateTimeField(required=True)
+    timestamp = ComplexDateTimeField(required=True)
     user = ReferenceField(
         document_type=User, db_field='user', required=True)
     answer = ReferenceField(
@@ -70,7 +70,9 @@ class EventModel(Document):
             points_given=self.points_given,
             coins=self.coins,
             achievements=[a.to_rule() for a in self.achievements],
-            acceptor_fund_id=self.acceptor_fund.to_fund(),
+            acceptor_fund=None
+                if self.acceptor_fund is None
+                else self.acceptor_fund.to_fund(),
             level_given=self.level_given,
             viewed=self.viewed
         )
@@ -94,7 +96,9 @@ class EventModel(Document):
             coins=event.coins,
             achievements=RuleModel.objects(
                 id__in=[r.id for r in event.achievements]),
-            acceptor_fund=FundModel.objects.get(id=event.acceptor_fund.id),
+            acceptor_fund=None
+                if event.acceptor_fund is None
+                else FundModel.objects.get(id=event.acceptor_fund.id),
             level_given=event.level_given,
             viewed=event.viewed
         )

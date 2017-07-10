@@ -11,8 +11,6 @@ no achievements (at least – for now) and no level changes.
 """
 from datetime import datetime
 
-from bson import ObjectId
-
 from vulyk.models.tasks import AbstractAnswer
 from vulyk.models.user import User
 
@@ -114,8 +112,8 @@ class Event:
                     'No acceptor funds are allowed for task events'
                 assert self.coins >= 0, \
                     'No negative amount of coins are allowed for task events'
-                assert self.level_given >= 1 or self.level_given is None, \
-                    'New level must be greater than zero or be absent' \
+                assert self.level_given is None or self.level_given > 0, \
+                    'New level must be greater than zero or be absent ' \
                     'for task events'
                 assert self.points_given > 0, \
                     'Points amount must be positive for task events'
@@ -125,14 +123,15 @@ class Event:
         except AssertionError as e:
             raise InvalidEventException(e)
 
-    @staticmethod
-    def build(timestamp: datetime,
+    @classmethod
+    def build(cls: type,
+              timestamp: datetime,
               user: User,
               answer: AbstractAnswer,
               points_given: int,
               coins: int,
               achievements: list,
-              acceptor_fund_id: ObjectId,
+              acceptor_fund: Fund,
               level_given: int,
               viewed: bool):
         """
@@ -144,59 +143,68 @@ class Event:
         :type points_given: int
         :type coins: int
         :type achievements: list[Rule]
-        :type acceptor_fund_id: ObjectId | None
+        :type acceptor_fund: Fund | None
         :type level_given: int
         :type viewed: bool
 
         :rtype: Event
         """
-        is_donate = coins < 0 and acceptor_fund_id is not None
+        # validation stage
+        ev = cls(timestamp=timestamp,
+                 user=user,
+                 answer=answer,
+                 points_given=points_given,
+                 coins=coins,
+                 achievements=achievements,
+                 acceptor_fund=acceptor_fund,
+                 level_given=level_given,
+                 viewed=viewed)
 
-        if is_donate:
+        if ev.coins < 0 and ev.acceptor_fund is not None:
             return DonateEvent(
-                timestamp=timestamp,
-                user=user,
-                coins=coins,
-                acceptor_fund=acceptor_fund_id)
-        elif level_given is None and len(achievements) == 0:
+                timestamp=ev.timestamp,
+                user=ev.user,
+                coins=ev.coins,
+                acceptor_fund=ev.acceptor_fund)
+        elif ev.level_given is None and len(ev.achievements) == 0:
             return NoAchievementsEvent(
-                timestamp=timestamp,
-                user=user,
-                answer=answer,
-                points_given=points_given,
-                coins=coins,
-                viewed=viewed
+                timestamp=ev.timestamp,
+                user=ev.user,
+                answer=ev.answer,
+                points_given=ev.points_given,
+                coins=ev.coins,
+                viewed=ev.viewed
             )
-        elif level_given is not None and len(achievements) == 0:
+        elif ev.level_given is not None and len(ev.achievements) == 0:
             return LevelEvent(
-                timestamp=timestamp,
-                user=user,
-                answer=answer,
-                points_given=points_given,
-                coins=coins,
-                level_given=level_given,
-                viewed=viewed
+                timestamp=ev.timestamp,
+                user=ev.user,
+                answer=ev.answer,
+                points_given=ev.points_given,
+                coins=ev.coins,
+                level_given=ev.level_given,
+                viewed=ev.viewed
             )
-        elif level_given is None and len(achievements) > 0:
+        elif ev.level_given is None and len(ev.achievements) > 0:
             return AchievementsEvent(
-                timestamp=timestamp,
-                user=user,
-                answer=answer,
-                points_given=points_given,
-                coins=coins,
-                achievements=achievements,
-                viewed=viewed
+                timestamp=ev.timestamp,
+                user=ev.user,
+                answer=ev.answer,
+                points_given=ev.points_given,
+                coins=ev.coins,
+                achievements=ev.achievements,
+                viewed=ev.viewed
             )
         else:
             return AchievementsLevelEvent(
-                timestamp=timestamp,
-                user=user,
-                answer=answer,
-                points_given=points_given,
-                coins=coins,
-                achievements=achievements,
-                level_given=level_given,
-                viewed=viewed
+                timestamp=ev.timestamp,
+                user=ev.user,
+                answer=ev.answer,
+                points_given=ev.points_given,
+                coins=ev.coins,
+                achievements=ev.achievements,
+                level_given=ev.level_given,
+                viewed=ev.viewed
             )
 
     def __str__(self):
@@ -211,19 +219,32 @@ class Event:
     def __repr__(self):
         return str(self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
-            return other.timestamp == self.timestamp and \
-                   other.user == self.user and \
-                   other.points_given == self.points_given and \
-                   other.achievements == self.achievements and \
-                   other.coins == self.coins and \
-                   other.level_given == self.level_given and \
-                   other.acceptor_fund == self.acceptor_fund
+            same_fund = False
+            same_answer = False
+
+            if self.acceptor_fund is None:
+                same_fund = other.acceptor_fund is None
+            else:
+                same_fund = self.acceptor_fund == other.acceptor_fund
+
+            if self.answer is None:
+                same_answer = other.answer is None
+            else:
+                same_answer = self.answer == other.answer
+
+            return other.timestamp == self.timestamp \
+                   and other.user.id == self.user.id \
+                   and other.points_given == self.points_given \
+                   and other.achievements == self.achievements \
+                   and other.coins == self.coins \
+                   and other.level_given == self.level_given \
+                   and same_answer and same_fund
         else:
             return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not self == other
 
 
@@ -256,7 +277,7 @@ class NoAchievementsEvent(Event):
                          coins=coins,
                          achievements=[],
                          acceptor_fund=None,
-                         level_given=0,
+                         level_given=None,
                          viewed=viewed)
 
     def __str__(self):

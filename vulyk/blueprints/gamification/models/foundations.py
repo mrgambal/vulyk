@@ -49,7 +49,7 @@ class FundModel(Document):
             description=self.description,
             site=self.site,
             email=self.email,
-            logo=self.logo.read(),
+            logo=self.logo.get(),
             donatable=self.donatable
         )
 
