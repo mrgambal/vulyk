@@ -14,7 +14,7 @@ from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.foundations import FundModel
 from vulyk.blueprints.gamification.models.rules import RuleModel
-from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
+from vulyk.models.tasks import AbstractTask, AbstractAnswer
 from vulyk.models.user import Group, User
 
 from ..base import BaseTest
@@ -56,7 +56,6 @@ class TestEventModels(BaseTest):
         Group.objects.delete()
         AbstractTask.objects.delete()
         AbstractAnswer.objects.delete()
-        Batch.objects.delete()
 
         EventModel.objects.delete()
         FundModel.objects.delete()

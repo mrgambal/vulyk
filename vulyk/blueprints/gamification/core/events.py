@@ -234,13 +234,13 @@ class Event:
             else:
                 same_answer = self.answer == other.answer
 
-            return other.timestamp == self.timestamp and \
-                   other.user.id == self.user.id and \
-                   other.points_given == self.points_given and \
-                   other.achievements == self.achievements and \
-                   other.coins == self.coins and \
-                   other.level_given == self.level_given and \
-                   same_answer and same_fund
+            return other.timestamp == self.timestamp \
+                   and other.user.id == self.user.id \
+                   and other.points_given == self.points_given \
+                   and other.achievements == self.achievements \
+                   and other.coins == self.coins \
+                   and other.level_given == self.level_given \
+                   and same_answer and same_fund
         else:
             return False
 
