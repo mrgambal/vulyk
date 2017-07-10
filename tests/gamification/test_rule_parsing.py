@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+test_rule_parsing
+"""
 import ujson as json
 
 from vulyk.blueprints.gamification.core.parsing import (
@@ -100,7 +103,7 @@ class TestJsonRulesParsing(BaseTest):
             'is_weekend': weekend,
             'is_adjacent': adjacent
         }
-        string = json.dumps(parsee)
+
         rule = Rule(
             rule_id=hash(name),
             badge=image,
@@ -123,16 +126,6 @@ class TestJsonRulesParsing(BaseTest):
         days = 21
         weekend = True
         adjacent = False
-        parsee = {
-            'badge': image,
-            'name': name,
-            'description': descr,
-            'bonus': bonus,
-            'tasks_number': tasks,
-            'days_number': days,
-            'is_weekend': weekend,
-            'is_adjacent': adjacent
-        }
 
         rule = Rule(
             rule_id=hash(name),

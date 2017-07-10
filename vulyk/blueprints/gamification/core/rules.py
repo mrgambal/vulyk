@@ -113,7 +113,7 @@ class Rule:
                                           'numeric bound')
 
     @property
-    def id(self) -> id:
+    def id(self) -> int:
         return self._hash
 
     @property
