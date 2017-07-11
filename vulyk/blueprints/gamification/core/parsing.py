@@ -26,6 +26,7 @@ class JsonRuleParser(RuleParser):
     """
     Basic JSON parser.
     """
+    __slots__ = []
 
     @staticmethod
     def parse(json_string: str) -> Rule:

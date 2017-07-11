@@ -25,12 +25,7 @@ class RuleQueryBuilder:
     properties into fully fledged queries to a data source.
     """
 
-    def __init__(self, rule: Rule) -> None:
-        """
-        :param rule: Actual rule to be calculated.
-        :type rule: Rule
-        """
-
+    def __init__(self) -> None:
         self._filter_first = {}
         self._projection = {}
         self._filter_second = {}
@@ -53,6 +48,8 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
     """
     Implementation of RuleQueryBuilder, bound to MongoDB.
     """
+    __slots__ = []
+
     _Pair = namedtuple('Pair', ['key', 'clause'])
 
     def __init__(self, rule: Rule) -> None:
@@ -60,7 +57,7 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
         :param rule: Actual rule to be calculated.
         :type rule: Rule
         """
-        super().__init__(rule)
+        super().__init__()
 
         if isinstance(rule, ProjectRule):
             self._filter_first['taskType'] = rule.task_type_name
@@ -140,6 +137,12 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
 
 
 class MongoRuleExecutor:
+    """
+    Simple query runner that uses pymongo's BaseQuerySet instance to aggregate
+    user's stats.
+    """
+    __slots__ = []
+
     @staticmethod
     def achieved(user_id: ObjectId,
                  rule: Rule,

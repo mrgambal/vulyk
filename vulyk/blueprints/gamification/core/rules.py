@@ -34,6 +34,17 @@ class Rule:
     Also additional bonuses to be given after user gets the achievement are
     included as well as achievement and its badge is.
     """
+    __slots__ = [
+        'badge',
+        'name',
+        'description',
+        'bonus',
+        '_tasks_number',
+        '_days_number',
+        '_is_weekend',
+        '_is_adjacent',
+        '_hash'
+    ]
 
     def __init__(self,
                  rule_id: int,
@@ -102,7 +113,7 @@ class Rule:
                                           'numeric bound')
 
     @property
-    def id(self) -> id:
+    def id(self) -> int:
         return self._hash
 
     @property
@@ -173,6 +184,9 @@ class ProjectRule(Rule):
     """
     Container for project specific rules.
     """
+    __slots__ = Rule.__slots__ + [
+        '_task_type_name'
+    ]
 
     def __init__(self,
                  rule_id: int,

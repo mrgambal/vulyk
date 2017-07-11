@@ -11,9 +11,8 @@ from mongoengine.connection import register_connection
 
 class BaseTest(unittest.TestCase):
     MONGO_URI = 'mongodb://localhost:27017/'
-    CONNECTION_NAME = 'default'
 
-    register_connection(CONNECTION_NAME, name=CONNECTION_NAME, host=MONGO_URI)
+    register_connection('default', name='vulyk_test', host=MONGO_URI)
 
     def setUp(self):
         pass

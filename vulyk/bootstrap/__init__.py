@@ -7,6 +7,8 @@ Contains code not to be used directly after the initialization.
 import flask
 from flask_mongoengine import MongoEngine
 
+from vulyk.blueprints.gamification import gamification
+
 from . import _assets, _logging, _social_login
 from ._tasks import init_plugins
 
@@ -48,6 +50,9 @@ def init_app(name):
 
         _assets.init(app)
         _social_login.init_social_login(app, db)
+
+        app.register_blueprint(gamification, url_prefix='/gamification')
+        app.logger.info('Gamification module loaded.')
 
         setattr(init_app, key, app)
 
