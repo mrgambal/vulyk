@@ -4,6 +4,7 @@ The package contains user state model and everything that will belong to
 this part of domain.
 """
 from datetime import datetime
+from decimal import Decimal
 
 from vulyk.models.user import User
 
@@ -37,17 +38,17 @@ class UserState:
     def __init__(self,
                  user: User,
                  level: int,
-                 points: int,
-                 actual_coins: int,
-                 potential_coins: int,
+                 points: Decimal,
+                 actual_coins: Decimal,
+                 potential_coins: Decimal,
                  achievements: list,
                  last_changed: datetime) -> None:
         """
         :type user: User
         :type level: int
-        :type points: int
-        :type actual_coins: int
-        :type potential_coins: int
+        :type points: Decimal
+        :type actual_coins: Decimal
+        :type potential_coins: Decimal
         :type achievements: list[vulyk.blueprints.gamification.core.rules.Rule]
         :type last_changed: datetime
         """

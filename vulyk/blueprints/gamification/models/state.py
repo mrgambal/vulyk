@@ -4,7 +4,8 @@ Contains all DB models related to aggregated user state within the game
 """
 from flask_mongoengine import Document
 from mongoengine import (
-    IntField, ComplexDateTimeField, ReferenceField, ListField
+    IntField, ComplexDateTimeField, ReferenceField, ListField,
+    DecimalField
 )
 
 from vulyk.models.user import User
@@ -20,9 +21,9 @@ __all__ = [
 class UserStateModel(Document):
     user = ReferenceField(document_type=User, required=True, unique=True)
     level = IntField(min_value=0, default=0)
-    points = IntField(min_value=0, default=0)
-    actual_coins = IntField(min_value=0, default=0, db_field='actualCoins')
-    potential_coins = IntField(
+    points = DecimalField(min_value=0, default=0)
+    actual_coins = DecimalField(min_value=0, default=0, db_field='actualCoins')
+    potential_coins = DecimalField(
         min_value=0, default=0, db_field='potentialCoins')
     achievements = ListField(
         field=ReferenceField(document_type=RuleModel, required=False))
