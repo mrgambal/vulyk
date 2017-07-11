@@ -1,6 +1,8 @@
 from datetime import datetime
+from decimal import Decimal
 from vulyk.signals import on_task_done
-from .models.task_types import AbstractGamifiedTaskType
+from .models.task_types import (
+    AbstractGamifiedTaskType, COINS_PER_TASK_KEY, POINTS_PER_TASK_KEY)
 from .core.events import Event
 from .core.state import UserState
 from .models.state import UserStateModel
@@ -28,19 +30,21 @@ def track_events(sender, answer):
         except UserStateModel.DoesNotExist:
             state_model = UserStateModel.objects.create(user=user)
 
-        state = state_model.to_state()
-        state.actual_coins += batch.meta["coins_per_task"]
-        state.points += batch.meta["points_per_task"]
-        state.last_changed = dt
+        # state = state_model.to_state()
+        state_model.actual_coins += Decimal(batch.batch_meta[COINS_PER_TASK_KEY])
+        state_model.points += Decimal(batch.batch_meta[POINTS_PER_TASK_KEY])
+        state_model.last_changed = dt
 
-        UserStateModel.from_state(state).save()
+        # Apparently, it's not possible to update existing state when using
+        # state_model = UserStateModel.from_state(state)
+        state_model.save()
 
         ev = Event.build(
             timestamp=dt,
             user=user,
             answer=answer,
-            points_given=batch.meta["points_per_task"],
-            coins=batch.meta["coins_per_task"],
+            points_given=batch.batch_meta[POINTS_PER_TASK_KEY],
+            coins=batch.batch_meta[COINS_PER_TASK_KEY],
             achievements=[],
             acceptor_fund=None,
             level_given=None,

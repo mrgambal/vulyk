@@ -6,7 +6,7 @@ from vulyk.blueprints.gamification.models.task_types import AbstractGamifiedTask
 class FakeType(AbstractGamifiedTaskType):
     task_model = FakeModel
     answer_model = FakeAnswer
-    type_name = 'FakeTaskType'
+    type_name = 'FakeGamifiedTaskType'
     template = 'tmpl.html'
 
     _name = 'Fake name'
