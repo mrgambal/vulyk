@@ -97,7 +97,8 @@ class AbstractTaskType:
 
         assert self.type_name, 'You should define type_name (underscore)'
         assert self.template, 'You should define template'
-        assert isinstance(self._task_type_meta, dict)
+        assert isinstance(self._task_type_meta, dict), \
+            'Batch meta must of dict type'
 
     @property
     def name(self):
@@ -105,7 +106,7 @@ class AbstractTaskType:
         Human-readable name of the plugin.
 
         :return: Name of the task type.
-         :rtype: str
+        :rtype: str
         """
         return self._name if len(self._name) > 0 else self.type_name
 

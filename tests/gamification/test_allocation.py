@@ -3,18 +3,20 @@
 """
 from datetime import datetime
 from decimal import Decimal
+
+from vulyk.app import TASKS_TYPES
+from vulyk.blueprints.gamification.models.events import EventModel
+from vulyk.blueprints.gamification.models.state import UserStateModel
+from vulyk.blueprints.gamification.models.task_types import \
+    POINTS_PER_TASK_KEY, COINS_PER_TASK_KEY
 from vulyk.models.exc import TaskValidationError
 from vulyk.models.stats import WorkSession
 from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
 from vulyk.models.user import User, Group
-from vulyk.blueprints.gamification.models.task_types import POINTS_PER_TASK_KEY, COINS_PER_TASK_KEY
-from vulyk.blueprints.gamification.models.state import UserStateModel
-from vulyk.blueprints.gamification.models.events import EventModel
-from vulyk.app import TASKS_TYPES
 
 from .fixtures import FakeType
-from ..fixtures import FakeType as BaseFakeType
 from ..base import BaseTest
+from ..fixtures import FakeType as BaseFakeType
 
 
 class TestAllocationOfMoneyAndPoints(BaseTest):

@@ -49,7 +49,7 @@ def add_batch(batch_id, count, task_type, default_batch,
             for m_key, m_val in batch_meta.items():
                 if m_key not in task_type.task_type_meta:
                     raise click.BadParameter(
-                        "Meta key {} doesn't exist in task type".format(m_key)
+                        'Meta key {} doesn\'t exist in task type'.format(m_key)
                     )
 
                 try:
@@ -57,8 +57,8 @@ def add_batch(batch_id, count, task_type, default_batch,
                     meta[m_key] = cast_to(m_val)
                 except ValueError:
                     raise click.BadParameter(
-                        "Value for meta key {} cannot be converted to type {}".format(
-                            m_key, cast_to)
+                        'Value for meta key {} cannot be converted '
+                        'to type {}'.format(m_key, cast_to)
                     )
 
             task_type_meta.update(meta)

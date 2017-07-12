@@ -1,16 +1,18 @@
+# coding=utf-8
 from datetime import datetime
 from decimal import Decimal
+
 from vulyk.signals import on_task_done
+
+from .core.events import Event
+from .models.events import EventModel
+from .models.state import UserStateModel
 from .models.task_types import (
     AbstractGamifiedTaskType, COINS_PER_TASK_KEY, POINTS_PER_TASK_KEY)
-from .core.events import Event
-from .core.state import UserState
-from .models.state import UserStateModel
-from .models.events import EventModel
 
 
 @on_task_done.connect
-def track_events(sender, answer):
+def track_events(sender, answer) -> None:
     from vulyk.app import TASKS_TYPES
 
     task = answer.task
@@ -20,18 +22,20 @@ def track_events(sender, answer):
     if not batch:
         return
 
-    if not batch.task_type in TASKS_TYPES:
+    if batch.task_type not in TASKS_TYPES:
         return
 
     if isinstance(TASKS_TYPES[batch.task_type], AbstractGamifiedTaskType):
         dt = datetime.now()  # TODO: TZ Aware?
+
         try:
             state_model = UserStateModel.objects.get(user=user)
         except UserStateModel.DoesNotExist:
             state_model = UserStateModel.objects.create(user=user)
 
         # state = state_model.to_state()
-        state_model.actual_coins += Decimal(batch.batch_meta[COINS_PER_TASK_KEY])
+        state_model.actual_coins += Decimal(
+            batch.batch_meta[COINS_PER_TASK_KEY])
         state_model.points += Decimal(batch.batch_meta[POINTS_PER_TASK_KEY])
         state_model.last_changed = dt
 

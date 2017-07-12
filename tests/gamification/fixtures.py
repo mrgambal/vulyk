@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from vulyk.blueprints.gamification.models.task_types import \
+    AbstractGamifiedTaskType
+
 from ..fixtures import FakeModel, FakeAnswer
-from vulyk.blueprints.gamification.models.task_types import AbstractGamifiedTaskType
 
 
 class FakeType(AbstractGamifiedTaskType):

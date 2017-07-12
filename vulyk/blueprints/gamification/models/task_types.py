@@ -1,7 +1,8 @@
+# coding=utf-8
 from vulyk.models.task_types import AbstractTaskType
 
-POINTS_PER_TASK_KEY = "points_per_task"
-COINS_PER_TASK_KEY = "coins_per_task"
+POINTS_PER_TASK_KEY = 'points_per_task'
+COINS_PER_TASK_KEY = 'coins_per_task'
 
 
 class AbstractGamifiedTaskType(AbstractTaskType):

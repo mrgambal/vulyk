@@ -6,19 +6,11 @@ test_cli
 """
 import unittest
 
-from mongoengine.connection import register_connection
+from vulyk import settings
 
 
 class BaseTest(unittest.TestCase):
-    MONGO_URI = 'mongodb://localhost:27017/'
-
-    register_connection('default', name='vulyk_test', host=MONGO_URI)
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
+    settings.MONGODB_SETTINGS['DB'] = 'vulyk_test'
 
 
 if __name__ == '__main__':

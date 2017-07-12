@@ -4,16 +4,15 @@
 """
 test_cli
 """
-import bz2file
-import click
 import gzip
 import unittest
 
+import bz2file
+import click
 
-from vulyk import settings
 from vulyk.cli import admin, batches, db
-from vulyk.models.tasks import Batch, AbstractAnswer, AbstractTask
 from vulyk.models.task_types import AbstractTaskType
+from vulyk.models.tasks import Batch, AbstractAnswer, AbstractTask
 from vulyk.models.user import Group, User
 
 from .base import BaseTest
@@ -81,7 +80,7 @@ class TestBatches(BaseTest):
     class AnotherTaskType(TestTaskType):
         type_name = 'wrong_task'
 
-    DEFAULT_BATCH = settings.DEFAULT_BATCH
+    DEFAULT_BATCH = 'default'
     TASK_TYPE = TestTaskType({})
     WRONG_TASK_TYPE = AnotherTaskType({})
 
