@@ -32,14 +32,14 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             ])
 
     def tearDown(self):
-        User.objects.delete()
-        Group.objects.delete()
-        AbstractTask.objects.delete()
-        AbstractAnswer.objects.delete()
-        WorkSession.objects.delete()
-        Batch.objects.delete()
-        UserStateModel.objects.delete()
-        EventModel.objects.delete()
+        User.drop_collection()
+        Group.drop_collection()
+        AbstractTask.drop_collection()
+        AbstractAnswer.drop_collection()
+        WorkSession.drop_collection()
+        Batch.drop_collection()
+        UserStateModel.drop_collection()
+        EventModel.drop_collection()
 
         TASKS_TYPES = []
         super().tearDown()

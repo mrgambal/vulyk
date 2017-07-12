@@ -29,11 +29,11 @@ class TestStateModels(BaseTest):
     def tearDown(self):
         super().tearDown()
 
-        User.objects.delete()
-        Group.objects.delete()
+        User.drop_collection()
+        Group.drop_collection()
 
-        RuleModel.objects.delete()
-        UserStateModel.objects.delete()
+        RuleModel.drop_collection()
+        UserStateModel.drop_collection()
 
     def test_rookie_ok(self):
         state = UserState(

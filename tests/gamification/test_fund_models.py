@@ -19,7 +19,9 @@ class TestFundModels(BaseTest):
     def tearDown(self):
         super().tearDown()
 
-        FundModel.objects.delete()
+        FundModel.drop_collection()
+        FundModel._get_db().drop_collection('images.files')
+        FundModel._get_db().drop_collection('images.chunks')
 
     def test_fund_ok(self):
         with TemporaryFile('w+b', suffix='.jpg') as f:

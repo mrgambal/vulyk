@@ -26,11 +26,11 @@ class TestLeaderBoard(BaseTest):
             description='test', id='default', allowed_types=[self.TASK_TYPE])
 
     def tearDown(self):
-        User.objects.delete()
-        Group.objects.delete()
-        AbstractTask.objects.delete()
-        AbstractAnswer.objects.delete()
-        Batch.objects.delete()
+        User.drop_collection()
+        Group.drop_collection()
+        AbstractTask.drop_collection()
+        AbstractAnswer.drop_collection()
+        Batch.drop_collection()
 
         super().tearDown()
 

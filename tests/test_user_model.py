@@ -23,8 +23,8 @@ class TestUser(BaseTest):
             description='test', id='default', allowed_types=[self.TASK_TYPE])
 
     def tearDown(self):
-        User.objects.delete()
-        Group.objects.delete()
+        User.drop_collection()
+        Group.drop_collection()
 
         super().tearDown()
 

@@ -336,7 +336,7 @@ class TestMongoQueryExecutor(BaseTest):
         super().setUp()
 
     def tearDown(self):
-        WorkSession.objects.delete()
+        WorkSession.drop_collection()
         super().tearDown()
 
     def test_n_tasks_ok(self):

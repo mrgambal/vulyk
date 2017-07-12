@@ -16,8 +16,9 @@ class TestUserLogin(BaseTest):
     USER = User(username='SuperUsername', email='1@email.com', admin=True)
 
     def tearDown(self):
-        User.objects.delete()
-        Group.objects.delete()
+        User.drop_collection()
+        Group.drop_collection()
+        Group._get_db().drop_collection('user_social_auth')
 
         super().tearDown()
 
@@ -25,7 +26,7 @@ class TestUserLogin(BaseTest):
     def test_injected_in_request(self):
         app = flask.Flask('test')
         app.config.from_object('vulyk.settings')
-        db = connect(host='mongodb://localhost:27017').vulyk_test
+        db = Group._get_db()
         db.Document = Document
 
         social_login.init_social_login(app, db)
@@ -41,7 +42,7 @@ class TestUserLogin(BaseTest):
     def test_injected_in_template(self):
         app = flask.Flask('test')
         app.config.from_object('vulyk.settings')
-        db = connect(host='mongodb://localhost:27017').vulyk_test
+        db = Group._get_db()
         db.Document = Document
 
         social_login.init_social_login(app, db)

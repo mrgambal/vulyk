@@ -52,14 +52,14 @@ class TestEventModels(BaseTest):
     def tearDown(self):
         super().tearDown()
 
-        User.objects.delete()
-        Group.objects.delete()
-        AbstractTask.objects.delete()
-        AbstractAnswer.objects.delete()
+        User.drop_collection()
+        Group.drop_collection()
+        AbstractTask.drop_collection()
+        AbstractAnswer.drop_collection()
 
-        EventModel.objects.delete()
-        FundModel.objects.delete()
-        RuleModel.objects.delete()
+        EventModel.drop_collection()
+        FundModel.drop_collection()
+        RuleModel.drop_collection()
 
     def test_no_achievements_ok(self):
         ev = Event.build(

@@ -22,8 +22,8 @@ class TestUtils(BaseTest):
             allowed_types=[FakeType.type_name])
 
     def tearDown(self):
-        User.objects.delete()
-        Group.objects.delete()
+        User.drop_collection()
+        Group.drop_collection()
 
         super().tearDown()
 
