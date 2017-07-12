@@ -60,7 +60,7 @@ class TestJsonRulesParsing(BaseTest):
         weekend = True
         adjacent = False
         parsee = {
-            'task_type': project,
+            'batch_name': project,
             'badge': image,
             'name': name,
             'description': descr,
@@ -72,7 +72,7 @@ class TestJsonRulesParsing(BaseTest):
         }
         string = json.dumps(parsee)
         rule = ProjectRule(rule_id=hash(name + project),
-                           task_type_name=project,
+                           batch_name=project,
                            badge=image,
                            name=name,
                            description=descr,

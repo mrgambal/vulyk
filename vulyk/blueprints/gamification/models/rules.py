@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask_mongoengine import Document
-from mongoengine import StringField, IntField, BooleanField
+from mongoengine import StringField, IntField, BooleanField, Q
 
 from ..core.rules import Rule, ProjectRule
 
@@ -14,7 +14,7 @@ class RuleModel(Document):
     Database-specific rule representation
     """
     id = IntField(required=True, primary_key=True)
-    task_type_name = StringField()
+    batch_name = StringField()
     badge = StringField(required=True)
     name = StringField(required=True, max_length=255, unique=True)
     description = StringField(required=True)
@@ -29,7 +29,7 @@ class RuleModel(Document):
         'allow_inheritance': True,
         'indexes': [
             'name',
-            'task_type_name'
+            'batch_name'
         ]
     }
 
@@ -44,13 +44,13 @@ class RuleModel(Document):
         :return: New RuleModel instance
         :rtype: RuleModel
         """
-        task_type_name = rule.task_type_name \
+        batch_name = rule.batch_name \
             if isinstance(rule, ProjectRule) \
             else ''
 
         return cls(
             id=rule.id,
-            task_type_name=task_type_name,
+            batch_name=batch_name,
             badge=rule.badge,
             name=rule.name,
             description=rule.description,
@@ -80,13 +80,48 @@ class RuleModel(Document):
             is_adjacent=self.is_adjacent
         )
 
-        if self.task_type_name:
+        if self.batch_name:
             return ProjectRule.from_rule(
                 rule=rule,
-                task_type_name=self.task_type_name
+                batch_name=self.batch_name
             )
         else:
             return rule
+
+    @classmethod
+    def get_actual_rules(cls: type,
+                         ids: list,
+                         batch_name: str,
+                         is_weekend: bool) -> list:
+        """
+        Prepare the list of rules to apply.
+        Cutting off is possible by using different tiny yet smart heuristics.
+
+        :param ids: A list of rules to be skipped for any reason
+        :type ids: list[str]
+        :param batch_name: Name of the batch the task is assigned to
+        :type batch_name: str
+        :param is_weekend: It today is a working day, there is no reason to
+        check for rules that are weekend-backed.
+        :type is_weekend: bool
+
+        :return: An array of rules to be checked and assigned.
+        :rtype: list[Rule]
+        """
+        base_q = Q()
+
+        if len(ids) > 0:
+            base_q &= Q(id__nin=ids)
+
+        if batch_name is not None and len(batch_name) > 0:
+            base_q &= (Q(batch_name=batch_name)
+                       | Q(batch_name='')
+                       | Q(batch_name__exists=False))
+
+        if not is_weekend:
+            base_q &= Q(is_weekend=False)
+
+        return [rule_model.to_rule() for rule_model in cls.objects(base_q)]
 
     def __str__(self):
         return 'RuleModel({model})'.format(model=str(self.to_rule()))

@@ -10,6 +10,7 @@ from vulyk.blueprints.gamification.core.queries import (
     MongoRuleExecutor,
     MongoRuleQueryBuilder)
 from vulyk.blueprints.gamification.core.rules import Rule, ProjectRule
+from vulyk.blueprints.gamification.models.rules import RuleModel
 from vulyk.models.stats import WorkSession
 
 from ..base import BaseTest
@@ -36,7 +37,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_n_tasks_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            task_type_name=project,
+            batch_name=project,
             badge='',
             name='',
             description='',
@@ -78,7 +79,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_n_tasks_m_days_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            task_type_name=project,
+            batch_name=project,
             badge='',
             name='',
             description='',
@@ -128,7 +129,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_n_tasks_weekends_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            task_type_name=project,
+            batch_name=project,
             badge='',
             name='',
             description='',
@@ -179,7 +180,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_m_weekends_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            task_type_name=project,
+            batch_name=project,
             badge='',
             name='',
             description='',
@@ -235,7 +236,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_m_weekends_adjacent_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            task_type_name=project,
+            batch_name=project,
             badge='',
             name='',
             description='',
@@ -296,7 +297,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_m_days_adjacent_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            task_type_name=project,
+            batch_name=project,
             badge='',
             name='',
             description='',
@@ -331,9 +332,6 @@ class TestMongoQueryExecutor(BaseTest):
     NOW = datetime.now()
     HOUR = timedelta(hours=1)
     DAY = timedelta(days=1)
-
-    def setUp(self):
-        super().setUp()
 
     def tearDown(self):
         WorkSession.drop_collection()
@@ -394,10 +392,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_n_tasks_project_ok(self):
         uid = ObjectId()
-        task_type_name = 'fake_task'
+        batch_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            task_type_name=task_type_name,
+            batch_name=batch_name,
             badge='',
             name='',
             description='',
@@ -407,14 +405,14 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=False,
             is_adjacent=False)
 
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
                     start_time=self.NOW - self.DAY, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
                     start_time=self.NOW - self.DAY * 2, end_time=self.NOW) \
             .save()
-        WorkSession(user=ObjectId(), task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=ObjectId(), task=ObjectId(), task_type=batch_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
 
         result = MongoRuleExecutor.achieved(
@@ -424,10 +422,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_n_tasks_project_fail(self):
         uid = ObjectId()
-        task_type_name = 'fake_task'
+        batch_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            task_type_name=task_type_name,
+            batch_name=batch_name,
             badge='',
             name='',
             description='',
@@ -437,14 +435,14 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=False,
             is_adjacent=False)
 
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
                     start_time=self.NOW - self.DAY, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
                     start_time=self.NOW - self.DAY * 2, end_time=self.NOW) \
             .save()
-        WorkSession(user=ObjectId(), task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=ObjectId(), task=ObjectId(), task_type=batch_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
 
         result = MongoRuleExecutor.achieved(
@@ -481,10 +479,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_n_tasks_m_days_project_ok(self):
         uid = ObjectId()
-        task_type_name = 'fake_task'
+        batch_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            task_type_name=task_type_name,
+            batch_name=batch_name,
             badge='',
             name='',
             description='',
@@ -498,7 +496,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = self.NOW - self.DAY * (i % 7)
             WorkSession(user=uid,
                         task=ObjectId(),
-                        task_type=task_type_name,
+                        task_type=batch_name,
                         start_time=day_i,
                         end_time=day_i
                         ).save()
@@ -678,10 +676,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_m_weekends_project(self):
         uid = ObjectId()
-        task_type_name = 'fake_task'
+        batch_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            task_type_name=task_type_name,
+            batch_name=batch_name,
             badge='',
             name='',
             description='',
@@ -697,7 +695,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sun) - (self.DAY * 7 * i * 2)
             WorkSession(user=uid,
                         task=ObjectId(),
-                        task_type=task_type_name,
+                        task_type=batch_name,
                         start_time=day_i,
                         end_time=day_i
                         ).save()
@@ -738,10 +736,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_m_adjacent_weekends_project(self):
         uid = ObjectId()
-        task_type_name = 'fake_task'
+        batch_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            task_type_name=task_type_name,
+            batch_name=batch_name,
             badge='',
             name='',
             description='',
@@ -757,7 +755,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sun) - (self.DAY * 7 * i)
             WorkSession(user=uid,
                         task=ObjectId(),
-                        task_type=task_type_name,
+                        task_type=batch_name,
                         start_time=day_i,
                         end_time=day_i
                         ).save()
@@ -795,10 +793,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_m_days_adjacent_project_ok(self):
         uid = ObjectId()
-        task_type_name = 'fake_task'
+        batch_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            task_type_name=task_type_name,
+            batch_name=batch_name,
             badge='',
             name='',
             description='',
@@ -811,7 +809,7 @@ class TestMongoQueryExecutor(BaseTest):
         for i in range(1, 6):
             WorkSession(user=uid,
                         task=ObjectId(),
-                        task_type=task_type_name,
+                        task_type=batch_name,
                         start_time=self.NOW - self.DAY * i,
                         end_time=self.NOW - self.DAY * i
                         ).save()
@@ -823,10 +821,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_m_days_adjacent_project_fail(self):
         uid = ObjectId()
-        task_type_name = 'fake_task'
+        batch_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            task_type_name=task_type_name,
+            batch_name=batch_name,
             badge='',
             name='',
             description='',
@@ -848,3 +846,165 @@ class TestMongoQueryExecutor(BaseTest):
             user_id=uid, rule=rule, collection=WorkSession.objects)
 
         self.assertFalse(result)
+
+
+class TestRuleModel(BaseTest):
+    RULES = [
+        Rule(
+            badge='',
+            name='rule_1',
+            description='',
+            bonus=0,
+            tasks_number=3,
+            days_number=0,
+            is_weekend=False,
+            is_adjacent=False,
+            rule_id=100),
+        Rule(
+            badge='',
+            name='rule_2',
+            description='',
+            bonus=10,
+            tasks_number=30,
+            days_number=0,
+            is_weekend=False,
+            is_adjacent=False,
+            rule_id=200),
+        ProjectRule(
+            rule_id=300,
+            batch_name='batch_1',
+            badge='',
+            name='rule_3',
+            description='',
+            bonus=0,
+            tasks_number=40,
+            days_number=0,
+            is_weekend=False,
+            is_adjacent=False),
+        ProjectRule(
+            rule_id=400,
+            batch_name='batch_2',
+            badge='',
+            name='rule_4',
+            description='',
+            bonus=0,
+            tasks_number=0,
+            days_number=5,
+            is_weekend=False,
+            is_adjacent=True),
+    ]
+
+    def setUp(self):
+        super().setUp()
+
+        for rule in self.RULES:
+            RuleModel.from_rule(rule).save()
+
+    def tearDown(self):
+        RuleModel.drop_collection()
+
+        super().tearDown()
+
+    def test_everything_ok(self):
+        self.assertEqual(
+            len(self.RULES),
+            len(RuleModel.get_actual_rules([], None, False))
+        )
+
+    def test_everything_batch_1(self):
+        rules = RuleModel.get_actual_rules([], 'batch_1', False)
+
+        self.assertEqual(3, len(rules))
+        self.assertTrue(any(r.id == 300 for r in rules))
+        self.assertTrue(all(r.id != 400 for r in rules))
+
+    def test_everything_batch_2(self):
+        rules = RuleModel.get_actual_rules([], 'batch_2', False)
+
+        self.assertEqual(3, len(rules))
+        self.assertTrue(any(r.id == 400 for r in rules))
+        self.assertTrue(all(r.id != 300 for r in rules))
+
+    def test_everything_and_weekend(self):
+        RuleModel.from_rule(
+            Rule(
+                badge='',
+                name='rule_5',
+                description='',
+                bonus=0,
+                tasks_number=3,
+                days_number=0,
+                is_weekend=True,
+                is_adjacent=False,
+                rule_id=500)).save()
+        rules = RuleModel.get_actual_rules([], None, True)
+        rules_no_weekend = RuleModel.get_actual_rules([], None, False)
+
+        self.assertEqual(5, len(rules))
+        self.assertTrue(any(r.id == 500 for r in rules))
+
+        self.assertEqual(4, len(rules_no_weekend))
+        self.assertTrue(all(r.id != 500 for r in rules_no_weekend))
+
+    def test_exclude_ids(self):
+        ids = [100, 200]
+        rules = RuleModel.get_actual_rules(ids, None, False)
+
+        self.assertEqual(2, len(rules))
+        self.assertTrue(all(r.id not in ids for r in rules))
+
+    def test_exclude_ids_batch(self):
+        ids = [100, 200]
+        rules = RuleModel.get_actual_rules(ids, 'batch_1', False)
+
+        self.assertEqual(1, len(rules))
+        self.assertTrue(rules[0].id, 300)
+
+    def test_exclude_ids_weekend(self):
+        RuleModel.from_rule(
+            Rule(
+                badge='',
+                name='rule_5',
+                description='',
+                bonus=0,
+                tasks_number=3,
+                days_number=0,
+                is_weekend=True,
+                is_adjacent=False,
+                rule_id=500)).save()
+        ids = [100, 200]
+        rules = RuleModel.get_actual_rules(ids, None, True)
+
+        self.assertEqual(3, len(rules))
+        self.assertTrue(any(r.id == 500 for r in rules))
+
+    def test_exclude_ids_batch_weekend(self):
+        RuleModel.from_rule(
+            Rule(
+                badge='',
+                name='rule_5',
+                description='',
+                bonus=0,
+                tasks_number=3,
+                days_number=0,
+                is_weekend=True,
+                is_adjacent=False,
+                rule_id=500)).save()
+        RuleModel.from_rule(
+            ProjectRule(
+                batch_name='batch_3',
+                badge='',
+                name='rule_6',
+                description='',
+                bonus=0,
+                tasks_number=3,
+                days_number=0,
+                is_weekend=True,
+                is_adjacent=False,
+                rule_id=600)).save()
+        ids = [100, 500]
+        rules = RuleModel.get_actual_rules(ids, 'batch_3', True)
+
+        self.assertEqual(2, len(rules))
+        self.assertTrue(all(r.id in [200, 600] for r in rules))
+        self.assertTrue(all(r.id != 500 for r in rules))

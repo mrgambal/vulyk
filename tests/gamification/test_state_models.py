@@ -3,6 +3,7 @@
 test_state_models
 """
 from datetime import datetime
+from decimal import Decimal
 
 from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.core.state import UserState
@@ -39,9 +40,9 @@ class TestStateModels(BaseTest):
         state = UserState(
             user=self.USER,
             level=0,
-            points=0,
-            actual_coins=0,
-            potential_coins=0,
+            points=Decimal(),
+            actual_coins=Decimal(),
+            potential_coins=Decimal(),
             achievements=[],
             last_changed=self.TIMESTAMP
         )
@@ -56,9 +57,9 @@ class TestStateModels(BaseTest):
         state = UserState(
             user=self.USER,
             level=20,
-            points=0,
-            actual_coins=0,
-            potential_coins=0,
+            points=Decimal(),
+            actual_coins=Decimal(),
+            potential_coins=Decimal(),
             achievements=[],
             last_changed=self.TIMESTAMP
         )
@@ -74,8 +75,8 @@ class TestStateModels(BaseTest):
             user=self.USER,
             level=0,
             points=20,
-            actual_coins=0,
-            potential_coins=0,
+            actual_coins=Decimal(),
+            potential_coins=Decimal(),
             achievements=[],
             last_changed=self.TIMESTAMP
         )
@@ -90,9 +91,9 @@ class TestStateModels(BaseTest):
         state = UserState(
             user=self.USER,
             level=0,
-            points=0,
-            actual_coins=50,
-            potential_coins=60,
+            points=Decimal(),
+            actual_coins=Decimal(50),
+            potential_coins=Decimal(60),
             achievements=[],
             last_changed=self.TIMESTAMP
         )
@@ -118,9 +119,9 @@ class TestStateModels(BaseTest):
         state = UserState(
             user=self.USER,
             level=20,
-            points=5000,
-            actual_coins=3240,
-            potential_coins=4000,
+            points=Decimal(5000),
+            actual_coins=Decimal(3240),
+            potential_coins=Decimal(4000),
             achievements=[rule_model],
             last_changed=self.TIMESTAMP
         )

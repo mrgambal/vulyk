@@ -4,7 +4,12 @@
 from datetime import datetime
 from decimal import Decimal
 
+from unittest.mock import patch
+
 from vulyk.app import TASKS_TYPES
+from vulyk.blueprints.gamification import listeners
+from vulyk.blueprints.gamification.core.rules import Rule
+from vulyk.blueprints.gamification.core.state import UserState
 from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.state import UserStateModel
 from vulyk.blueprints.gamification.models.task_types import \
@@ -335,3 +340,131 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         self.assertEqual(ev.viewed, False)
 
         self.assertEqual(ev.timestamp, state.last_changed)
+
+
+class TestAllocationBadges(BaseTest):
+    SATURDAY = datetime(2017, 7, 8)
+    SUNDAY = datetime(2017, 7, 9)
+    MONDAY = datetime(2017, 7, 10)
+    USER = None
+    GET_ACTUAL_RULES = 'vulyk.blueprints.gamification.models.rules.' \
+                       'RuleModel.get_actual_rules'
+
+    def setUp(self):
+        super().setUp()
+
+        Group.objects.create(
+            description='test', id='default', allowed_types=[
+                FakeType.type_name, BaseFakeType.type_name
+            ])
+        self.USER = User(username='user0', email='user0@email.com').save()
+
+    def tearDown(self):
+        User.drop_collection()
+        Group.drop_collection()
+
+        super().tearDown()
+
+    def test_get_rules_no_earned_no_batch_no_weekend(self):
+        rookie_state = UserState(
+            user=self.USER,
+            level=0,
+            points=Decimal(),
+            actual_coins=Decimal(),
+            potential_coins=Decimal(),
+            achievements=[],
+            last_changed=self.MONDAY
+        )
+
+        def patched_rules(**kwargs):
+            assert kwargs['ids'] == []
+            assert kwargs['batch_name'] == ''
+            assert not kwargs['is_weekend']
+
+        with patch(self.GET_ACTUAL_RULES, patched_rules):
+            listeners.get_actual_rules(rookie_state, '', self.MONDAY)
+            self.assertRaises(
+                AssertionError,
+                lambda: listeners.get_actual_rules(
+                    rookie_state,
+                    'batch_should_not_be_here',
+                    self.MONDAY))
+
+    def test_get_rules_badges_no_batch_no_weekend(self):
+        rule = Rule(
+            badge='',
+            name='rule_1',
+            description='',
+            bonus=0,
+            tasks_number=0,
+            days_number=5,
+            is_weekend=False,
+            is_adjacent=True,
+            rule_id=100)
+        state = UserState(
+            user=self.USER,
+            level=20,
+            points=Decimal(5000),
+            actual_coins=Decimal(3240),
+            potential_coins=Decimal(4000),
+            achievements=[rule],
+            last_changed=self.MONDAY
+        )
+
+        def patched_rules(**kwargs):
+            assert kwargs['ids'] == [100]
+            assert kwargs['batch_name'] == ''
+            assert not kwargs['is_weekend']
+
+        with patch(self.GET_ACTUAL_RULES, patched_rules):
+            listeners.get_actual_rules(state, '', self.MONDAY)
+
+    def test_get_rules_no_badges_no_batch_weekend(self):
+        state = UserState(
+            user=self.USER,
+            level=20,
+            points=Decimal(5000),
+            actual_coins=Decimal(3240),
+            potential_coins=Decimal(4000),
+            achievements=[],
+            last_changed=self.MONDAY
+        )
+
+        def patched_rules(**kwargs):
+            assert kwargs['ids'] == []
+            assert kwargs['batch_name'] == ''
+            assert kwargs['is_weekend']
+
+        with patch(self.GET_ACTUAL_RULES, patched_rules):
+            listeners.get_actual_rules(state, '', self.SATURDAY)
+            listeners.get_actual_rules(state, '', self.SUNDAY)
+
+    def test_get_rules_badges_batch_weekend(self):
+        rule = Rule(
+            badge='',
+            name='rule_1',
+            description='',
+            bonus=0,
+            tasks_number=0,
+            days_number=5,
+            is_weekend=False,
+            is_adjacent=True,
+            rule_id=100)
+        state = UserState(
+            user=self.USER,
+            level=20,
+            points=Decimal(5000),
+            actual_coins=Decimal(3240),
+            potential_coins=Decimal(4000),
+            achievements=[rule],
+            last_changed=self.MONDAY
+        )
+
+        def patched_rules(**kwargs):
+            assert kwargs['ids'] == [100]
+            assert kwargs['batch_name'] == 'batch_1'
+            assert kwargs['is_weekend']
+
+        with patch(self.GET_ACTUAL_RULES, patched_rules):
+            listeners.get_actual_rules(state, 'batch_1', self.SUNDAY)
+

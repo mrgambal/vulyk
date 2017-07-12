@@ -185,12 +185,12 @@ class ProjectRule(Rule):
     Container for project specific rules.
     """
     __slots__ = Rule.__slots__ + [
-        '_task_type_name'
+        '_batch_name'
     ]
 
     def __init__(self,
                  rule_id: int,
-                 task_type_name: str,
+                 batch_name: str,
                  badge: str,
                  name: str,
                  description: str,
@@ -202,8 +202,8 @@ class ProjectRule(Rule):
         """
         :param rule_id: Unique rule identifier.
         :type rule_id: int
-        :param task_type_name: ID of the project/task type.
-        :type task_type_name: str
+        :param batch_name: ID of the batch.
+        :type batch_name: str
         :param badge: Badge image (either base64 or URL)
         :type badge: str
         :param name: Achievement name
@@ -231,28 +231,28 @@ class ProjectRule(Rule):
                          is_weekend=is_weekend,
                          is_adjacent=is_adjacent)
 
-        self._task_type_name = task_type_name
+        self._batch_name = batch_name
 
     @property
-    def task_type_name(self) -> str:
-        return self._task_type_name
+    def batch_name(self) -> str:
+        return self._batch_name
 
     @classmethod
-    def from_rule(cls, rule: Rule, task_type_name: str) -> Rule:
+    def from_rule(cls, rule: Rule, batch_name: str) -> Rule:
         """
         Factory method to extend regular Rule and promote it to ProjectRule
 
         :param rule: Basic Rule instance to copy info from
         :type rule: Rule
-        :param task_type_name: ID of the project/task type.
-        :type task_type_name: str
+        :param batch_name: ID of the project/task type.
+        :type batch_name: str
 
         :return: Fully formed ProjectRule
         :rtype: ProjectRule
         """
         return cls(
             rule_id=rule.id,
-            task_type_name=task_type_name,
+            batch_name=batch_name,
             badge=rule.badge,
             name=rule.name,
             description=rule.description,
@@ -263,10 +263,10 @@ class ProjectRule(Rule):
             is_adjacent=rule.is_adjacent)
 
     def __str__(self) -> str:
-        return 'ProjectRule({name}, {task_type}, {bonus}, {tasks}, {days},' \
+        return 'ProjectRule({name}, {batch}, {bonus}, {tasks}, {days},' \
                ' {week}, {adj})' \
             .format(name=self.name,
-                    task_type=self._task_type_name,
+                    batch=self._batch_name,
                     bonus=self.bonus,
                     tasks=self._tasks_number,
                     days=self._days_number,
@@ -274,9 +274,9 @@ class ProjectRule(Rule):
                     adj=self._is_adjacent)
 
     def __repr__(self) -> str:
-        return 'ProjectRule({name}, {task_type}, {descr})'.format(
+        return 'ProjectRule({name}, {batch}, {descr})'.format(
             name=self.name,
-            task_type=self._task_type_name,
+            batch=self._batch_name,
             descr=self.description[:50] + '...'
         )
 
