@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-test_task_types
+test_worksessions
 """
 from datetime import datetime, timedelta
 

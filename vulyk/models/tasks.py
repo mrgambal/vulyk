@@ -24,6 +24,7 @@ class Batch(Document):
     task_type = StringField(max_length=50, required=True, db_field='taskType')
     tasks_count = IntField(default=0, required=True, db_field='tasksCount')
     tasks_processed = IntField(default=0, db_field='tasksProcessed')
+    batch_meta = DictField(db_field='batchMeta')
 
     meta = {
         'collection': 'batches',

@@ -61,6 +61,9 @@ class AbstractTaskType:
     _name = ''
     _description = ''
 
+    # Meta information on project to copy to task batches
+    _task_type_meta = {}
+
     # managers
     _work_session_manager = None
     _leaderboard_manager = None
@@ -94,6 +97,7 @@ class AbstractTaskType:
 
         assert self.type_name, 'You should define type_name (underscore)'
         assert self.template, 'You should define template'
+        assert isinstance(self._task_type_meta, dict)
 
     @property
     def name(self):
@@ -104,6 +108,16 @@ class AbstractTaskType:
          :rtype: str
         """
         return self._name if len(self._name) > 0 else self.type_name
+
+    @property
+    def task_type_meta(self):
+        """
+        Dict with task type metadata (freeform dict)
+
+        :return: project specific metadata
+         :rtype: dict
+        """
+        return self._task_type_meta
 
     @property
     def description(self):

@@ -8,6 +8,8 @@ from flask import Blueprint, Response, send_file
 from vulyk.blueprints.gamification.models.foundations import FundModel
 from vulyk import utils
 
+from . import listeners
+
 gamification = Blueprint('gamification', __name__)
 
 

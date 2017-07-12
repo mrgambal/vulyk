@@ -4,7 +4,8 @@ Contains all DB models related to game events.
 """
 from flask_mongoengine import Document
 from mongoengine import (
-    IntField, ComplexDateTimeField, ReferenceField, BooleanField, ListField
+    DecimalField, ComplexDateTimeField, ReferenceField, BooleanField, ListField,
+    IntField
 )
 
 from vulyk.models.tasks import AbstractAnswer
@@ -30,9 +31,9 @@ class EventModel(Document):
         document_type=AbstractAnswer, db_field='answer', required=False,
         unique=True)
     # points must only be added
-    points_given = IntField(min_value=0, required=True, db_field='points')
+    points_given = DecimalField(min_value=0, required=True, db_field='points')
     # coins can be both given and withdrawn
-    coins = IntField(required=True)
+    coins = DecimalField(required=True)
     achievements = ListField(
         field=ReferenceField(document_type=RuleModel, required=False))
     # if user donates earned coins to a fund, specify the fund

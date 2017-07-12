@@ -5,6 +5,7 @@ import logging
 from flask_mongoengine import Document
 from mongoengine.errors import OperationError
 
+from vulyk.signals import on_task_done
 from vulyk.models.exc import WorkSessionLookUpError, WorkSessionUpdateError
 
 __all__ = [
@@ -102,7 +103,7 @@ class WorkSessionManager:
 
                 self._logger.debug(
                     'Added %s seconds of activities for user %s and task %s.',
-                    user_id, task.id)
+                    seconds, user_id, task.id)
             else:
                 msg = 'Can not update the session {} for user {}. Value: {}.' \
                     .format(session.id, user_id, seconds)
@@ -139,6 +140,8 @@ class WorkSessionManager:
                 rs.first().update(
                     set__end_time=datetime.now(),
                     set__answer=answer)
+
+                on_task_done.send(self, answer=answer)
             else:
                 msg = 'No session was found for {0}'.format(answer)
 
