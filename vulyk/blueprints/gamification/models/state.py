@@ -80,6 +80,54 @@ class UserStateModel(Document):
             last_changed=state.last_changed
         )
 
+    @classmethod
+    def get_or_create_by_user(cls, user: User) -> UserState:
+        """
+        Returns an existing UserStateModel instance bound to the user, or a new
+        one if didn't exist before.
+
+        :param user: Current User model instance
+        :type user: User
+
+        :return: UserState instance
+        :rtype: UserState
+        """
+        try:
+            state_model = cls.objects.get(user=user)
+        except cls.DoesNotExist:
+            state_model = cls.objects.create(user=user)
+
+        return state_model.to_state()
+
+    @classmethod
+    def update_state(cls, diff: UserState) -> None:
+        """
+        Prepares and conducts an atomic update query from passed diff.
+
+        :param diff: State object contains values that are to be changed only.
+        :type diff: UserState
+
+        :rtype: None
+        """
+        update_dict = {'set__last_changed': diff.last_changed}
+
+        if diff.level > 0:
+            update_dict['set__level'] = diff.level
+        if diff.points > 0:
+            # DON'T PUT YOUR BLAME ON ME
+            # https://github.com/MongoEngine/mongoengine/blob/master/mongoengine/fields.py#L415
+            update_dict['inc__points'] = float(diff.points)
+        if diff.actual_coins != 0:
+            # ALL YOUR DECIMALS ARE BELONG TO US
+            update_dict['inc__actual_coins'] = float(diff.actual_coins)
+        if diff.potential_coins != 0:
+            update_dict['inc__potential_coins'] = float(diff.potential_coins)
+        if len(diff.achievements) > 0:
+            update_dict['add_to_set__achievements'] = \
+                cls.from_state(diff).achievements
+
+        cls.objects.get(user=diff.user).update(**update_dict)
+
     def __str__(self):
         return 'UserStateModel({model})'.format(model=str(self.to_state()))
 

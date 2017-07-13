@@ -334,7 +334,7 @@ class TestMongoQueryExecutor(BaseTest):
     DAY = timedelta(days=1)
 
     def tearDown(self):
-        WorkSession.drop_collection()
+        WorkSession.objects.delete()
         super().tearDown()
 
     def test_n_tasks_ok(self):
@@ -901,7 +901,7 @@ class TestRuleModel(BaseTest):
             RuleModel.from_rule(rule).save()
 
     def tearDown(self):
-        RuleModel.drop_collection()
+        RuleModel.objects.delete()
 
         super().tearDown()
 

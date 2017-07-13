@@ -34,9 +34,8 @@ def track_events(sender, answer) -> None:
     """
     from vulyk.app import TASKS_TYPES
 
-    task = answer.task
     user = answer.created_by
-    batch = task.batch
+    batch = answer.task.batch
 
     if not batch or batch.task_type not in TASKS_TYPES:
         return
@@ -44,31 +43,29 @@ def track_events(sender, answer) -> None:
     if isinstance(TASKS_TYPES[batch.task_type], AbstractGamifiedTaskType):
         dt = datetime.now()  # TODO: TZ Aware?
         # I. Get current/new state
-        try:
-            state_model = UserStateModel.objects.get(user=user)
-        except UserStateModel.DoesNotExist:
-            state_model = UserStateModel.objects.create(user=user)
+        state = UserStateModel.get_or_create_by_user(user)
 
         # II. gather earned goods
-        rules = list(filter(
+        badges = list(filter(
             lambda rule: MongoRuleExecutor.achieved(
                 user_id=user.id,
                 rule=rule,
                 collection=WorkSession.objects),
             get_actual_rules(
-                state=state_model.to_state(),
+                state=state,
                 batch_name=batch.id,
                 now=dt)))
-        coins_earned = Decimal(batch.batch_meta[COINS_PER_TASK_KEY])
-        points_earned = Decimal(batch.batch_meta[POINTS_PER_TASK_KEY])
-        # TODO: add USM.update_from_state(state) method, save progress
         # III. Alter the state and create event
-        state_model.actual_coins += coins_earned
-        state_model.points += points_earned
-        state_model.last_changed = dt
 
-        state_model.save()
-
+        UserStateModel.update_state(
+            diff=UserState(
+                user=user,
+                level=0,
+                points=Decimal(batch.batch_meta[POINTS_PER_TASK_KEY]),
+                actual_coins=Decimal(batch.batch_meta[COINS_PER_TASK_KEY]),
+                potential_coins=Decimal(),
+                achievements=badges,
+                last_changed=dt))
         EventModel.from_event(
             Event.build(
                 timestamp=dt,
@@ -76,7 +73,7 @@ def track_events(sender, answer) -> None:
                 answer=answer,
                 points_given=batch.batch_meta[POINTS_PER_TASK_KEY],
                 coins=batch.batch_meta[COINS_PER_TASK_KEY],
-                achievements=rules,
+                achievements=badges,
                 acceptor_fund=None,
                 level_given=None,
                 viewed=False)

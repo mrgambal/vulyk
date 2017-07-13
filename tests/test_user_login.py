@@ -16,8 +16,8 @@ class TestUserLogin(BaseTest):
     USER = User(username='SuperUsername', email='1@email.com', admin=True)
 
     def tearDown(self):
-        User.drop_collection()
-        Group.drop_collection()
+        User.objects.delete()
+        Group.objects.delete()
         Group._get_db().drop_collection('user_social_auth')
 
         super().tearDown()

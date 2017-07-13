@@ -19,7 +19,7 @@ class TestFundModels(BaseTest):
     def tearDown(self):
         super().tearDown()
 
-        FundModel.drop_collection()
+        FundModel.objects.delete()
         FundModel._get_db().drop_collection('images.files')
         FundModel._get_db().drop_collection('images.chunks')
 

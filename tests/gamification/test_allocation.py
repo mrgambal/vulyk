@@ -3,18 +3,18 @@
 """
 from datetime import datetime
 from decimal import Decimal
-
 from unittest.mock import patch
 
 from vulyk.app import TASKS_TYPES
 from vulyk.blueprints.gamification import listeners
 from vulyk.blueprints.gamification.core.rules import Rule
-from vulyk.blueprints.gamification.core.state import UserState
+from vulyk.blueprints.gamification.core.state import (
+    UserState, InvalidUserStateException)
 from vulyk.blueprints.gamification.models.events import EventModel
+from vulyk.blueprints.gamification.models.rules import RuleModel
 from vulyk.blueprints.gamification.models.state import UserStateModel
 from vulyk.blueprints.gamification.models.task_types import \
     POINTS_PER_TASK_KEY, COINS_PER_TASK_KEY
-from vulyk.models.exc import TaskValidationError
 from vulyk.models.stats import WorkSession
 from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
 from vulyk.models.user import User, Group
@@ -37,14 +37,15 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             ])
 
     def tearDown(self):
-        User.drop_collection()
-        Group.drop_collection()
-        AbstractTask.drop_collection()
-        AbstractAnswer.drop_collection()
-        WorkSession.drop_collection()
-        Batch.drop_collection()
-        UserStateModel.drop_collection()
-        EventModel.drop_collection()
+        User.objects.delete()
+        Group.objects.delete()
+        AbstractTask.objects.delete()
+        AbstractAnswer.objects.delete()
+        WorkSession.objects.delete()
+        Batch.objects.delete()
+        UserStateModel.objects.delete()
+        EventModel.objects.delete()
+        RuleModel.objects.delete()
 
         TASKS_TYPES = []
         super().tearDown()
@@ -78,20 +79,72 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         task_type._work_session_manager.start_work_session(task, user.id)
         task_type.on_task_done(user, task.id, {'result': 'result'})
 
-        state = UserStateModel.objects.get(user=user)
-        self.assertEqual(state.points, Decimal("1.0"))
-        self.assertEqual(state.actual_coins, Decimal("1.0"))
-
         events = EventModel.objects.filter(user=user)
+        state = UserStateModel.get_or_create_by_user(user=user)
+
         self.assertEqual(len(events), 1)
-        ev = events[0]
+        ev = events[0].to_event()
         self.assertEqual(ev.points_given, Decimal("1.0"))
         self.assertEqual(ev.coins, Decimal("1.0"))
         self.assertEqual(ev.achievements, [])
         self.assertEqual(ev.level_given, None)
         self.assertEqual(ev.viewed, False)
 
+        self.assertEqual(state.points, ev.points_given)
+        self.assertEqual(state.actual_coins, ev.coins)
+        self.assertEqual(state.potential_coins, Decimal())
+        self.assertEqual(state.level, 0)
+        self.assertEqual(state.achievements, {})
         self.assertEqual(ev.timestamp, state.last_changed)
+
+    def test_single_allocation_badge_given(self):
+        task_type = FakeType({})
+        TASKS_TYPES[task_type.type_name] = task_type
+
+        user = User(username='user0', email='user0@email.com').save()
+        batch = Batch(
+            id='default',
+            task_type=task_type.type_name,
+            tasks_count=1,
+            tasks_processed=0,
+            batch_meta={
+                POINTS_PER_TASK_KEY: 1.0,
+                COINS_PER_TASK_KEY: 1.0
+            }
+        ).save()
+
+        task = task_type.task_model(
+            id='task0',
+            task_type=task_type.type_name,
+            batch=batch,
+            closed=False,
+            users_count=0,
+            users_processed=[],
+            users_skipped=[],
+            task_data={'data': 'data'}).save()
+
+        rule = Rule(
+            badge='Faithful Fury',
+            name='rule_1',
+            description='Kill one fly',
+            bonus=0,
+            tasks_number=1,
+            days_number=0,
+            is_weekend=False,
+            is_adjacent=False,
+            rule_id=100)
+        RuleModel.from_rule(rule).save()
+
+        task_type._work_session_manager.start_work_session(task, user.id)
+        task_type.on_task_done(user, task.id, {'result': 'result'})
+
+        events = EventModel.objects.filter(user=user)
+        state = UserStateModel.get_or_create_by_user(user=user)
+
+        ev = events[0].to_event()
+        self.assertEqual(ev.achievements, [rule])
+
+        self.assertEqual(state.achievements, {rule.id: rule})
 
     def test_double_allocation(self):
         task_type = FakeType({})
@@ -134,7 +187,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         task_type._work_session_manager.start_work_session(task2, user.id)
         task_type.on_task_done(user, task2.id, {'result': 'result'})
 
-        state = UserStateModel.objects.get(user=user)
+        state = UserStateModel.get_or_create_by_user(user=user)
         self.assertEqual(state.points, Decimal("5.0"))
         self.assertEqual(state.actual_coins, Decimal("3.0"))
 
@@ -177,7 +230,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
 
         task_type._work_session_manager.start_work_session(task, user.id)
         self.assertRaises(
-            TaskValidationError,
+            InvalidUserStateException,
             lambda: task_type.on_task_done(user, task.id, {'result': 'result'})
         )
 
@@ -233,7 +286,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         task_type._work_session_manager.start_work_session(task2, user.id)
         task_type.on_task_done(user, task2.id, {'result': 'result'})
 
-        state = UserStateModel.objects.get(user=user)
+        state = UserStateModel.get_or_create_by_user(user=user)
         self.assertEqual(state.points, Decimal("27.5"))
         self.assertEqual(state.actual_coins, Decimal("16.5"))
 
@@ -326,7 +379,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         task_type_new._work_session_manager.start_work_session(task2, user.id)
         task_type_new.on_task_done(user, task2.id, {'result': 'result'})
 
-        state = UserStateModel.objects.get(user=user)
+        state = UserStateModel.get_or_create_by_user(user=user)
         self.assertEqual(state.points, Decimal("25"))
         self.assertEqual(state.actual_coins, Decimal("15"))
 
@@ -360,8 +413,8 @@ class TestAllocationBadges(BaseTest):
         self.USER = User(username='user0', email='user0@email.com').save()
 
     def tearDown(self):
-        User.drop_collection()
-        Group.drop_collection()
+        User.objects.delete()
+        Group.objects.delete()
 
         super().tearDown()
 
