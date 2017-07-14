@@ -71,10 +71,11 @@ class UserState:
         try:
             assert self.user is not None, 'User must be present.'
             assert self.level >= 0, 'Level value must be zero or greater.'
-            assert self.points >= 0, 'Points value must be zero or greater.'
-            assert self.actual_coins >= 0, \
+            assert self.points >= Decimal(0), \
+                'Points value must be zero or greater.'
+            assert self.actual_coins >= Decimal(0), \
                 'Actual coins value must be zero or greater.'
-            assert self.potential_coins >= 0, \
+            assert self.potential_coins >= Decimal(0), \
                 'Potential coins value must be zero or greater.'
             assert isinstance(self.achievements, dict), \
                 'Achievements value must be a dict'

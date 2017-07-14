@@ -60,7 +60,7 @@ class TestJsonRulesParsing(BaseTest):
         weekend = True
         adjacent = False
         parsee = {
-            'task_type': project,
+            'task_type_name': project,
             'badge': image,
             'name': name,
             'description': descr,

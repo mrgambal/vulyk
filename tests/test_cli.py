@@ -33,9 +33,9 @@ class TestAdmin(BaseTest):
                  admin=i % 3 == 0).save()
 
     def tearDown(self):
-        User.drop_collection()
-        Group.drop_collection()
-        Batch.drop_collection()
+        User.objects.delete()
+        Group.objects.delete()
+        Batch.objects.delete()
 
         super().tearDown()
 
@@ -85,7 +85,7 @@ class TestBatches(BaseTest):
     WRONG_TASK_TYPE = AnotherTaskType({})
 
     def tearDown(self):
-        Batch.drop_collection()
+        Batch.objects.delete()
 
         super().tearDown()
 

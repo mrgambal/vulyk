@@ -2,13 +2,13 @@
 """
 test_user_login
 """
-import flask
-from mongoengine import connect, Document
 from unittest.mock import patch
+
+import flask
+from mongoengine import Document
 
 from vulyk.bootstrap import _social_login as social_login
 from vulyk.models.user import Group, User
-
 from .base import BaseTest
 
 
@@ -16,8 +16,8 @@ class TestUserLogin(BaseTest):
     USER = User(username='SuperUsername', email='1@email.com', admin=True)
 
     def tearDown(self):
-        User.drop_collection()
-        Group.drop_collection()
+        User.objects.delete()
+        Group.objects.delete()
         Group._get_db().drop_collection('user_social_auth')
 
         super().tearDown()

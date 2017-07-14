@@ -202,7 +202,7 @@ class ProjectRule(Rule):
         """
         :param rule_id: Unique rule identifier.
         :type rule_id: int
-        :param task_type_name: ID of the project/task type.
+        :param task_type_name: Task type name.
         :type task_type_name: str
         :param badge: Badge image (either base64 or URL)
         :type badge: str

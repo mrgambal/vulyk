@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask_mongoengine import Document
-from mongoengine import StringField, IntField, BooleanField
+from mongoengine import StringField, IntField, BooleanField, Q
 
 from ..core.rules import Rule, ProjectRule
 
@@ -87,6 +87,41 @@ class RuleModel(Document):
             )
         else:
             return rule
+
+    @classmethod
+    def get_actual_rules(cls: type,
+                         skip_ids: list,
+                         task_type_name: str,
+                         is_weekend: bool) -> list:
+        """
+        Prepare the list of rules to apply.
+        Cutting off is possible by using different tiny yet smart heuristics.
+
+        :param skip_ids: A list of rules to be skipped for any reason
+        :type skip_ids: list[str]
+        :param task_type_name: Name of the project the task is assigned to
+        :type task_type_name: str
+        :param is_weekend: It today is a working day, there is no reason to
+        check for rules that are weekend-backed.
+        :type is_weekend: bool
+
+        :return: An array of rules to be checked and assigned.
+        :rtype: list[Rule]
+        """
+        base_q = Q()
+
+        if len(skip_ids) > 0:
+            base_q &= Q(id__nin=skip_ids)
+
+        if task_type_name is not None and len(task_type_name) > 0:
+            base_q &= (Q(task_type_name=task_type_name)
+                       | Q(task_type_name='')
+                       | Q(task_type_name__exists=False))
+
+        if not is_weekend:
+            base_q &= Q(is_weekend=False)
+
+        return [rule_model.to_rule() for rule_model in cls.objects(base_q)]
 
     def __str__(self):
         return 'RuleModel({model})'.format(model=str(self.to_rule()))

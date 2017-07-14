@@ -44,7 +44,7 @@ class JsonRuleParser(RuleParser):
         try:
             parsee = json.loads(json_string)
             name = parsee['name']
-            task_type_name = parsee.get('task_type', '')
+            task_type_name = parsee.get('task_type_name', '')
             hash_id = hash('{}{}'.format(name, task_type_name))
 
             rule = Rule(rule_id=hash_id,
@@ -58,8 +58,7 @@ class JsonRuleParser(RuleParser):
                         is_adjacent=bool(parsee['is_adjacent']))
 
             if task_type_name:
-                return ProjectRule.from_rule(rule,
-                                             parsee['task_type'])
+                return ProjectRule.from_rule(rule, task_type_name)
             else:
                 return rule
         except ValueError:
