@@ -25,8 +25,8 @@ def track_events(sender, answer) -> None:
     """
     The most important gear of the gamification module.
 
-    :param sender:
-    :type sender:
+    :param sender: Sender
+    :type sender: object
     :param answer: Current finished task's answer instance
     :type answer: AbstractAnswer
 
@@ -53,16 +53,19 @@ def track_events(sender, answer) -> None:
                 collection=WorkSession.objects),
             get_actual_rules(
                 state=state,
-                batch_name=batch.id,
+                task_type_name=batch.task_type,
                 now=dt)))
+
         # III. Alter the state and create event
+        points = batch.batch_meta[POINTS_PER_TASK_KEY]
+        coins = batch.batch_meta[COINS_PER_TASK_KEY]
 
         UserStateModel.update_state(
             diff=UserState(
                 user=user,
                 level=0,
-                points=Decimal(batch.batch_meta[POINTS_PER_TASK_KEY]),
-                actual_coins=Decimal(batch.batch_meta[COINS_PER_TASK_KEY]),
+                points=Decimal(points),
+                actual_coins=Decimal(coins),
                 potential_coins=Decimal(),
                 achievements=badges,
                 last_changed=dt))
@@ -71,8 +74,8 @@ def track_events(sender, answer) -> None:
                 timestamp=dt,
                 user=user,
                 answer=answer,
-                points_given=batch.batch_meta[POINTS_PER_TASK_KEY],
-                coins=batch.batch_meta[COINS_PER_TASK_KEY],
+                points_given=points,
+                coins=coins,
                 achievements=badges,
                 acceptor_fund=None,
                 level_given=None,
@@ -80,20 +83,23 @@ def track_events(sender, answer) -> None:
         ).save()
 
 
-def get_actual_rules(state: UserState, batch_name: str, now: datetime) -> list:
+def get_actual_rules(state: UserState,
+                     task_type_name: str,
+                     now: datetime) -> list:
     """
+    Returns a list of eligible rules.
 
-    :param state:
-    :type state:
-    :param batch_name:
-    :type batch_name:
-    :param now:
-    :type now:
+    :param state: Current state
+    :type state: UserState
+    :param task_type_name: The task's project
+    :type task_type_name: str
+    :param now: Timestamp to check for weekends
+    :type now: datetime
 
-    :return:
-    :rtype:
+    :return: List of Rule instances
+    :rtype: list[vulyk.blueprints.gamification.core.rules.Rule]
     """
     return RuleModel.get_actual_rules(
-        ids=list(state.achievements.keys()),
-        batch_name=batch_name,
+        skip_ids=list(state.achievements.keys()),
+        task_type_name=task_type_name,
         is_weekend=now.weekday() in [5, 6])

@@ -44,8 +44,8 @@ class JsonRuleParser(RuleParser):
         try:
             parsee = json.loads(json_string)
             name = parsee['name']
-            batch_name = parsee.get('batch_name', '')
-            hash_id = hash('{}{}'.format(name, batch_name))
+            task_type_name = parsee.get('task_type_name', '')
+            hash_id = hash('{}{}'.format(name, task_type_name))
 
             rule = Rule(rule_id=hash_id,
                         badge=parsee['badge'],
@@ -57,8 +57,8 @@ class JsonRuleParser(RuleParser):
                         is_weekend=bool(parsee['is_weekend']),
                         is_adjacent=bool(parsee['is_adjacent']))
 
-            if batch_name:
-                return ProjectRule.from_rule(rule, batch_name)
+            if task_type_name:
+                return ProjectRule.from_rule(rule, task_type_name)
             else:
                 return rule
         except ValueError:

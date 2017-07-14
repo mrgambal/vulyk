@@ -37,7 +37,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_n_tasks_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            batch_name=project,
+            task_type_name=project,
             badge='',
             name='',
             description='',
@@ -79,7 +79,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_n_tasks_m_days_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            batch_name=project,
+            task_type_name=project,
             badge='',
             name='',
             description='',
@@ -129,7 +129,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_n_tasks_weekends_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            batch_name=project,
+            task_type_name=project,
             badge='',
             name='',
             description='',
@@ -180,7 +180,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_m_weekends_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            batch_name=project,
+            task_type_name=project,
             badge='',
             name='',
             description='',
@@ -236,7 +236,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_m_weekends_adjacent_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            batch_name=project,
+            task_type_name=project,
             badge='',
             name='',
             description='',
@@ -297,7 +297,7 @@ class TestMongoQueryBuilder(BaseTest):
     def test_m_days_adjacent_project(self):
         project = 'fake_tasks'
         rule = ProjectRule(
-            batch_name=project,
+            task_type_name=project,
             badge='',
             name='',
             description='',
@@ -392,10 +392,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_n_tasks_project_ok(self):
         uid = ObjectId()
-        batch_name = 'fake_task'
+        task_type_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            batch_name=batch_name,
+            task_type_name=task_type_name,
             badge='',
             name='',
             description='',
@@ -405,14 +405,14 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=False,
             is_adjacent=False)
 
-        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.DAY, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.DAY * 2, end_time=self.NOW) \
             .save()
-        WorkSession(user=ObjectId(), task=ObjectId(), task_type=batch_name,
+        WorkSession(user=ObjectId(), task=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
 
         result = MongoRuleExecutor.achieved(
@@ -422,10 +422,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_n_tasks_project_fail(self):
         uid = ObjectId()
-        batch_name = 'fake_task'
+        task_type_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            batch_name=batch_name,
+            task_type_name=task_type_name,
             badge='',
             name='',
             description='',
@@ -435,14 +435,14 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=False,
             is_adjacent=False)
 
-        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.DAY, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=batch_name,
+        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.DAY * 2, end_time=self.NOW) \
             .save()
-        WorkSession(user=ObjectId(), task=ObjectId(), task_type=batch_name,
+        WorkSession(user=ObjectId(), task=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
 
         result = MongoRuleExecutor.achieved(
@@ -479,10 +479,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_n_tasks_m_days_project_ok(self):
         uid = ObjectId()
-        batch_name = 'fake_task'
+        task_type_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            batch_name=batch_name,
+            task_type_name=task_type_name,
             badge='',
             name='',
             description='',
@@ -496,7 +496,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = self.NOW - self.DAY * (i % 7)
             WorkSession(user=uid,
                         task=ObjectId(),
-                        task_type=batch_name,
+                        task_type=task_type_name,
                         start_time=day_i,
                         end_time=day_i
                         ).save()
@@ -676,10 +676,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_m_weekends_project(self):
         uid = ObjectId()
-        batch_name = 'fake_task'
+        task_type_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            batch_name=batch_name,
+            task_type_name=task_type_name,
             badge='',
             name='',
             description='',
@@ -695,7 +695,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sun) - (self.DAY * 7 * i * 2)
             WorkSession(user=uid,
                         task=ObjectId(),
-                        task_type=batch_name,
+                        task_type=task_type_name,
                         start_time=day_i,
                         end_time=day_i
                         ).save()
@@ -736,10 +736,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_m_adjacent_weekends_project(self):
         uid = ObjectId()
-        batch_name = 'fake_task'
+        task_type_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            batch_name=batch_name,
+            task_type_name=task_type_name,
             badge='',
             name='',
             description='',
@@ -755,7 +755,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sun) - (self.DAY * 7 * i)
             WorkSession(user=uid,
                         task=ObjectId(),
-                        task_type=batch_name,
+                        task_type=task_type_name,
                         start_time=day_i,
                         end_time=day_i
                         ).save()
@@ -793,10 +793,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_m_days_adjacent_project_ok(self):
         uid = ObjectId()
-        batch_name = 'fake_task'
+        task_type_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            batch_name=batch_name,
+            task_type_name=task_type_name,
             badge='',
             name='',
             description='',
@@ -809,7 +809,7 @@ class TestMongoQueryExecutor(BaseTest):
         for i in range(1, 6):
             WorkSession(user=uid,
                         task=ObjectId(),
-                        task_type=batch_name,
+                        task_type=task_type_name,
                         start_time=self.NOW - self.DAY * i,
                         end_time=self.NOW - self.DAY * i
                         ).save()
@@ -821,10 +821,10 @@ class TestMongoQueryExecutor(BaseTest):
 
     def test_m_days_adjacent_project_fail(self):
         uid = ObjectId()
-        batch_name = 'fake_task'
+        task_type_name = 'fake_task'
         rule = ProjectRule(
             rule_id=100,
-            batch_name=batch_name,
+            task_type_name=task_type_name,
             badge='',
             name='',
             description='',
@@ -872,7 +872,7 @@ class TestRuleModel(BaseTest):
             rule_id=200),
         ProjectRule(
             rule_id=300,
-            batch_name='batch_1',
+            task_type_name='batch_1',
             badge='',
             name='rule_3',
             description='',
@@ -883,7 +883,7 @@ class TestRuleModel(BaseTest):
             is_adjacent=False),
         ProjectRule(
             rule_id=400,
-            batch_name='batch_2',
+            task_type_name='batch_2',
             badge='',
             name='rule_4',
             description='',
@@ -992,7 +992,7 @@ class TestRuleModel(BaseTest):
                 rule_id=500)).save()
         RuleModel.from_rule(
             ProjectRule(
-                batch_name='batch_3',
+                task_type_name='batch_3',
                 badge='',
                 name='rule_6',
                 description='',

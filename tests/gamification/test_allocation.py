@@ -26,6 +26,8 @@ from ..fixtures import FakeType as BaseFakeType
 
 class TestAllocationOfMoneyAndPoints(BaseTest):
     TIMESTAMP = datetime.now()
+    USER = None
+    BATCH = None
 
     def setUp(self):
         super().setUp()
@@ -35,6 +37,17 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             description='test', id='default', allowed_types=[
                 FakeType.type_name, BaseFakeType.type_name
             ])
+        self.USER = User(username='user0', email='user0@email.com').save()
+        self.BATCH = Batch(
+            id='default',
+            task_type=FakeType.type_name,
+            tasks_count=1,
+            tasks_processed=0,
+            batch_meta={
+                POINTS_PER_TASK_KEY: 1.0,
+                COINS_PER_TASK_KEY: 1.0
+            }
+        ).save()
 
     def tearDown(self):
         User.objects.delete()
@@ -43,6 +56,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         AbstractAnswer.objects.delete()
         WorkSession.objects.delete()
         Batch.objects.delete()
+
         UserStateModel.objects.delete()
         EventModel.objects.delete()
         RuleModel.objects.delete()
@@ -54,33 +68,21 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         task_type = FakeType({})
         TASKS_TYPES[task_type.type_name] = task_type
 
-        user = User(username='user0', email='user0@email.com').save()
-        batch = Batch(
-            id='default',
-            task_type=task_type.type_name,
-            tasks_count=1,
-            tasks_processed=0,
-            batch_meta={
-                POINTS_PER_TASK_KEY: 1.0,
-                COINS_PER_TASK_KEY: 1.0
-            }
-        ).save()
-
         task = task_type.task_model(
             id='task0',
             task_type=task_type.type_name,
-            batch=batch,
+            batch=self.BATCH,
             closed=False,
             users_count=0,
             users_processed=[],
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task, user.id)
-        task_type.on_task_done(user, task.id, {'result': 'result'})
+        task_type._work_session_manager.start_work_session(task, self.USER.id)
+        task_type.on_task_done(self.USER, task.id, {'result': 'result'})
 
-        events = EventModel.objects.filter(user=user)
-        state = UserStateModel.get_or_create_by_user(user=user)
+        events = EventModel.objects.filter(user=self.USER)
+        state = UserStateModel.get_or_create_by_user(user=self.USER)
 
         self.assertEqual(len(events), 1)
         ev = events[0].to_event()
@@ -101,22 +103,10 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         task_type = FakeType({})
         TASKS_TYPES[task_type.type_name] = task_type
 
-        user = User(username='user0', email='user0@email.com').save()
-        batch = Batch(
-            id='default',
-            task_type=task_type.type_name,
-            tasks_count=1,
-            tasks_processed=0,
-            batch_meta={
-                POINTS_PER_TASK_KEY: 1.0,
-                COINS_PER_TASK_KEY: 1.0
-            }
-        ).save()
-
         task = task_type.task_model(
             id='task0',
             task_type=task_type.type_name,
-            batch=batch,
+            batch=self.BATCH,
             closed=False,
             users_count=0,
             users_processed=[],
@@ -135,22 +125,30 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             rule_id=100)
         RuleModel.from_rule(rule).save()
 
-        task_type._work_session_manager.start_work_session(task, user.id)
-        task_type.on_task_done(user, task.id, {'result': 'result'})
+        task_type._work_session_manager.start_work_session(task, self.USER.id)
+        task_type.on_task_done(self.USER, task.id, {'result': 'result'})
 
-        events = EventModel.objects.filter(user=user)
-        state = UserStateModel.get_or_create_by_user(user=user)
+        events = EventModel.objects.filter(user=self.USER)
+        state = UserStateModel.get_or_create_by_user(user=self.USER)
 
         ev = events[0].to_event()
+        self.assertEqual(ev.points_given, Decimal("1.0"))
+        self.assertEqual(ev.coins, Decimal("1.0"))
+        self.assertEqual(ev.level_given, None)
+        self.assertEqual(ev.viewed, False)
         self.assertEqual(ev.achievements, [rule])
 
+        self.assertEqual(state.points, ev.points_given)
+        self.assertEqual(state.actual_coins, ev.coins)
+        self.assertEqual(state.potential_coins, Decimal())
+        self.assertEqual(state.level, 0)
+        self.assertEqual(ev.timestamp, state.last_changed)
         self.assertEqual(state.achievements, {rule.id: rule})
 
     def test_double_allocation(self):
         task_type = FakeType({})
         TASKS_TYPES[task_type.type_name] = task_type
 
-        user = User(username='user0', email='user0@email.com').save()
         batch = Batch(
             id='default',
             task_type=task_type.type_name,
@@ -182,16 +180,18 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task1, user.id)
-        task_type.on_task_done(user, task1.id, {'result': 'result'})
-        task_type._work_session_manager.start_work_session(task2, user.id)
-        task_type.on_task_done(user, task2.id, {'result': 'result'})
+        task_type._work_session_manager.start_work_session(task1, self.USER.id)
+        task_type.on_task_done(self.USER, task1.id, {'result': 'result'})
+        task_type._work_session_manager.start_work_session(task2, self.USER.id)
+        task_type.on_task_done(self.USER, task2.id, {'result': 'result'})
 
-        state = UserStateModel.get_or_create_by_user(user=user)
+        state = UserStateModel.get_or_create_by_user(user=self.USER)
         self.assertEqual(state.points, Decimal("5.0"))
         self.assertEqual(state.actual_coins, Decimal("3.0"))
 
-        events = EventModel.objects.filter(user=user).order_by("-timestamp")
+        events = EventModel.objects \
+            .filter(user=self.USER) \
+            .order_by("-timestamp")
         self.assertEqual(len(events), 2)
         self.assertEqual(events[0].timestamp, state.last_changed)
 
@@ -206,7 +206,6 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         task_type = FakeType({})
         TASKS_TYPES[task_type.type_name] = task_type
 
-        user = User(username='user0', email='user0@email.com').save()
         batch = Batch(
             id='default',
             task_type=task_type.type_name,
@@ -228,17 +227,18 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task, user.id)
+        task_type._work_session_manager.start_work_session(task, self.USER.id)
         self.assertRaises(
             InvalidUserStateException,
-            lambda: task_type.on_task_done(user, task.id, {'result': 'result'})
+            lambda: task_type.on_task_done(self.USER,
+                                           task.id,
+                                           {'result': 'result'})
         )
 
     def test_double_allocation_different_batches(self):
         task_type = FakeType({})
         TASKS_TYPES[task_type.type_name] = task_type
 
-        user = User(username='user0', email='user0@email.com').save()
         batch1 = Batch(
             id='default',
             task_type=task_type.type_name,
@@ -281,16 +281,16 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task1, user.id)
-        task_type.on_task_done(user, task1.id, {'result': 'result'})
-        task_type._work_session_manager.start_work_session(task2, user.id)
-        task_type.on_task_done(user, task2.id, {'result': 'result'})
+        task_type._work_session_manager.start_work_session(task1, self.USER.id)
+        task_type.on_task_done(self.USER, task1.id, {'result': 'result'})
+        task_type._work_session_manager.start_work_session(task2, self.USER.id)
+        task_type.on_task_done(self.USER, task2.id, {'result': 'result'})
 
-        state = UserStateModel.get_or_create_by_user(user=user)
+        state = UserStateModel.get_or_create_by_user(user=self.USER)
         self.assertEqual(state.points, Decimal("27.5"))
         self.assertEqual(state.actual_coins, Decimal("16.5"))
 
-        events = EventModel.objects.filter(user=user).order_by("-timestamp")
+        events = EventModel.objects.filter(user=self.USER).order_by("-timestamp")
         self.assertEqual(len(events), 2)
         self.assertEqual(events[0].timestamp, state.last_changed)
 
@@ -305,7 +305,6 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         task_type = BaseFakeType({})
         TASKS_TYPES[task_type.type_name] = task_type
 
-        user = User(username='user0', email='user0@email.com').save()
         batch = Batch(
             id='default',
             task_type=task_type.type_name,
@@ -323,11 +322,11 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task, user.id)
-        task_type.on_task_done(user, task.id, {'result': 'result'})
+        task_type._work_session_manager.start_work_session(task, self.USER.id)
+        task_type.on_task_done(self.USER, task.id, {'result': 'result'})
 
-        self.assertEqual(UserStateModel.objects.filter(user=user).count(), 0)
-        self.assertEqual(EventModel.objects.filter(user=user).count(), 0)
+        self.assertEqual(UserStateModel.objects(user=self.USER).count(), 0)
+        self.assertEqual(EventModel.objects(user=self.USER).count(), 0)
 
     def test_double_allocation_mixed_project(self):
         task_type_base = BaseFakeType({})
@@ -335,7 +334,6 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         TASKS_TYPES[task_type_base.type_name] = task_type_base
         TASKS_TYPES[task_type_new.type_name] = task_type_new
 
-        user = User(username='user0', email='user0@email.com').save()
         batch1 = Batch(
             id='default',
             task_type=task_type_base.type_name,
@@ -374,16 +372,18 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type_base._work_session_manager.start_work_session(task1, user.id)
-        task_type_base.on_task_done(user, task1.id, {'result': 'result'})
-        task_type_new._work_session_manager.start_work_session(task2, user.id)
-        task_type_new.on_task_done(user, task2.id, {'result': 'result'})
+        task_type_base._work_session_manager.start_work_session(task1,
+                                                                self.USER.id)
+        task_type_base.on_task_done(self.USER, task1.id, {'result': 'result'})
+        task_type_new._work_session_manager.start_work_session(task2,
+                                                               self.USER.id)
+        task_type_new.on_task_done(self.USER, task2.id, {'result': 'result'})
 
-        state = UserStateModel.get_or_create_by_user(user=user)
+        state = UserStateModel.get_or_create_by_user(user=self.USER)
         self.assertEqual(state.points, Decimal("25"))
         self.assertEqual(state.actual_coins, Decimal("15"))
 
-        events = EventModel.objects.filter(user=user)
+        events = EventModel.objects.filter(user=self.USER)
         self.assertEqual(len(events), 1)
         ev = events[0]
         self.assertEqual(ev.points_given, Decimal("25"))
@@ -430,8 +430,8 @@ class TestAllocationBadges(BaseTest):
         )
 
         def patched_rules(**kwargs):
-            assert kwargs['ids'] == []
-            assert kwargs['batch_name'] == ''
+            assert kwargs['skip_ids'] == []
+            assert kwargs['task_type_name'] == ''
             assert not kwargs['is_weekend']
 
         with patch(self.GET_ACTUAL_RULES, patched_rules):
@@ -465,8 +465,8 @@ class TestAllocationBadges(BaseTest):
         )
 
         def patched_rules(**kwargs):
-            assert kwargs['ids'] == [100]
-            assert kwargs['batch_name'] == ''
+            assert kwargs['skip_ids'] == [100]
+            assert kwargs['task_type_name'] == ''
             assert not kwargs['is_weekend']
 
         with patch(self.GET_ACTUAL_RULES, patched_rules):
@@ -484,8 +484,8 @@ class TestAllocationBadges(BaseTest):
         )
 
         def patched_rules(**kwargs):
-            assert kwargs['ids'] == []
-            assert kwargs['batch_name'] == ''
+            assert kwargs['skip_ids'] == []
+            assert kwargs['task_type_name'] == ''
             assert kwargs['is_weekend']
 
         with patch(self.GET_ACTUAL_RULES, patched_rules):
@@ -514,10 +514,9 @@ class TestAllocationBadges(BaseTest):
         )
 
         def patched_rules(**kwargs):
-            assert kwargs['ids'] == [100]
-            assert kwargs['batch_name'] == 'batch_1'
+            assert kwargs['skip_ids'] == [100]
+            assert kwargs['task_type_name'] == 'batch_1'
             assert kwargs['is_weekend']
 
         with patch(self.GET_ACTUAL_RULES, patched_rules):
             listeners.get_actual_rules(state, 'batch_1', self.SUNDAY)
-

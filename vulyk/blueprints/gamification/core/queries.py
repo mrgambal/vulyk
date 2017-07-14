@@ -60,7 +60,7 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
         super().__init__()
 
         if isinstance(rule, ProjectRule):
-            self._filter_first['taskType'] = rule.batch_name
+            self._filter_first['taskType'] = rule.task_type_name
 
         # we filter out tasks older than given date in these cases:
         # - n tasks in m days
