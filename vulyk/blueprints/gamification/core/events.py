@@ -118,7 +118,7 @@ class Event:
                 assert self.points_given > 0, \
                     'Points amount must be positive for task events'
                 assert self.answer is not None, \
-                    'Answer should be present.for task events'
+                    'Answer should be present for task events'
 
         except AssertionError as e:
             raise InvalidEventException(e)
@@ -173,8 +173,7 @@ class Event:
                 answer=ev.answer,
                 points_given=ev.points_given,
                 coins=ev.coins,
-                viewed=ev.viewed
-            )
+                viewed=ev.viewed)
         elif ev.level_given is not None and len(ev.achievements) == 0:
             return LevelEvent(
                 timestamp=ev.timestamp,
@@ -183,8 +182,7 @@ class Event:
                 points_given=ev.points_given,
                 coins=ev.coins,
                 level_given=ev.level_given,
-                viewed=ev.viewed
-            )
+                viewed=ev.viewed)
         elif ev.level_given is None and len(ev.achievements) > 0:
             return AchievementsEvent(
                 timestamp=ev.timestamp,
@@ -193,8 +191,7 @@ class Event:
                 points_given=ev.points_given,
                 coins=ev.coins,
                 achievements=ev.achievements,
-                viewed=ev.viewed
-            )
+                viewed=ev.viewed)
         else:
             return AchievementsLevelEvent(
                 timestamp=ev.timestamp,
@@ -204,8 +201,30 @@ class Event:
                 coins=ev.coins,
                 achievements=ev.achievements,
                 level_given=ev.level_given,
-                viewed=ev.viewed
-            )
+                viewed=ev.viewed)
+
+    def to_dict(self) -> dict:
+        """
+        Could be used as a source for JSON or any other representation format
+
+        :return: Dict-ized object view
+        :rtype: dict
+        """
+        return {
+            'timestamp': self.timestamp,
+            'user': self.user.username,
+            'answer': self.answer.as_dict()
+                if self.answer is not None
+                else None,
+            'points_given': self.points_given,
+            'coins': self.coins,
+            'achievements': [r.to_dict() for r in self.achievements],
+            'acceptor_fund': self.acceptor_fund.to_dict()
+                if self.acceptor_fund is not None
+                else None,
+            'level_given': self.level_given,
+            'viewed': self.viewed
+        }
 
     def __str__(self):
         return 'Event({user}, {answer}, {points}, {coins}, {badges}, {lvl})' \
@@ -235,12 +254,12 @@ class Event:
                 same_answer = self.answer == other.answer
 
             return other.timestamp == self.timestamp \
-                   and other.user.id == self.user.id \
-                   and other.points_given == self.points_given \
-                   and other.achievements == self.achievements \
-                   and other.coins == self.coins \
-                   and other.level_given == self.level_given \
-                   and same_answer and same_fund
+                and other.user.id == self.user.id \
+                and other.points_given == self.points_given \
+                and other.achievements == self.achievements \
+                and other.coins == self.coins \
+                and other.level_given == self.level_given \
+                and same_answer and same_fund
         else:
             return False
 

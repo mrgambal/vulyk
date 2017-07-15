@@ -2,6 +2,7 @@
 """
 Foundations
 """
+from io import IOBase
 
 __all__ = [
     'Fund'
@@ -29,7 +30,7 @@ class Fund:
                  description: str,
                  site: str,
                  email: str,
-                 logo: bytes,
+                 logo: IOBase,
                  donatable: bool) -> None:
         # let's put it manually to use as an alias
         """
@@ -38,7 +39,7 @@ class Fund:
         :type description: str
         :type site: str
         :type email: str
-        :type logo: bytes
+        :type logo: IOBase
         :type donatable: bool
         """
         self.id = fund_id
@@ -49,6 +50,22 @@ class Fund:
         # this one should be an image file or *FSProxy, not sure yet
         self.logo = logo
         self.donatable = donatable
+
+    def to_dict(self) -> dict:
+        """
+        Could be used as a source for JSON or any other representation format
+
+        :return: Dict-ized object view
+        :rtype: dict
+        """
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'site': self.site,
+            'email': self.email,
+            'donatable': self.donatable
+        }
 
     def __eq__(self, o: object) -> bool:
         if isinstance(o, Fund):

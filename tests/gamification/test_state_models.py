@@ -360,3 +360,55 @@ class TestStateModels(BaseTest):
                          diff.potential_coins + diff_two.potential_coins)
         self.assertSetEqual(set(new_state.achievements.keys()), {200, 100})
         self.assertEqual(new_state.last_changed, diff_two.last_changed)
+
+    def test_rookie_to_dict(self):
+        state = UserState(
+            user=self.USER,
+            level=0,
+            points=Decimal(),
+            actual_coins=Decimal(),
+            potential_coins=Decimal(),
+            achievements=[],
+            last_changed=self.TIMESTAMP)
+        expected = {
+            'user': self.USER.username,
+            'level': 0,
+            'points': 0,
+            'actual_coins': 0,
+            'potential_coins': 0,
+            'achievements': [],
+            'last_changed': self.TIMESTAMP.strftime("%d.%m.%Y %H:%M:%S")
+        }
+
+        self.assertDictEqual(expected, state.to_dict())
+
+    def test_everything_to_dict(self):
+        rule = Rule(
+            badge='',
+            name='',
+            description='',
+            bonus=0,
+            tasks_number=0,
+            days_number=5,
+            is_weekend=False,
+            is_adjacent=True,
+            rule_id=100)
+        state = UserState(
+            user=self.USER,
+            level=80,
+            points=Decimal(200),
+            actual_coins=Decimal(20),
+            potential_coins=Decimal(100),
+            achievements=[rule],
+            last_changed=self.TIMESTAMP)
+        expected = {
+            'user': self.USER.username,
+            'level': 80,
+            'points': 200,
+            'actual_coins': 20,
+            'potential_coins': 100,
+            'achievements': [rule.to_dict()],
+            'last_changed': self.TIMESTAMP.strftime("%d.%m.%Y %H:%M:%S")
+        }
+
+        self.assertDictEqual(expected, state.to_dict())

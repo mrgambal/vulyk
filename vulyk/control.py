@@ -107,7 +107,7 @@ def load(task_type, path, meta, batch):
 @click.option('--batch',
               default=app.config['DEFAULT_BATCH'],
               type=click.Choice(_batches.batches_list() + ["__all__"]),
-              help='Specify the batch id from which tasks should be exported. ' +
+              help='Specify the batch id from which tasks should be exported. '
                    'Passing __all__ will export all tasks of a given type')
 @click.option('--export-all', 'export_all', default=False, is_flag=True)
 def export(task_type, path, batch, export_all):

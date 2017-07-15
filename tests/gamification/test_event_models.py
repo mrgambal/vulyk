@@ -189,3 +189,78 @@ class TestEventModels(BaseTest):
 
             self.assertIsInstance(ev, DonateEvent, 'Event is of a wrong type')
             self.assertEqual(ev, ev2, 'Event was not saved and restored fine')
+
+    def test_level_badge_to_dict(self):
+        rule = Rule(
+            badge='',
+            name='',
+            description='',
+            bonus=0,
+            tasks_number=0,
+            days_number=5,
+            is_weekend=False,
+            is_adjacent=True,
+            rule_id=100)
+        ev = Event.build(
+            timestamp=self.TIMESTAMP,
+            user=self.USER,
+            answer=self.ANSWER,
+            points_given=10,
+            coins=10,
+            achievements=[rule],
+            acceptor_fund=None,
+            level_given=2,
+            viewed=False)
+        expected = {
+            'timestamp': self.TIMESTAMP,
+            'user': self.USER.username,
+            'answer': self.ANSWER.as_dict(),
+            'points_given': 10,
+            'coins': 10,
+            'achievements': [rule.to_dict()],
+            'acceptor_fund': None,
+            'level_given': 2,
+            'viewed': False
+        }
+
+        self.assertDictEqual(expected, ev.to_dict())
+
+    def test_donate_to_dict(self):
+        with TemporaryFile('w+b', suffix='.jpg') as f:
+            load = b'iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAAbElEQVR' \
+                   b'4nO3Q0QmAMBAFwWitKSvFWsOKECIz/8c7dgwAAAAAAAAAAAAAADjHtW' \
+                   b'15zve3a333R3BvWT2UWIFYgViBWIFYgViBWIFYgViBWIFYgViBWIFYg' \
+                   b'ViBWIFYgVgAAAAAAAAAAAAAAPBTD1i3AiiQSFCiAAAAAElFTkSuQmCC'
+            f.write(base64.b64decode(load))
+
+            fund = Fund(
+                fund_id='newfund',
+                name='New fund',
+                description='description',
+                site='site.com',
+                email='email@email.ek',
+                logo=f,
+                donatable=True)
+            ev = Event.build(
+                timestamp=self.TIMESTAMP,
+                user=self.USER,
+                answer=None,
+                points_given=0,
+                coins=-10,
+                achievements=[],
+                acceptor_fund=fund,
+                level_given=None,
+                viewed=True)
+            expected = {
+                'timestamp': self.TIMESTAMP,
+                'user': self.USER.username,
+                'answer': None,
+                'points_given': 0,
+                'coins': -10,
+                'achievements': [],
+                'acceptor_fund': fund.to_dict(),
+                'level_given': None,
+                'viewed': True
+            }
+
+            self.assertDictEqual(expected, ev.to_dict())

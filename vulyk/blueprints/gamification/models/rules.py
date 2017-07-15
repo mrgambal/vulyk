@@ -101,7 +101,7 @@ class RuleModel(Document):
         :type skip_ids: list[str]
         :param task_type_name: Name of the project the task is assigned to
         :type task_type_name: str
-        :param is_weekend: It today is a working day, there is no reason to
+        :param is_weekend: If today is a working day, there is no reason to
         check for rules that are weekend-backed.
         :type is_weekend: bool
 

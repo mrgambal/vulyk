@@ -264,8 +264,8 @@ class AbstractTaskType:
                 break
         else:
             # Now searching w/o batch restriction
-            rs = self.task_model.objects(base_q
-                                         & Q(users_skipped__nin=[user]))
+            rs = self.task_model.objects(
+                base_q & Q(users_skipped__nin=[user]))
 
             if rs.count() == 0:
                 del rs
