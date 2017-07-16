@@ -46,7 +46,7 @@ class RuleModel(Document):
         """
         task_type_name = rule.task_type_name \
             if isinstance(rule, ProjectRule) \
-            else ''
+            else ''  # type: str
 
         return cls(
             id=rule.id,
@@ -89,7 +89,7 @@ class RuleModel(Document):
             return rule
 
     @classmethod
-    def get_actual_rules(cls: type,
+    def get_actual_rules(cls,
                          skip_ids: list,
                          task_type_name: str,
                          is_weekend: bool) -> list:

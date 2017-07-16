@@ -23,6 +23,9 @@ __all__ = [
 
 
 class StateSortingKeys(Enum):
+    """
+    The intent of this enum is to keep different sorting options shortcuts.
+    """
     POINTS = 0
     ACTUAL_COINS = 1
     POTENTIAL_COINS = 2
@@ -140,24 +143,22 @@ class UserStateModel(Document):
         cls.objects.get(user=diff.user).update(**update_dict)
 
     @classmethod
-    def get_top_users(cls,
-                      number: int,
-                      sort_by: StateSortingKeys) -> Iterator:
+    def get_top_users(cls, limit: int, sort_by: StateSortingKeys) -> Iterator:
         """
         Enumerates over top users basing on passed sorting criteria and
         limiting number. The yield sorting is descending.
 
-        :param number: Top limit
-        :type number: int
+        :param limit: Top limit
+        :type limit: int
         :param sort_by: Criteria enumeration item
         :type sort_by: StateSortingKeys
 
         :return: An iterator
         :rtype: Iterator[UserState]
         """
-        return map(
+        yield from map(
             lambda state_model: state_model.to_state(),
-            cls.objects().order_by('-%s' % sort_by.name.lower()).limit(number)
+            cls.objects().order_by('-%s' % sort_by.name.lower()).limit(limit)
         )
 
     def __str__(self):

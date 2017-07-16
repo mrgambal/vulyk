@@ -102,7 +102,7 @@ class UserState:
         }
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, self.__class__):
+        if isinstance(o, UserState):
             return o.user.id == self.user.id \
                    and o.level == self.level \
                    and o.points == self.points \
@@ -111,6 +111,8 @@ class UserState:
                    and set(o.achievements.keys()) \
                        == set(self.achievements.keys()) \
                    and o.last_changed == self.last_changed
+        else:
+            return False
 
     def __ne__(self, o: object) -> bool:
         return not self == o

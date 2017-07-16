@@ -220,8 +220,7 @@ class TestEventModels(BaseTest):
             'achievements': [rule.to_dict()],
             'acceptor_fund': None,
             'level_given': 2,
-            'viewed': False
-        }
+            'viewed': False}
 
         self.assertDictEqual(expected, ev.to_dict(),
                              'Event was not translated to dict correctly')
@@ -261,8 +260,7 @@ class TestEventModels(BaseTest):
                 'achievements': [],
                 'acceptor_fund': fund.to_dict(),
                 'level_given': None,
-                'viewed': True
-            }
+                'viewed': True}
 
             self.assertDictEqual(expected, ev.to_dict(),
                                  'Event was not translated to dict correctly')
@@ -311,8 +309,7 @@ class TestEventModels(BaseTest):
     def test_unread_events_correct_sorting(self):
         users = [
             User(username='user%s' % i, email='user%s@email.com' % i).save()
-            for i in range(0, 3)
-        ]
+            for i in range(0, 3)]
 
         for i in range(0, 9):
             user = users[i % 3]
@@ -342,19 +339,16 @@ class TestEventModels(BaseTest):
         index = 2
         events = EventModel.get_unread_events(users[index])
 
-        self.assertSequenceEqual(
-            [
-                self.TIMESTAMP + timedelta(seconds=index + 3 * i)
-                for i in range(3)
-            ],
+        self.assertSequenceEqual([
+            self.TIMESTAMP + timedelta(seconds=index + 3 * i)
+            for i in range(3)],
             [e.timestamp for e in events],
             'Unread events list has wrong sorting')
 
     def test_unread_events_set_viewed(self):
         users = [
             User(username='user%s' % i, email='user%s@email.com' % i).save()
-            for i in range(0, 3)
-        ]
+            for i in range(0, 3)]
 
         for i in range(0, 9):
             user = users[i % 3]
@@ -387,6 +381,7 @@ class TestEventModels(BaseTest):
             self.assertEqual(
                 len(events), 3,
                 '%s should have 3 unread events' % user.username)
+
             new_events = EventModel.get_unread_events(user)
             self.assertEqual(
                 len(new_events), 0,
