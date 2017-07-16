@@ -4,7 +4,8 @@ Contains all DB models related to game events.
 """
 from flask_mongoengine import Document
 from mongoengine import (
-    DecimalField, ComplexDateTimeField, ReferenceField, BooleanField, ListField,
+    DecimalField, ComplexDateTimeField, ReferenceField, BooleanField,
+    ListField,
     IntField
 )
 
@@ -72,8 +73,8 @@ class EventModel(Document):
             coins=self.coins,
             achievements=[a.to_rule() for a in self.achievements],
             acceptor_fund=None
-                if self.acceptor_fund is None
-                else self.acceptor_fund.to_fund(),
+            if self.acceptor_fund is None
+            else self.acceptor_fund.to_fund(),
             level_given=self.level_given,
             viewed=self.viewed
         )
@@ -98,11 +99,39 @@ class EventModel(Document):
             achievements=RuleModel.objects(
                 id__in=[r.id for r in event.achievements]),
             acceptor_fund=None
-                if event.acceptor_fund is None
-                else FundModel.objects.get(id=event.acceptor_fund.id),
+            if event.acceptor_fund is None
+            else FundModel.objects.get(id=event.acceptor_fund.id),
             level_given=event.level_given,
             viewed=event.viewed
         )
+
+    @classmethod
+    def get_unread_events(cls, user: User) -> list:
+        """
+        Returns aggregated and sorted list of events (achievements & level-ups)
+        user'd been given but hasn't checked yet. Simultaneously, those events
+        are being marked as viewed to prevent subsequent displaying.
+
+        :param user: The user to extract events for
+        :type user: User
+
+        :return: A list of events in ascending chronological order.
+        :rtype: list[Event]
+        """
+
+        events = []
+        ids_to_set_viewed = []
+
+        for ev in cls.objects(user=user, viewed=False):
+            events.append(ev.to_event())
+            ids_to_set_viewed.append(ev.id)
+
+        cls.objects(
+            id__in=ids_to_set_viewed,
+            viewed=False
+        ).update(set__viewed=True)
+
+        return events
 
     def __str__(self):
         return 'EventModel({model})'.format(model=str(self.to_event()))

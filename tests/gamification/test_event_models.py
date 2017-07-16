@@ -3,7 +3,7 @@
 test_event_models
 """
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 from tempfile import TemporaryFile
 
 from vulyk.blueprints.gamification.core.events import (
@@ -223,7 +223,8 @@ class TestEventModels(BaseTest):
             'viewed': False
         }
 
-        self.assertDictEqual(expected, ev.to_dict())
+        self.assertDictEqual(expected, ev.to_dict(),
+                             'Event was not translated to dict correctly')
 
     def test_donate_to_dict(self):
         with TemporaryFile('w+b', suffix='.jpg') as f:
@@ -263,4 +264,130 @@ class TestEventModels(BaseTest):
                 'viewed': True
             }
 
-            self.assertDictEqual(expected, ev.to_dict())
+            self.assertDictEqual(expected, ev.to_dict(),
+                                 'Event was not translated to dict correctly')
+
+    def test_unread_events_correct_user(self):
+        users = [
+            User(username='user%s' % i, email='user%s@email.com' % i).save()
+            for i in range(0, 3)
+        ]
+
+        for i in range(0, 9):
+            user = users[i % 3]
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=users[i % 3],
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch='default',
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=user,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=10,
+                coins=10,
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+        index = 2
+        events = EventModel.get_unread_events(users[index])
+
+        self.assertEqual(
+            len(events), 3,
+            'Wrong number of unread events extracted')
+        self.assertTrue(
+            all([e.user.id == users[index].id for e in events]),
+            'Unread events list contains wrong user\'s events')
+
+    def test_unread_events_correct_sorting(self):
+        users = [
+            User(username='user%s' % i, email='user%s@email.com' % i).save()
+            for i in range(0, 3)
+        ]
+
+        for i in range(0, 9):
+            user = users[i % 3]
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=users[i % 3],
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch='default',
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=user,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=10,
+                coins=10,
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+        index = 2
+        events = EventModel.get_unread_events(users[index])
+
+        self.assertSequenceEqual(
+            [
+                self.TIMESTAMP + timedelta(seconds=index + 3 * i)
+                for i in range(3)
+            ],
+            [e.timestamp for e in events],
+            'Unread events list has wrong sorting')
+
+    def test_unread_events_set_viewed(self):
+        users = [
+            User(username='user%s' % i, email='user%s@email.com' % i).save()
+            for i in range(0, 3)
+        ]
+
+        for i in range(0, 9):
+            user = users[i % 3]
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=users[i % 3],
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch='default',
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=user,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=10,
+                coins=10,
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+
+        for user in users:
+            events = EventModel.get_unread_events(user)
+            self.assertEqual(
+                len(events), 3,
+                '%s should have 3 unread events' % user.username)
+            new_events = EventModel.get_unread_events(user)
+            self.assertEqual(
+                len(new_events), 0,
+                'Unexpected unread events for %s.' % user.username)
