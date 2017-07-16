@@ -73,9 +73,9 @@ def db():
                                 readable=True,
                                 resolve_path=True),
                 nargs=-1)
-@click.options('--meta', multiple=True,
-               type=(str, str),
-               help='Override meta information for the batch')
+@click.option('--meta', multiple=True,
+              type=(str, str),
+              help='Override meta information for the batch')
 @click.option('--batch',
               default=app.config['DEFAULT_BATCH'],
               callback=lambda ctx, param, value: _batches.validate_batch(

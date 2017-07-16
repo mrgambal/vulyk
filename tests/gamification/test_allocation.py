@@ -290,7 +290,9 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         self.assertEqual(state.points, Decimal("27.5"))
         self.assertEqual(state.actual_coins, Decimal("16.5"))
 
-        events = EventModel.objects.filter(user=self.USER).order_by("-timestamp")
+        events = EventModel.objects \
+            .filter(user=self.USER) \
+            .order_by("-timestamp")
         self.assertEqual(len(events), 2)
         self.assertEqual(events[0].timestamp, state.last_changed)
 
