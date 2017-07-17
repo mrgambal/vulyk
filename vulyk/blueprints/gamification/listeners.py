@@ -1,4 +1,5 @@
 # coding=utf-8
+from collections import Iterator
 from datetime import datetime
 from decimal import Decimal
 
@@ -9,7 +10,7 @@ from .core.events import Event
 from .core.queries import MongoRuleExecutor
 from .core.state import UserState
 from .models.events import EventModel
-from .models.rules import RuleModel
+from .models.rules import RuleModel, ProjectAndFreeRules
 from .models.state import UserStateModel
 from .models.task_types import (
     AbstractGamifiedTaskType, COINS_PER_TASK_KEY, POINTS_PER_TASK_KEY)
@@ -83,9 +84,11 @@ def track_events(sender, answer) -> None:
         ).save()
 
 
-def get_actual_rules(state: UserState,
-                     task_type_name: str,
-                     now: datetime) -> list:
+def get_actual_rules(
+    state: UserState,
+    task_type_name: str,
+    now: datetime
+) -> Iterator:
     """
     Returns a list of eligible rules.
 
@@ -96,10 +99,10 @@ def get_actual_rules(state: UserState,
     :param now: Timestamp to check for weekends
     :type now: datetime
 
-    :return: List of Rule instances
-    :rtype: list[vulyk.blueprints.gamification.core.rules.Rule]
+    :return: Iterator of Rule instances
+    :rtype: Iterator[vulyk.blueprints.gamification.core.rules.Rule]
     """
     return RuleModel.get_actual_rules(
         skip_ids=list(state.achievements.keys()),
-        task_type_name=task_type_name,
+        rule_filter=ProjectAndFreeRules(task_type_name),
         is_weekend=now.weekday() in [5, 6])

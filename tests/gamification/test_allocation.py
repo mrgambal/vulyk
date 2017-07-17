@@ -11,7 +11,8 @@ from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.core.state import (
     UserState, InvalidUserStateException)
 from vulyk.blueprints.gamification.models.events import EventModel
-from vulyk.blueprints.gamification.models.rules import RuleModel
+from vulyk.blueprints.gamification.models.rules import (
+    RuleModel, ProjectAndFreeRules)
 from vulyk.blueprints.gamification.models.state import UserStateModel
 from vulyk.blueprints.gamification.models.task_types import \
     POINTS_PER_TASK_KEY, COINS_PER_TASK_KEY
@@ -433,7 +434,7 @@ class TestAllocationBadges(BaseTest):
 
         def patched_rules(**kwargs):
             assert kwargs['skip_ids'] == []
-            assert kwargs['task_type_name'] == ''
+            assert kwargs['rule_filter'] == ProjectAndFreeRules('')
             assert not kwargs['is_weekend']
 
         with patch(self.GET_ACTUAL_RULES, patched_rules):
@@ -468,7 +469,7 @@ class TestAllocationBadges(BaseTest):
 
         def patched_rules(**kwargs):
             assert kwargs['skip_ids'] == [100]
-            assert kwargs['task_type_name'] == ''
+            assert kwargs['rule_filter'] == ProjectAndFreeRules('')
             assert not kwargs['is_weekend']
 
         with patch(self.GET_ACTUAL_RULES, patched_rules):
@@ -487,7 +488,7 @@ class TestAllocationBadges(BaseTest):
 
         def patched_rules(**kwargs):
             assert kwargs['skip_ids'] == []
-            assert kwargs['task_type_name'] == ''
+            assert kwargs['rule_filter'] == ProjectAndFreeRules('')
             assert kwargs['is_weekend']
 
         with patch(self.GET_ACTUAL_RULES, patched_rules):
@@ -517,7 +518,7 @@ class TestAllocationBadges(BaseTest):
 
         def patched_rules(**kwargs):
             assert kwargs['skip_ids'] == [100]
-            assert kwargs['task_type_name'] == 'batch_1'
+            assert kwargs['rule_filter'] == ProjectAndFreeRules('batch_1')
             assert kwargs['is_weekend']
 
         with patch(self.GET_ACTUAL_RULES, patched_rules):
