@@ -84,8 +84,25 @@ class UserState:
         except AssertionError as e:
             raise InvalidUserStateException(e)
 
+    def to_dict(self) -> dict:
+        """
+        Could be used as a source for JSON or any other representation format
+
+        :return: Dict-ized object view
+        :rtype: dict
+        """
+        return {
+            'user': self.user.username,
+            'level': self.level,
+            'points': self.points,
+            'actual_coins': self.actual_coins,
+            'potential_coins': self.potential_coins,
+            'achievements': [r.to_dict() for r in self.achievements.values()],
+            'last_changed': self.last_changed.strftime("%d.%m.%Y %H:%M:%S")
+        }
+
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, self.__class__):
+        if isinstance(o, UserState):
             return o.user.id == self.user.id \
                    and o.level == self.level \
                    and o.points == self.points \
@@ -94,6 +111,8 @@ class UserState:
                    and set(o.achievements.keys()) \
                        == set(self.achievements.keys()) \
                    and o.last_changed == self.last_changed
+        else:
+            return False
 
     def __ne__(self, o: object) -> bool:
         return not self == o

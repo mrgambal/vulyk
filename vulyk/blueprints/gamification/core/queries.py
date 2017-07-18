@@ -26,10 +26,10 @@ class RuleQueryBuilder:
     """
 
     def __init__(self) -> None:
-        self._filter_first = {}
-        self._projection = {}
-        self._filter_second = {}
-        self._group = {}
+        self._filter_first = {}  # type: dict
+        self._projection = {}  # type: dict
+        self._filter_second = {}  # type: dict
+        self._group = {}  # type: dict
 
     def build_for(self, user_id: ObjectId) -> list:
         """

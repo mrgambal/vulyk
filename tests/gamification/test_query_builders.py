@@ -10,7 +10,8 @@ from vulyk.blueprints.gamification.core.queries import (
     MongoRuleExecutor,
     MongoRuleQueryBuilder)
 from vulyk.blueprints.gamification.core.rules import Rule, ProjectRule
-from vulyk.blueprints.gamification.models.rules import RuleModel
+from vulyk.blueprints.gamification.models.rules import (
+    RuleModel, AllRules, ProjectAndFreeRules, StrictProjectRules)
 from vulyk.models.stats import WorkSession
 
 from ..base import BaseTest
@@ -469,8 +470,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -498,8 +498,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type=task_type_name,
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -526,8 +525,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -553,8 +551,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -581,8 +578,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -609,8 +605,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -637,8 +632,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -666,8 +660,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task',
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -697,8 +690,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type=task_type_name,
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -726,8 +718,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task',
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -757,8 +748,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type=task_type_name,
                         start_time=day_i,
-                        end_time=day_i
-                        ).save()
+                        end_time=day_i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -783,8 +773,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task',
                         start_time=self.NOW - self.DAY * i,
-                        end_time=self.NOW - self.DAY * i
-                        ).save()
+                        end_time=self.NOW - self.DAY * i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -811,8 +800,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type=task_type_name,
                         start_time=self.NOW - self.DAY * i,
-                        end_time=self.NOW - self.DAY * i
-                        ).save()
+                        end_time=self.NOW - self.DAY * i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -839,8 +827,7 @@ class TestMongoQueryExecutor(BaseTest):
                         task=ObjectId(),
                         task_type='fake_task_%s' % i,
                         start_time=self.NOW - self.DAY * i,
-                        end_time=self.NOW - self.DAY * i
-                        ).save()
+                        end_time=self.NOW - self.DAY * i).save()
 
         result = MongoRuleExecutor.achieved(
             user_id=uid, rule=rule, collection=WorkSession.objects)
@@ -872,7 +859,7 @@ class TestRuleModel(BaseTest):
             rule_id=200),
         ProjectRule(
             rule_id=300,
-            task_type_name='batch_1',
+            task_type_name='project_1',
             badge='',
             name='rule_3',
             description='',
@@ -883,7 +870,7 @@ class TestRuleModel(BaseTest):
             is_adjacent=False),
         ProjectRule(
             rule_id=400,
-            task_type_name='batch_2',
+            task_type_name='project_2',
             badge='',
             name='rule_4',
             description='',
@@ -908,18 +895,20 @@ class TestRuleModel(BaseTest):
     def test_everything_ok(self):
         self.assertEqual(
             len(self.RULES),
-            len(RuleModel.get_actual_rules([], None, False))
+            len(list(RuleModel.get_actual_rules([], AllRules(), False)))
         )
 
-    def test_everything_batch_1(self):
-        rules = RuleModel.get_actual_rules([], 'batch_1', False)
+    def test_everything_project_1(self):
+        rules = list(RuleModel.get_actual_rules(
+            [], ProjectAndFreeRules('project_1'), False))
 
         self.assertEqual(3, len(rules))
         self.assertTrue(any(r.id == 300 for r in rules))
         self.assertTrue(all(r.id != 400 for r in rules))
 
-    def test_everything_batch_2(self):
-        rules = RuleModel.get_actual_rules([], 'batch_2', False)
+    def test_everything_project_2(self):
+        rules = list(RuleModel.get_actual_rules(
+            [], ProjectAndFreeRules('project_2'), False))
 
         self.assertEqual(3, len(rules))
         self.assertTrue(any(r.id == 400 for r in rules))
@@ -937,8 +926,9 @@ class TestRuleModel(BaseTest):
                 is_weekend=True,
                 is_adjacent=False,
                 rule_id=500)).save()
-        rules = RuleModel.get_actual_rules([], None, True)
-        rules_no_weekend = RuleModel.get_actual_rules([], None, False)
+        rules = list(RuleModel.get_actual_rules([], AllRules(), True))
+        rules_no_weekend = list(
+            RuleModel.get_actual_rules([], AllRules(), False))
 
         self.assertEqual(5, len(rules))
         self.assertTrue(any(r.id == 500 for r in rules))
@@ -948,14 +938,15 @@ class TestRuleModel(BaseTest):
 
     def test_exclude_ids(self):
         ids = [100, 200]
-        rules = RuleModel.get_actual_rules(ids, None, False)
+        rules = list(RuleModel.get_actual_rules(ids, AllRules(), False))
 
         self.assertEqual(2, len(rules))
         self.assertTrue(all(r.id not in ids for r in rules))
 
-    def test_exclude_ids_batch(self):
+    def test_exclude_ids_project(self):
         ids = [100, 200]
-        rules = RuleModel.get_actual_rules(ids, 'batch_1', False)
+        rules = list(RuleModel.get_actual_rules(
+            ids, ProjectAndFreeRules('project_1'), False))
 
         self.assertEqual(1, len(rules))
         self.assertTrue(rules[0].id, 300)
@@ -973,12 +964,12 @@ class TestRuleModel(BaseTest):
                 is_adjacent=False,
                 rule_id=500)).save()
         ids = [100, 200]
-        rules = RuleModel.get_actual_rules(ids, None, True)
+        rules = list(RuleModel.get_actual_rules(ids, AllRules(), True))
 
         self.assertEqual(3, len(rules))
         self.assertTrue(any(r.id == 500 for r in rules))
 
-    def test_exclude_ids_batch_weekend(self):
+    def test_exclude_ids_project_weekend(self):
         RuleModel.from_rule(
             Rule(
                 badge='',
@@ -992,7 +983,7 @@ class TestRuleModel(BaseTest):
                 rule_id=500)).save()
         RuleModel.from_rule(
             ProjectRule(
-                task_type_name='batch_3',
+                task_type_name='project_3',
                 badge='',
                 name='rule_6',
                 description='',
@@ -1003,8 +994,40 @@ class TestRuleModel(BaseTest):
                 is_adjacent=False,
                 rule_id=600)).save()
         ids = [100, 500]
-        rules = RuleModel.get_actual_rules(ids, 'batch_3', True)
+        rules = list(RuleModel.get_actual_rules(
+            ids, ProjectAndFreeRules('project_3'), True))
 
         self.assertEqual(2, len(rules))
         self.assertTrue(all(r.id in [200, 600] for r in rules))
         self.assertTrue(all(r.id != 500 for r in rules))
+
+    def test_exclude_ids_strict_project_weekend(self):
+        RuleModel.from_rule(
+            Rule(
+                badge='',
+                name='rule_5',
+                description='',
+                bonus=0,
+                tasks_number=3,
+                days_number=0,
+                is_weekend=True,
+                is_adjacent=False,
+                rule_id=500)).save()
+        RuleModel.from_rule(
+            ProjectRule(
+                task_type_name='project_3',
+                badge='',
+                name='rule_6',
+                description='',
+                bonus=0,
+                tasks_number=3,
+                days_number=0,
+                is_weekend=True,
+                is_adjacent=False,
+                rule_id=600)).save()
+        ids = [100, 500]
+        rules = list(RuleModel.get_actual_rules(
+            ids, StrictProjectRules('project_3'), True))
+
+        self.assertEqual(1, len(rules))
+        self.assertTrue(rules[0].id, 600)

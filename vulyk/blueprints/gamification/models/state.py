@@ -2,6 +2,9 @@
 """
 Contains all DB models related to aggregated user state within the game
 """
+from collections import Iterator
+from enum import Enum
+
 from flask_mongoengine import Document
 from mongoengine import (
     IntField, ComplexDateTimeField, ReferenceField, ListField,
@@ -14,8 +17,19 @@ from .rules import RuleModel
 from ..core.state import UserState
 
 __all__ = [
+    'StateSortingKeys',
     'UserStateModel'
 ]
+
+
+class StateSortingKeys(Enum):
+    """
+    The intent of this enum is to keep different sorting options shortcuts.
+    """
+    POINTS = 0
+    ACTUAL_COINS = 1
+    POTENTIAL_COINS = 2
+    LEVEL = 3
 
 
 class UserStateModel(Document):
@@ -127,6 +141,25 @@ class UserStateModel(Document):
                 cls.from_state(diff).achievements
 
         cls.objects.get(user=diff.user).update(**update_dict)
+
+    @classmethod
+    def get_top_users(cls, limit: int, sort_by: StateSortingKeys) -> Iterator:
+        """
+        Enumerates over top users basing on passed sorting criteria and
+        limiting number. The yield sorting is descending.
+
+        :param limit: Top limit
+        :type limit: int
+        :param sort_by: Criteria enumeration item
+        :type sort_by: StateSortingKeys
+
+        :return: An iterator
+        :rtype: Iterator[UserState]
+        """
+        yield from map(
+            lambda state_model: state_model.to_state(),
+            cls.objects().order_by('-%s' % sort_by.name.lower()).limit(limit)
+        )
 
     def __str__(self):
         return 'UserStateModel({model})'.format(model=str(self.to_state()))

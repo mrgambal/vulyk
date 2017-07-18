@@ -154,6 +154,25 @@ class Rule:
             if self._tasks_number > 0 \
             else self._days_number
 
+    def to_dict(self) -> dict:
+        """
+        Could be used as a source for JSON or any other representation format
+
+        :return: Dict-ized object view
+        :rtype: dict
+        """
+        return {
+            'id': self.id,
+            'badge': self.badge,
+            'name': self.name,
+            'description': self.description,
+            'bonus': self.bonus,
+            'tasks_number': self.tasks_number,
+            'days_number': self.days_number,
+            'is_weekend': self.is_weekend,
+            'is_adjacent': self.is_adjacent
+        }
+
     def __eq__(self, o: object) -> bool:
         if isinstance(o, Rule):
             return self._hash == o.id
@@ -261,6 +280,18 @@ class ProjectRule(Rule):
             days_number=rule.days_number,
             is_weekend=rule.is_weekend,
             is_adjacent=rule.is_adjacent)
+
+    def to_dict(self) -> dict:
+        """
+        Could be used as a source for JSON or any other representation format
+
+        :return: Dict-ized object view
+        :rtype: dict
+        """
+        result = super().to_dict()
+        result['task_type_name'] = self.task_type_name
+
+        return result
 
     def __str__(self) -> str:
         return 'ProjectRule({name}, {task_type}, {bonus}, {tasks}, {days},' \

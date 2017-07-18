@@ -4,11 +4,13 @@ test_state_models
 """
 from datetime import datetime, timedelta
 from decimal import Decimal
+from operator import attrgetter
 
 from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.core.state import UserState
 from vulyk.blueprints.gamification.models.rules import RuleModel
-from vulyk.blueprints.gamification.models.state import UserStateModel
+from vulyk.blueprints.gamification.models.state import (
+    UserStateModel, StateSortingKeys)
 from vulyk.models.user import Group, User
 
 from ..base import BaseTest
@@ -360,3 +362,122 @@ class TestStateModels(BaseTest):
                          diff.potential_coins + diff_two.potential_coins)
         self.assertSetEqual(set(new_state.achievements.keys()), {200, 100})
         self.assertEqual(new_state.last_changed, diff_two.last_changed)
+
+    def test_rookie_to_dict(self):
+        state = UserState(
+            user=self.USER,
+            level=0,
+            points=Decimal(),
+            actual_coins=Decimal(),
+            potential_coins=Decimal(),
+            achievements=[],
+            last_changed=self.TIMESTAMP)
+        expected = {
+            'user': self.USER.username,
+            'level': 0,
+            'points': 0,
+            'actual_coins': 0,
+            'potential_coins': 0,
+            'achievements': [],
+            'last_changed': self.TIMESTAMP.strftime("%d.%m.%Y %H:%M:%S")
+        }
+
+        self.assertDictEqual(expected, state.to_dict(),
+                             'Wrong state to dict conversion')
+
+    def test_everything_to_dict(self):
+        rule = Rule(
+            badge='',
+            name='',
+            description='',
+            bonus=0,
+            tasks_number=0,
+            days_number=5,
+            is_weekend=False,
+            is_adjacent=True,
+            rule_id=100)
+        state = UserState(
+            user=self.USER,
+            level=80,
+            points=Decimal(200),
+            actual_coins=Decimal(20),
+            potential_coins=Decimal(100),
+            achievements=[rule],
+            last_changed=self.TIMESTAMP)
+        expected = {
+            'user': self.USER.username,
+            'level': 80,
+            'points': 200,
+            'actual_coins': 20,
+            'potential_coins': 100,
+            'achievements': [rule.to_dict()],
+            'last_changed': self.TIMESTAMP.strftime("%d.%m.%Y %H:%M:%S")
+        }
+
+        self.assertDictEqual(expected, state.to_dict(),
+                             'Wrong state to dict conversion')
+
+    def test_create_if_not_exists(self):
+        state = UserStateModel.get_or_create_by_user(self.USER)
+
+        self.assertEqual(state.user.username, self.USER.username,
+                         'Wrong username for newly created state')
+        self.assertEqual(state.level, 0,
+                         'Wrong level for newly created state')
+        self.assertEqual(state.points, Decimal(),
+                         'Wrong points for newly created state')
+        self.assertEqual(state.actual_coins, Decimal(),
+                         'Wrong actual coins for newly created state')
+        self.assertEqual(state.potential_coins, Decimal(),
+                         'Wrong potential coins for newly created state')
+        self.assertEqual(state.achievements, {},
+                         'Wrong achievements set for newly created state')
+
+    def test_top_correct_limit(self):
+        [
+            UserStateModel.from_state(
+                UserState(
+                    user=User(
+                        username='user%s' % i,
+                        email='user%s@email.com' % i).save(),
+                    level=i,
+                    points=Decimal(200),
+                    actual_coins=Decimal(20),
+                    potential_coins=Decimal(100),
+                    achievements=[],
+                    last_changed=self.TIMESTAMP
+                )
+            ).save() for i in range(5)
+        ]
+        sorting = StateSortingKeys.LEVEL
+
+        for i in range(1, 5):
+            self.assertEqual(
+                len(list((UserStateModel.get_top_users(i, sorting)))), i,
+                'Limiting was not applied correctly: %s items' % i)
+
+    def test_top_correct_sorting(self):
+        [
+            UserStateModel.from_state(
+                UserState(
+                    user=User(
+                        username='user%s' % i,
+                        email='user%s@email.com' % i).save(),
+                    level=i,
+                    points=Decimal(i * 20),
+                    actual_coins=Decimal(100 - i * 20),
+                    potential_coins=Decimal(100 - i if i % 2 else 100 + i),
+                    achievements=[],
+                    last_changed=self.TIMESTAMP
+                )
+            ).save() for i in range(5)
+        ]
+
+        for item in StateSortingKeys:
+            key = item.name.lower()
+            result = UserStateModel.get_top_users(5, item)
+            properties = list(map(attrgetter(key), result))
+
+            self.assertSequenceEqual(
+                properties, sorted(properties, reverse=True),
+                'Sorting was not applied correctly: %s' % key)
