@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import flask
 from mongoengine import Document
+from werkzeug.local import LocalProxy
 
 from vulyk.bootstrap import _social_login as social_login
 from vulyk.models.user import Group, User
@@ -14,6 +15,7 @@ from .base import BaseTest
 
 class TestUserLogin(BaseTest):
     USER = User(username='SuperUsername', email='1@email.com', admin=True)
+    USER_PROXY = LocalProxy(lambda: TestUserLogin.USER)
 
     def tearDown(self):
         User.objects.delete()
@@ -22,7 +24,7 @@ class TestUserLogin(BaseTest):
 
         super().tearDown()
 
-    @patch('flask_login.current_user', USER)
+    @patch('flask_login.current_user', USER_PROXY)
     def test_injected_in_request(self):
         app = flask.Flask('test')
         app.config.from_object('vulyk.settings')
@@ -38,7 +40,7 @@ class TestUserLogin(BaseTest):
         app.route('/test', methods=['GET'])(fake_route)
         app.test_client().get('/test')
 
-    @patch('flask_login.current_user', USER)
+    @patch('flask_login.current_user', USER_PROXY)
     def test_injected_in_template(self):
         app = flask.Flask('test')
         app.config.from_object('vulyk.settings')
@@ -53,4 +55,4 @@ class TestUserLogin(BaseTest):
         app.route('/test', methods=['GET'])(fake_route)
         resp = app.test_client().get('/test')
 
-        self.assertEqual(resp.data.decode('utf8'), self.USER.username)
+        self.assertEqual(resp.data.decode('utf8'), self.USER_PROXY.username)

@@ -9,6 +9,7 @@ from vulyk.blueprints.gamification.models.foundations import FundModel
 from vulyk import utils
 
 from . import listeners
+from .models.events import EventModel
 
 gamification = Blueprint('gamification', __name__)
 
@@ -37,3 +38,14 @@ def fund_logo(fund_id: str) -> Response:
     return send_file(fund.logo,
                      mimetype='image/{}'.format(fund.logo.format.lower()),
                      cache_timeout=360000)
+
+
+@gamification.route('/events')
+def unseen_events() -> Response:
+    """
+
+    :return:
+    :rtype:
+    """
+    return utils.json_response({
+        'events': EventModel.get_unread_events(flask.g.user)})
