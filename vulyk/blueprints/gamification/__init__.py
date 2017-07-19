@@ -55,7 +55,9 @@ def badges(project: str = None, strictness: str = None) -> Response:
             flask.abort(utils.HTTPStatus.NOT_FOUND)
 
     return utils.json_response(
-        {'badges': RuleModel.get_actual_rules([], filtering, True)})
+        {'badges': map(
+            lambda r: r.to_dict(),
+            RuleModel.get_actual_rules([], filtering, True))})
 
 
 @gamification.route('/funds', methods=['GET'])
@@ -83,7 +85,10 @@ def funds(category: str = None) -> Response:
         else:
             flask.abort(utils.HTTPStatus.NOT_FOUND)
 
-    return utils.json_response({'funds': FundModel.get_funds(filtering)})
+    return utils.json_response(
+        {'funds': map(
+            lambda f: f.to_dict(),
+            FundModel.get_funds(filtering))})
 
 
 @gamification.route('/funds/<string:fund_id>/logo', methods=['GET'])
@@ -124,7 +129,9 @@ def unseen_events() -> Response:
 
     if isinstance(user, User):
         return utils.json_response({
-            'events': EventModel.get_unread_events(flask.g.user)})
+            'events': map(
+                lambda e: e.to_dict(),
+                EventModel.get_unread_events(flask.g.user))})
     else:
         flask.abort(utils.HTTPStatus.FORBIDDEN)
 
