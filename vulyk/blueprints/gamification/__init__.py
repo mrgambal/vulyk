@@ -6,15 +6,56 @@ import flask
 from flask import Blueprint, Response, send_file
 
 from vulyk import utils
-from vulyk.models.user import User
 from vulyk.blueprints.gamification.models.foundations import (
     FundModel, FundFilterBy)
+from vulyk.blueprints.gamification.models.rules import (
+    AllRules, ProjectAndFreeRules, RuleModel, StrictProjectRules)
 from vulyk.blueprints.gamification.models.state import UserStateModel
+from vulyk.models.user import User
 
 from . import listeners
 from .models.events import EventModel
 
+__all__ = [
+    'gamification'
+]
+
 gamification = Blueprint('gamification', __name__)
+
+
+@gamification.route('/badges', methods=['GET'])
+@gamification.route(
+    '/badges/<string:project>/<string:strictness>', methods=['GET'])
+def badges(project: str = None, strictness: str = None) -> Response:
+    """
+    Prepares a list of badges with either no filters or different filtering
+    policies within a task type (project).
+    When no project specified – all badges will return.
+    In case if project is passed there is two possible options to filter them:
+
+    > 'weak' – rules related to the project + rules with no project;
+    > 'strict' – rules related to the project ONLY.
+
+    :param project: Task type name
+    :type project: str
+    :param strictness: Filtering policy: 'strict' or 'weak'
+    :type strictness: str
+
+    :return: List of badges (rules).
+    :rtype: Response
+    """
+    filtering = AllRules()
+
+    if project is not None:
+        if strictness == 'strict':
+            filtering = StrictProjectRules(project)
+        elif strictness == 'weak':
+            filtering = ProjectAndFreeRules(project)
+        else:
+            flask.abort(utils.HTTPStatus.NOT_FOUND)
+
+    return utils.json_response(
+        {'badges': RuleModel.get_actual_rules([], filtering, True)})
 
 
 @gamification.route('/funds', methods=['GET'])
@@ -42,7 +83,7 @@ def funds(category: str = None) -> Response:
         else:
             flask.abort(utils.HTTPStatus.NOT_FOUND)
 
-    return utils.json_response({'funds': list(FundModel.get_funds(filtering))})
+    return utils.json_response({'funds': FundModel.get_funds(filtering)})
 
 
 @gamification.route('/funds/<string:fund_id>/logo', methods=['GET'])
