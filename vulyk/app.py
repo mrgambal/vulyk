@@ -152,8 +152,7 @@ def skip(type_name, task_id):
         return NO_TASKS
 
     try:
-        task_type.skip_task(user=user._get_current_object(),
-                            task_id=task_id)
+        task_type.skip_task(user=user, task_id=task_id)
     except TaskNotFoundError:
         return NO_TASKS
 
@@ -182,9 +181,7 @@ def done(type_name, task_id):
 
     try:
         task_type.on_task_done(
-            # Mongoengine will shit bricks if it receives LocalProxy object
-            user._get_current_object(),
-            task_id, json.loads(flask.request.form.get('result')))
+            user, task_id, json.loads(flask.request.form.get('result')))
     except TaskNotFoundError:
         return NO_TASKS
 

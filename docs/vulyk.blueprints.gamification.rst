@@ -10,6 +10,14 @@ Subpackages
     vulyk.blueprints.gamification.core
     vulyk.blueprints.gamification.models
 
+vulyk.blueprints.gamification.listeners module
+----------------------------------------------
+
+.. automodule:: vulyk.blueprints.gamification.listeners
+:members:
+        :undoc-members:
+        :show-inheritance:
+
 Module contents
 ---------------
 

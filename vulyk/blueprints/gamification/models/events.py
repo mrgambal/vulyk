@@ -73,8 +73,8 @@ class EventModel(Document):
             coins=self.coins,
             achievements=[a.to_rule() for a in self.achievements],
             acceptor_fund=None
-            if self.acceptor_fund is None
-            else self.acceptor_fund.to_fund(),
+                if self.acceptor_fund is None
+                else self.acceptor_fund.to_fund(),
             level_given=self.level_given,
             viewed=self.viewed
         )
@@ -99,8 +99,8 @@ class EventModel(Document):
             achievements=RuleModel.objects(
                 id__in=[r.id for r in event.achievements]),
             acceptor_fund=None
-            if event.acceptor_fund is None
-            else FundModel.objects.get(id=event.acceptor_fund.id),
+                if event.acceptor_fund is None
+                else FundModel.objects.get(id=event.acceptor_fund.id),
             level_given=event.level_given,
             viewed=event.viewed
         )

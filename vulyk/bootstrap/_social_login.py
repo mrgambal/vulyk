@@ -46,7 +46,7 @@ def init_social_login(app, db):
 
     @app.before_request
     def global_user():
-        g.user = login.current_user
+        g.user = login.current_user._get_current_object()
 
     @app.context_processor
     def inject_user():
