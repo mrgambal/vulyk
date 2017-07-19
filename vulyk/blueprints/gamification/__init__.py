@@ -9,6 +9,7 @@ from vulyk import utils
 from vulyk.models.user import User
 from vulyk.blueprints.gamification.models.foundations import (
     FundModel, FundFilterBy)
+from vulyk.blueprints.gamification.models.state import UserStateModel
 
 from . import listeners
 from .models.events import EventModel
@@ -83,5 +84,26 @@ def unseen_events() -> Response:
     if isinstance(user, User):
         return utils.json_response({
             'events': EventModel.get_unread_events(flask.g.user)})
+    else:
+        flask.abort(utils.HTTPStatus.FORBIDDEN)
+
+
+@gamification.route('/users/<string:user_id>/state', methods=['GET'])
+def users_state(user_id: str) -> Response:
+    """
+    The collected state of the user within the gamification subsystem.
+    Could be created for the very first time asked (if hasn't yet).
+
+    :param user_id: Needed user ID
+    :type user_id: str
+
+    :return: An response with a state or 404 if user is not found.
+    :rtype: Response
+    """
+    user = User.get_by_id(user_id)
+
+    if isinstance(user, User):
+        state = UserStateModel.get_or_create_by_user(user)
+        return utils.json_response({'state': state.to_dict()})
     else:
         flask.abort(utils.HTTPStatus.FORBIDDEN)

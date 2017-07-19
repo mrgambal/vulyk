@@ -133,6 +133,21 @@ class User(Document, UserMixin):
 
         return document
 
+    @classmethod
+    def get_by_id(cls, user_id: str):
+        """
+
+        :param user_id: Needed user ID
+        :type user_id: str
+
+        :return: The user
+        :rtype: User | None
+        """
+        try:
+            return cls.objects.get(id=user_id)
+        except cls.DoesNotExist:
+            return None
+
     def __str__(self):
         return self.username
 
