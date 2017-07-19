@@ -56,11 +56,10 @@ def track_events(sender, answer) -> None:
                 state=state,
                 task_type_name=batch.task_type,
                 now=dt)))
-
-        # III. Alter the state and create event
         points = batch.batch_meta[POINTS_PER_TASK_KEY]
         coins = batch.batch_meta[COINS_PER_TASK_KEY]
 
+        # III. Alter the state and create event
         UserStateModel.update_state(
             diff=UserState(
                 user=user,

@@ -11,7 +11,7 @@ from vulyk import utils
 from vulyk.blueprints.gamification import gamification
 from vulyk.blueprints.gamification.core.foundations import Fund
 from vulyk.blueprints.gamification.models.foundations import (
-    FundModel, FundFilterKeys)
+    FundModel, FundFilterBy)
 
 from ..base import BaseTest
 
@@ -51,7 +51,7 @@ class TestFundModels(BaseTest):
 
         fund = self._get_fund(self.FUND_ID, self.FUND_NAME)
 
-        resp = app.test_client().get('/gamification/fund/{id}/logo'
+        resp = app.test_client().get('/gamification/funds/{id}/logo'
                                      .format(id=fund.id))
         self.assertEqual(resp.mimetype, 'image/png')
         self.assertEqual(resp.status_code, utils.HTTPStatus.OK)
@@ -74,13 +74,13 @@ class TestFundModels(BaseTest):
         self._get_fund('fund2', 'Fund 2', False)
 
         self.assertEqual(
-            len(list(FundModel.get_all())), 2,
+            len(list(FundModel.get_funds())), 2,
             'Not all funds were fetched')
 
     def test_get_donatable_funds(self):
         self._get_fund('fund1', 'Fund 1'),
         self._get_fund('fund2', 'Fund 2', False)
-        result = list(FundModel.get_all(FundFilterKeys.DONATABLE))
+        result = list(FundModel.get_funds(FundFilterBy.DONATABLE))
 
         self.assertEqual(len(result), 1, 'A single fund must be fetched')
         self.assertEqual(result[0].name, 'Fund 1')
@@ -88,7 +88,7 @@ class TestFundModels(BaseTest):
     def test_get_non_donatable_funds(self):
         self._get_fund('fund1', 'Fund 1'),
         self._get_fund('fund2', 'Fund 2', False)
-        result = list(FundModel.get_all(FundFilterKeys.NON_DONATABLE))
+        result = list(FundModel.get_funds(FundFilterBy.NON_DONATABLE))
 
         self.assertEqual(len(result), 1, 'A single fund must be fetched')
         self.assertEqual(result[0].name, 'Fund 2')

@@ -13,12 +13,12 @@ from mongoengine import (
 from ..core.events import Fund
 
 __all__ = [
-    'FundFilterKeys',
+    'FundFilterBy',
     'FundModel'
 ]
 
 
-class FundFilterKeys(Enum):
+class FundFilterBy(Enum):
     """
     The intent of this enum is to represent filtering policies.
     """
@@ -107,23 +107,25 @@ class FundModel(Document):
         return result
 
     @classmethod
-    def get_all(
-        cls, filter_by: FundFilterKeys = FundFilterKeys.NO_FILTER
+    def get_funds(
+        cls, filter_by: FundFilterBy = FundFilterBy.NO_FILTER
     ) -> Iterator:
         """
+        Returns an enumeration of funds available using the filtering policy
+        passed.
 
-        :param filter_by:
-        :type filter_by: FundFilterKeys
+        :param filter_by: Filtering policy
+        :type filter_by: FundFilterBy
 
-        :return:
+        :return: Lazy enumeration of funds available.
         :rtype: Iterator[Fund]
         """
         criteria = Q()
 
-        if filter_by != FundFilterKeys.NO_FILTER:
-            if filter_by == FundFilterKeys.DONATABLE:
+        if filter_by != FundFilterBy.NO_FILTER:
+            if filter_by == FundFilterBy.DONATABLE:
                 criteria = Q(donatable=True)
-            elif filter_by == FundFilterKeys.NON_DONATABLE:
+            elif filter_by == FundFilterBy.NON_DONATABLE:
                 criteria = Q(donatable=False)
 
         yield from map(lambda f: f.to_fund(), cls.objects(criteria))
