@@ -17,7 +17,7 @@ class BaseTest(unittest.TestCase):
     # override to run against test DB during tests
     settings.MONGODB_SETTINGS['DB'] = DB_NAME
     # allows us to run selected tests w/o need to launch the whole bunch
-    register_connection('default', name='vulyk_test', host=MONGO_URI)
+    register_connection('default', name=DB_NAME, host=MONGO_URI)
 
 
 if __name__ == '__main__':

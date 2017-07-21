@@ -3,6 +3,7 @@
 Contains all DB models related to aggregated user state within the game
 """
 from collections import Iterator
+from decimal import Decimal
 from enum import Enum
 
 from flask_mongoengine import Document
@@ -166,3 +167,22 @@ class UserStateModel(Document):
 
     def __repr__(self):
         return str(self)
+
+    @classmethod
+    def withdraw(cls, user: User, amount: Decimal) -> bool:
+        """
+        Reflects money withdrawal from current account.
+
+        :param user: User to perform the action on.
+        :type user: User
+        :param amount: Money amount (either positive or negative)
+        :type amount: Decimal
+
+        :return: True if needed amount was successfully withdrawn
+        :rtype: bool
+        """
+        amount = abs(float(amount))
+        update_dict = {'dec__actual_coins': amount}
+
+        return cls.objects(user=user, actual_coins__gte=amount) \
+            .update(**update_dict) == 1

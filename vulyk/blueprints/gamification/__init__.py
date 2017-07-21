@@ -2,15 +2,20 @@
 """
 The core of gamification sub-project.
 """
+from decimal import Decimal
+
 import flask
-from flask import Blueprint, Response, send_file
+from flask_login import AnonymousUserMixin
 
 from vulyk import utils
+from vulyk.blueprints.gamification.core.foundations import Fund
 from vulyk.blueprints.gamification.models.foundations import (
     FundModel, FundFilterBy)
 from vulyk.blueprints.gamification.models.rules import (
     AllRules, ProjectAndFreeRules, RuleModel, StrictProjectRules)
 from vulyk.blueprints.gamification.models.state import UserStateModel
+from vulyk.blueprints.gamification.services import (
+    DonationResult, DonationsService)
 from vulyk.models.user import User
 
 from . import listeners
@@ -20,13 +25,13 @@ __all__ = [
     'gamification'
 ]
 
-gamification = Blueprint('gamification', __name__)
+gamification = flask.Blueprint('gamification', __name__)
 
 
 @gamification.route('/badges', methods=['GET'])
 @gamification.route(
     '/badges/<string:project>/<string:strictness>', methods=['GET'])
-def badges(project: str = None, strictness: str = None) -> Response:
+def badges(project: str = None, strictness: str = None) -> flask.Response:
     """
     Prepares a list of badges with either no filters or different filtering
     policies within a task type (project).
@@ -42,7 +47,7 @@ def badges(project: str = None, strictness: str = None) -> Response:
     :type strictness: str
 
     :return: List of badges (rules).
-    :rtype: Response
+    :rtype: flask.Response
     """
     filtering = AllRules()
 
@@ -62,7 +67,7 @@ def badges(project: str = None, strictness: str = None) -> Response:
 
 @gamification.route('/funds', methods=['GET'])
 @gamification.route('/funds/<string:category>', methods=['GET'])
-def funds(category: str = None) -> Response:
+def funds(category: str = None) -> flask.Response:
     """
     The list of foundations we donate to or those, that backed us.
     May be filtered using `category` parameter that currently takes two values
@@ -73,7 +78,7 @@ def funds(category: str = None) -> Response:
     :type category: str
 
     :return: Funds list filtered by category (if passed).
-    :rtype: Response
+    :rtype: flask.Response
     """
     filtering = FundFilterBy.NO_FILTER
 
@@ -92,7 +97,7 @@ def funds(category: str = None) -> Response:
 
 
 @gamification.route('/funds/<string:fund_id>/logo', methods=['GET'])
-def fund_logo(fund_id: str) -> Response:
+def fund_logo(fund_id: str) -> flask.Response:
     """
     Simple controller that will return you a logotype of the fund if it exists
     in the DB by fund's ID.
@@ -107,25 +112,26 @@ def fund_logo(fund_id: str) -> Response:
     :return: An response with a file or 404 if fund is not found
     :rtype: Response
     """
-    fund = FundModel.find_by_id(fund_id)
+    fund = FundModel.find_by_id(fund_id)  # type: Union[Fund, None]
 
     if fund is None:
         flask.abort(utils.HTTPStatus.NOT_FOUND)
 
-    return send_file(fund.logo,
-                     mimetype='image/{}'.format(fund.logo.format.lower()),
-                     cache_timeout=360000)
+    return flask.send_file(
+        fund.logo,
+        mimetype='image/{}'.format(fund.logo.format.lower()),
+        cache_timeout=360000)
 
 
 @gamification.route('/events', methods=['GET'])
-def unseen_events() -> Response:
+def unseen_events() -> flask.Response:
     """
     The list of yet unseen events we return for currently logged in user.
 
     :return: Events list (may be empty) or Forbidden if not authorized.
-    :rtype: Response
+    :rtype: flask.Response
     """
-    user = flask.g.user
+    user = flask.g.user  # type: Union[User, AnonymousUserMixin]
 
     if isinstance(user, User):
         return utils.json_response({
@@ -137,7 +143,7 @@ def unseen_events() -> Response:
 
 
 @gamification.route('/users/<string:user_id>/state', methods=['GET'])
-def users_state(user_id: str) -> Response:
+def users_state(user_id: str) -> flask.Response:
     """
     The collected state of the user within the gamification subsystem.
     Could be created for the very first time asked (if hasn't yet).
@@ -146,12 +152,59 @@ def users_state(user_id: str) -> Response:
     :type user_id: str
 
     :return: An response with a state or 404 if user is not found.
-    :rtype: Response
+    :rtype: flask.Response
     """
-    user = User.get_by_id(user_id)
+    user = User.get_by_id(user_id)  # type: Union[User, None]
 
     if isinstance(user, User):
         state = UserStateModel.get_or_create_by_user(user)
         return utils.json_response({'state': state.to_dict()})
     else:
         flask.abort(utils.HTTPStatus.FORBIDDEN)
+
+
+@gamification.route('/donations', methods=['POST'])
+def donate() -> flask.Response:
+    """
+    Performs a money donation to specified fund.
+
+    :return: Usual JSON response
+    :rtype: Response
+    """
+    user = flask.g.user  # type: Union[User, AnonymousUserMixin]
+
+    if isinstance(user, AnonymousUserMixin):
+        flask.abort(utils.HTTPStatus.FORBIDDEN)
+
+    fund_id = flask.request.form.get('fund_id')  # type: str
+    amount = flask.request.form.get('amount')  # type: int
+
+    try:
+        amount = Decimal(amount)
+    except ValueError:
+        return flask.abort(utils.HTTPStatus.BAD_REQUEST)
+
+    result = DonationsService(user, fund_id, amount).donate()
+
+    if result == DonationResult.SUCCESS:
+        return utils.json_response({'done': True})
+    elif result == DonationResult.BEGGAR:
+        return utils.json_response(
+            result={'done': False},
+            errors=['Not enough money on your active account'],
+            status=utils.HTTPStatus.BAD_REQUEST)
+    elif result == DonationResult.STINGY:
+        return utils.json_response(
+            result={'done': False},
+            errors=['Wrong amount passed'],
+            status=utils.HTTPStatus.BAD_REQUEST)
+    elif result == DonationResult.LIAR:
+        return utils.json_response(
+            result={'done': False},
+            errors=['Wrong fund ID passed'],
+            status=utils.HTTPStatus.BAD_REQUEST)
+    elif result == DonationResult.ERROR:
+        return utils.json_response(
+            result={'done': False},
+            errors=['Something wrong happened'],
+            status=utils.HTTPStatus.BAD_REQUEST)
