@@ -175,14 +175,21 @@ class UserStateModel(Document):
 
         :param user: User to perform the action on.
         :type user: User
-        :param amount: Money amount (either positive or negative)
+        :param amount: Money amount (ONLY positive)
         :type amount: Decimal
+
+        :raise:
+            - RuntimeError – if amount is negative
 
         :return: True if needed amount was successfully withdrawn
         :rtype: bool
         """
-        amount = abs(float(amount))
+        amount = float(amount)
+
+        if amount <= 0:
+            raise RuntimeError('Donation amount should be positive')
+
         update_dict = {'dec__actual_coins': amount}
 
         return cls.objects(user=user, actual_coins__gte=amount) \
-            .update(**update_dict) == 1
+                   .update(**update_dict) == 1

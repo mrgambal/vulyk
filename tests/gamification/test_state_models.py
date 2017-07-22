@@ -526,28 +526,14 @@ class TestStateModels(BaseTest):
             achievements=[],
             last_changed=self.TIMESTAMP)
         state_model = UserStateModel.from_state(state).save()
-        result = UserStateModel.withdraw(self.USER, Decimal(-99))
+
+        self.assertRaises(
+            RuntimeError,
+            lambda: UserStateModel.withdraw(self.USER, Decimal(-99)))
+
         state_model.reload()
 
-        self.assertTrue(result)
-        self.assertEqual(state_model.actual_coins, Decimal(1))
-        self.assertEqual(state_model.potential_coins, Decimal(500))
-
-    def test_withdraw_negative_point(self):
-        state = UserState(
-            user=self.USER,
-            level=0,
-            points=Decimal(),
-            actual_coins=Decimal(100),
-            potential_coins=Decimal(500),
-            achievements=[],
-            last_changed=self.TIMESTAMP)
-        state_model = UserStateModel.from_state(state).save()
-        result = UserStateModel.withdraw(self.USER, Decimal('-99.5'))
-        state_model.reload()
-
-        self.assertTrue(result)
-        self.assertEqual(state_model.actual_coins, Decimal('0.5'))
+        self.assertEqual(state_model.actual_coins, Decimal(100))
         self.assertEqual(state_model.potential_coins, Decimal(500))
 
     def test_withdraw_no_money_positive(self):
@@ -594,26 +580,12 @@ class TestStateModels(BaseTest):
             achievements=[],
             last_changed=self.TIMESTAMP)
         state_model = UserStateModel.from_state(state).save()
-        result = UserStateModel.withdraw(self.USER, Decimal(-99))
+
+        self.assertRaises(
+            RuntimeError,
+            lambda: UserStateModel.withdraw(self.USER, Decimal(-99)))
+
         state_model.reload()
 
         self.assertEqual(state_model.actual_coins, Decimal(80))
         self.assertEqual(state_model.potential_coins, Decimal(500))
-        self.assertFalse(result)
-
-    def test_withdraw_no_money_negative_point(self):
-        state = UserState(
-            user=self.USER,
-            level=0,
-            points=Decimal(),
-            actual_coins=Decimal(80),
-            potential_coins=Decimal(500),
-            achievements=[],
-            last_changed=self.TIMESTAMP)
-        state_model = UserStateModel.from_state(state).save()
-        result = UserStateModel.withdraw(self.USER, Decimal('-98.5'))
-        state_model.reload()
-
-        self.assertEqual(state_model.actual_coins, Decimal(80))
-        self.assertEqual(state_model.potential_coins, Decimal(500))
-        self.assertFalse(result)

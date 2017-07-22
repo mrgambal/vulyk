@@ -105,7 +105,7 @@ class TestDonation(BaseTest):
         self.assertEqual(state.actual_coins, Decimal(100),
                          'Actual coins value must be 100')
 
-    def test_donation_service_stingy(self):
+    def test_donation_service_stingy_zero(self):
         fund = self._get_fund()
         amount = Decimal(0)
         state = UserStateModel.from_state(
@@ -122,7 +122,28 @@ class TestDonation(BaseTest):
         state.reload()
 
         self.assertEqual(result, DonationResult.STINGY,
-                         'Donation result should be STINGY')
+                         'Donation result for zero amount should be STINGY')
+        self.assertEqual(state.actual_coins, Decimal(100),
+                         'Actual coins value must be 100')
+
+    def test_donation_service_stingy_negative(self):
+        fund = self._get_fund()
+        amount = Decimal(-10)
+        state = UserStateModel.from_state(
+            UserState(
+                user=self.USER,
+                level=0,
+                points=Decimal(3000.67),
+                actual_coins=Decimal(100),
+                potential_coins=Decimal(500),
+                achievements=[],
+                last_changed=datetime.now()
+            )).save()
+        result = DonationsService(self.USER, fund.id, amount).donate()
+        state.reload()
+
+        self.assertEqual(result, DonationResult.STINGY,
+                         'Donation result for negative amount must be STINGY')
         self.assertEqual(state.actual_coins, Decimal(100),
                          'Actual coins value must be 100')
 

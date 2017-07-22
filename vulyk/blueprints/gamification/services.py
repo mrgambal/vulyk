@@ -41,7 +41,7 @@ class DonationsService:
         :param user: Current user
         :type user: User
         """
-        self._amount = amount if amount < 0 else (amount * -1)
+        self._amount = amount
         self._user = user
         self._fund = FundModel.find_by_id(fund_id)
 
@@ -61,7 +61,7 @@ class DonationsService:
             ERROR - sh*t happened :( .
         :rtype: DonationResult
         """
-        if self._amount == 0:
+        if self._amount <= 0:
             return DonationResult.STINGY
 
         if self._fund is None:
@@ -73,7 +73,7 @@ class DonationsService:
                     DonateEvent(
                         timestamp=datetime.now(),
                         user=self._user,
-                        coins=self._amount,
+                        coins=-self._amount,
                         acceptor_fund=self._fund)
                 ).save()
 
