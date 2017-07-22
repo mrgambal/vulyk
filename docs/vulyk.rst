@@ -39,6 +39,14 @@ vulyk\.settings module
     :undoc-members:
     :show-inheritance:
 
+vulyk\.signals module
+---------------------
+
+.. automodule:: vulyk.signals
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 vulyk\.utils module
 -------------------
 

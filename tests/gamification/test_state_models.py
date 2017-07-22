@@ -481,3 +481,111 @@ class TestStateModels(BaseTest):
             self.assertSequenceEqual(
                 properties, sorted(properties, reverse=True),
                 'Sorting was not applied correctly: %s' % key)
+
+    def test_withdraw_positive(self):
+        state = UserState(
+            user=self.USER,
+            level=0,
+            points=Decimal(),
+            actual_coins=Decimal(100),
+            potential_coins=Decimal(500),
+            achievements=[],
+            last_changed=self.TIMESTAMP)
+        state_model = UserStateModel.from_state(state).save()
+        result = UserStateModel.withdraw(self.USER, Decimal(99))
+        state_model.reload()
+
+        self.assertTrue(result)
+        self.assertEqual(state_model.actual_coins, Decimal(1))
+        self.assertEqual(state_model.potential_coins, Decimal(500))
+
+    def test_withdraw_positive_point(self):
+        state = UserState(
+            user=self.USER,
+            level=0,
+            points=Decimal(),
+            actual_coins=Decimal(100),
+            potential_coins=Decimal(500),
+            achievements=[],
+            last_changed=self.TIMESTAMP)
+        state_model = UserStateModel.from_state(state).save()
+        result = UserStateModel.withdraw(self.USER, Decimal('99.5'))
+        state_model.reload()
+
+        self.assertTrue(result)
+        self.assertEqual(state_model.actual_coins, Decimal('0.5'))
+        self.assertEqual(state_model.potential_coins, Decimal(500))
+
+    def test_withdraw_negative(self):
+        state = UserState(
+            user=self.USER,
+            level=0,
+            points=Decimal(),
+            actual_coins=Decimal(100),
+            potential_coins=Decimal(500),
+            achievements=[],
+            last_changed=self.TIMESTAMP)
+        state_model = UserStateModel.from_state(state).save()
+
+        self.assertRaises(
+            RuntimeError,
+            lambda: UserStateModel.withdraw(self.USER, Decimal(-99)))
+
+        state_model.reload()
+
+        self.assertEqual(state_model.actual_coins, Decimal(100))
+        self.assertEqual(state_model.potential_coins, Decimal(500))
+
+    def test_withdraw_no_money_positive(self):
+        state = UserState(
+            user=self.USER,
+            level=0,
+            points=Decimal(),
+            actual_coins=Decimal(80),
+            potential_coins=Decimal(500),
+            achievements=[],
+            last_changed=self.TIMESTAMP)
+        state_model = UserStateModel.from_state(state).save()
+        result = UserStateModel.withdraw(self.USER, Decimal(99))
+        state_model.reload()
+
+        self.assertFalse(result)
+        self.assertEqual(state_model.actual_coins, Decimal(80))
+        self.assertEqual(state_model.potential_coins, Decimal(500))
+
+    def test_withdraw_no_money_positive_point(self):
+        state = UserState(
+            user=self.USER,
+            level=0,
+            points=Decimal(),
+            actual_coins=Decimal(80),
+            potential_coins=Decimal(500),
+            achievements=[],
+            last_changed=self.TIMESTAMP)
+        state_model = UserStateModel.from_state(state).save()
+        result = UserStateModel.withdraw(self.USER, Decimal('99.5'))
+        state_model.reload()
+
+        self.assertFalse(result)
+        self.assertEqual(state_model.actual_coins, Decimal(80))
+        self.assertEqual(state_model.potential_coins, Decimal(500))
+
+    def test_withdraw_no_money_negative(self):
+        state = UserState(
+            user=self.USER,
+            level=0,
+            points=Decimal(),
+            actual_coins=Decimal(80),
+            potential_coins=Decimal(500),
+            achievements=[],
+            last_changed=self.TIMESTAMP)
+        state_model = UserStateModel.from_state(state).save()
+
+        self.assertRaises(
+            RuntimeError,
+            lambda: UserStateModel.withdraw(self.USER, Decimal(-99)))
+
+        state_model.reload()
+
+        self.assertEqual(state_model.actual_coins, Decimal(80))
+        self.assertEqual(state_model.potential_coins, Decimal(500))

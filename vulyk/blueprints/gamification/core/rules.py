@@ -25,7 +25,6 @@ class Rule:
 
     - you closed n tasks
     - you closed n tasks in m days
-    - you closed n tasks in mornings in m days
     - you closed n tasks in weekends
     - you've been working for m weekends
     - you've been working for m days in a row

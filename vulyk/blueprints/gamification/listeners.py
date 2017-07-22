@@ -16,7 +16,7 @@ from .models.task_types import (
     AbstractGamifiedTaskType, COINS_PER_TASK_KEY, POINTS_PER_TASK_KEY)
 
 __all__ = [
-    'track_events'
+    'track_events',
     'get_actual_rules'
 ]
 

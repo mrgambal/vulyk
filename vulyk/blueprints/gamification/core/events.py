@@ -10,6 +10,7 @@ a link to a fund and negative amount of coins, along with zero points,
 no achievements (at least – for now) and no level changes.
 """
 from datetime import datetime
+from decimal import Decimal
 
 from vulyk.models.tasks import AbstractAnswer
 from vulyk.models.user import User
@@ -57,8 +58,8 @@ class Event:
                  timestamp: datetime,
                  user: User,
                  answer: AbstractAnswer,
-                 points_given: int,
-                 coins: int,
+                 points_given: Decimal,
+                 coins: Decimal,
                  achievements: list,
                  acceptor_fund: Fund,
                  level_given: int,
@@ -69,8 +70,8 @@ class Event:
         :type timestamp: datetime
         :type user: User
         :type answer: AbstractAnswer | None
-        :type points_given: int
-        :type coins: int
+        :type points_given: Decimal
+        :type coins: Dec
         :type achievements: list[Rule]
         :type acceptor_fund: Fund
         :type level_given: int
@@ -90,7 +91,6 @@ class Event:
 
     def _validate(self):
         """
-
         :raises: InvalidEventException
         """
         is_donate = self.coins < 0 and self.acceptor_fund is not None
@@ -128,8 +128,8 @@ class Event:
               timestamp: datetime,
               user: User,
               answer: AbstractAnswer,
-              points_given: int,
-              coins: int,
+              points_given: Decimal,
+              coins: Decimal,
               achievements: list,
               acceptor_fund: Fund,
               level_given: int,
@@ -140,8 +140,8 @@ class Event:
         :type timestamp: datetime
         :type user: User
         :type answer: AbstractAnswer | None
-        :type points_given: int
-        :type coins: int
+        :type points_given: Decimal
+        :type coins: Decimal
         :type achievements: list[Rule]
         :type acceptor_fund: Fund | None
         :type level_given: int
@@ -278,15 +278,15 @@ class NoAchievementsEvent(Event):
                  timestamp: datetime,
                  user: User,
                  answer: AbstractAnswer,
-                 points_given: int,
-                 coins: int,
+                 points_given: Decimal,
+                 coins: Decimal,
                  viewed: bool) -> None:
         """
         :type timestamp: datetime
         :type user: User
         :type answer: AbstractAnswer | None
-        :type points_given: int
-        :type coins: int
+        :type points_given: Decimal
+        :type coins: Decimal
         :type viewed: bool
         """
         super().__init__(timestamp=timestamp,
@@ -318,16 +318,16 @@ class AchievementsEvent(Event):
                  timestamp: datetime,
                  user: User,
                  answer: AbstractAnswer,
-                 points_given: int,
-                 coins: int,
+                 points_given: Decimal,
+                 coins: Decimal,
                  achievements: list,
                  viewed: bool) -> None:
         """
         :type timestamp: datetime
         :type user: User
         :type answer: AbstractAnswer | None
-        :type points_given: int
-        :type coins: int
+        :type points_given: Decimal
+        :type coins: Decimal
         :type achievements: list[Rule]
         :type viewed: bool
         """
@@ -361,8 +361,8 @@ class LevelEvent(Event):
                  timestamp: datetime,
                  user: User,
                  answer: AbstractAnswer,
-                 points_given: int,
-                 coins: int,
+                 points_given: Decimal,
+                 coins: Decimal,
                  level_given: int,
                  viewed: bool) -> None:
         """
@@ -370,8 +370,8 @@ class LevelEvent(Event):
         :type timestamp: datetime
         :type user: User
         :type answer: AbstractAnswer | None
-        :type points_given: int
-        :type coins: int
+        :type points_given: Decimal
+        :type coins: Decimal
         :type level_given: int
         :type viewed: bool
         """
@@ -405,8 +405,8 @@ class AchievementsLevelEvent(Event):
                  timestamp: datetime,
                  user: User,
                  answer: AbstractAnswer,
-                 points_given: int,
-                 coins: int,
+                 points_given: Decimal,
+                 coins: Decimal,
                  achievements: list,
                  level_given: int,
                  viewed: bool) -> None:
@@ -415,8 +415,8 @@ class AchievementsLevelEvent(Event):
         :type timestamp: datetime
         :type user: User
         :type answer: AbstractAnswer | None
-        :type points_given: int
-        :type coins: int
+        :type points_given: Decimal
+        :type coins: Decimal
         :type achievements: list[vulyk.blueprints.gamification.core.rules.Rule]
         :type level_given: int
         :type viewed: bool
@@ -454,13 +454,13 @@ class DonateEvent(Event):
     def __init__(self,
                  timestamp: datetime,
                  user: User,
-                 coins: int,
+                 coins: Decimal,
                  acceptor_fund: Fund) -> None:
         """
         :type timestamp: datetime
         :type user: User
         :type acceptor_fund: Fund
-        :type coins: int
+        :type coins: Decimal
         """
         super().__init__(timestamp=timestamp,
                          user=user,

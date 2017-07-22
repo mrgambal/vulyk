@@ -192,7 +192,7 @@ class RuleModel(Document):
         :param rule_filter: Prepared query container.
         :type rule_filter: RuleFilter
         :param is_weekend: If today is a working day, there is no reason to
-        check for rules that are weekend-backed.
+            check for rules that are weekend-backed.
         :type is_weekend: bool
 
         :return: An array of rules to be checked and assigned.
