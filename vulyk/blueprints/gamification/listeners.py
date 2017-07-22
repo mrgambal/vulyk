@@ -60,11 +60,14 @@ def track_events(sender, answer) -> None:
         points = batch.batch_meta[POINTS_PER_TASK_KEY]
         coins = batch.batch_meta[COINS_PER_TASK_KEY]
 
+        current_level = gamification.get_level(state.points)
+        updated_level = gamification.get_level(state.points + Decimal(points))
+
         # III. Alter the state and create event
         UserStateModel.update_state(
             diff=UserState(
                 user=user,
-                level=0,
+                level=updated_level,
                 points=Decimal(points),
                 actual_coins=Decimal(coins),
                 potential_coins=Decimal(),
@@ -79,7 +82,7 @@ def track_events(sender, answer) -> None:
                 coins=coins,
                 achievements=badges,
                 acceptor_fund=None,
-                level_given=None,
+                level_given=None if current_level == updated_level else updated_level,
                 viewed=False)
         ).save()
 

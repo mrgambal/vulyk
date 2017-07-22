@@ -26,17 +26,31 @@ __all__ = [
     'gamification'
 ]
 
+
 class GamificationModule(VulykModule):
-    config={
-        "levels": {
-            k: 0 if k == 0 else 1 if k == 1 else (k - 1) * 25 for k in range(51)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.config["levels"] = {
+            k: 1 if k == 1 else (k - 1) * 25 for k in range(1, 51)
         }
-    }
 
     def get_level(self, points):
-        for k in sorted(self.config["levels"].keys()):
-            if points <= self.config["levels"][k]:
-                return k - 1
+        """
+        Obtains the level that corresponds to a number of points
+
+        :param points: Number of points
+        :type points: Decimal
+
+        :return: Level
+        :rtype: int
+        """
+
+        for k in sorted(self.config["levels"].keys(), reverse=True):
+            if points >= self.config["levels"][k]:
+                return k
+
+        return 0
 
 
 gamification = GamificationModule('gamification', __name__)
