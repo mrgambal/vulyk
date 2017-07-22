@@ -20,12 +20,26 @@ from vulyk.models.user import User
 
 from . import listeners
 from .models.events import EventModel
+from .. import VulykModule
 
 __all__ = [
     'gamification'
 ]
 
-gamification = flask.Blueprint('gamification', __name__)
+class GamificationModule(VulykModule):
+    config={
+        "levels": {
+            k: 0 if k == 0 else 1 if k == 1 else (k - 1) * 25 for k in range(51)
+        }
+    }
+
+    def get_level(self, points):
+        for k in sorted(self.config["levels"].keys()):
+            if points <= self.config["levels"][k]:
+                return k - 1
+
+
+gamification = GamificationModule('gamification', __name__)
 
 
 @gamification.route('/badges', methods=['GET'])

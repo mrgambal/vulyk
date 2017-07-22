@@ -34,6 +34,7 @@ def track_events(sender, answer) -> None:
     :rtype: None
     """
     from vulyk.app import TASKS_TYPES
+    from vulyk.blueprints.gamification import gamification
 
     user = answer.created_by
     batch = answer.task.batch
