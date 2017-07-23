@@ -99,3 +99,11 @@ SITE_TITLE = ENV('SITE_TITLE', 'Канцелярская сотня предст
 TEMPLATE_BASE_FOLDERS = []
 
 THANKS_TASK_MESSAGE = 'Спасибо за помощь, сознательный гражданин!'
+
+ENABLED_BLUEPRINTS = [
+    {
+        "path": "vulyk.blueprints.gamification.gamification",
+        "config": {},
+        "url_prefix": "gamification"
+    }
+]
