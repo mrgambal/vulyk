@@ -27,7 +27,7 @@ def _get_files_for_settings(app, assets_key):
         result = [
             os.path.join(app.static_folder, static_file)
             for static_file in app.config[assets_key]
-            ]
+        ]
 
     return result
 

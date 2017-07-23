@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 """
-from ..base import BaseTest
 from vulyk.blueprints.gamification import GamificationModule
+from ..base import BaseTest
 
 
 class TestGetLevel(BaseTest):
@@ -11,7 +11,7 @@ class TestGetLevel(BaseTest):
 
     def test_configured_levels(self):
         gamification = GamificationModule('gamification', __name__)
-        levels = gamification.config["levels"]
+        levels = gamification.config['levels']
 
         self.assertEqual(levels[1], 1)
         self.assertEqual(levels[2], 25)
@@ -20,13 +20,13 @@ class TestGetLevel(BaseTest):
     def test_configure(self):
         gamification = GamificationModule('gamification', __name__)
         gamification.configure({
-            "levels": {
+            'levels': {
                 1: 5,
                 2: 10,
                 3: 150
             }
         })
-        levels = gamification.config["levels"]
+        levels = gamification.config['levels']
 
         self.assertEqual(levels[1], 5)
         self.assertEqual(levels[2], 10)
@@ -51,13 +51,13 @@ class TestGetLevel(BaseTest):
     def test_configured_get_levels(self):
         gamification = GamificationModule('gamification', __name__)
         gamification.configure({
-            "levels": {
+            'levels': {
                 1: 5,
                 2: 10,
                 3: 150
             }
         })
-        levels = gamification.config["levels"]
+        levels = gamification.config['levels']
 
         self.assertEqual(gamification.get_level(0), 0)
         self.assertEqual(gamification.get_level(4), 0)

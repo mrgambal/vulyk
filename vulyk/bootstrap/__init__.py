@@ -5,12 +5,10 @@ Project bootstrapper.
 Contains code not to be used directly after the initialization.
 """
 import flask
-from werkzeug.utils import import_string
 from flask_mongoengine import MongoEngine
 
-from . import _assets, _logging, _social_login
+from . import _assets, _logging, _social_login, _blueprints
 from ._tasks import init_plugins
-from vulyk.blueprints import VulykModule
 
 __all__ = [
     'init_app',
@@ -50,27 +48,7 @@ def init_app(name):
 
         _assets.init(app)
         _social_login.init_social_login(app, db)
-
-        enabled_blueprints = app.config.get('ENABLED_BLUEPRINTS', [])
-        for blueprint in enabled_blueprints:
-            try:
-                blueprint_obj = import_string(blueprint['path'])
-                if not isinstance(blueprint_obj, VulykModule):
-                    raise ImportError
-
-                blueprint_obj.configure(blueprint.get('config', {}))
-
-                app.register_blueprint(
-                    blueprint_obj, url_prefix="/{}".format(blueprint["url_prefix"])
-                )
-
-                app.logger.info('Blueprint {} loaded successfully.'.format(
-                    blueprint.get("path"))
-                )
-            except (ImportError, KeyError) as e:
-                app.logger.warning('Cannot load blueprint {}: {}.'.format(
-                    blueprint.get("path"), e)
-                )
+        _blueprints.init_blueprints(app)
 
         setattr(init_app, key, app)
 
