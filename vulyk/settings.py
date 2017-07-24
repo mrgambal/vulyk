@@ -58,6 +58,7 @@ SOCIAL_AUTH_VK_APP_SECRET = ENV('SOCIAL_AUTH_VK_APP_SECRET', '')
 
 SOCIAL_AUTH_FACEBOOK_SCOPE = ENV('SOCIAL_AUTH_FACEBOOK_SCOPE', ['email'])
 
+STATIC_FOLDER = "static"
 JS_ASSETS = ['vendor/jquery/jquery.js',
              'vendor/jquery.cookie/jquery.cookie.js',
              'vendor/bootstrap/bootstrap.js',
@@ -97,6 +98,7 @@ SITE_LOGO = ENV('SITE_LOGO', '/static/images/logo.png')
 SITE_TITLE = ENV('SITE_TITLE', 'Канцелярская сотня представляет!')
 
 TEMPLATE_BASE_FOLDERS = []
+TEMPLATES_FOLDER = "templates"
 
 THANKS_TASK_MESSAGE = 'Спасибо за помощь, сознательный гражданин!'
 
