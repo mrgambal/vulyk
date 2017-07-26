@@ -37,8 +37,8 @@ def init_app(name):
         except ImportError:
             pass
 
-        app.template_folder = app.config.get("TEMPLATES_FOLDER", "templates")
-        app.static_folder = app.config.get("STATIC_FOLDER", "static")
+        app.template_folder = app.config.get('TEMPLATES_FOLDER', 'templates')
+        app.static_folder = app.config.get('STATIC_FOLDER', 'static')
 
         _logging.init_logger(app=app)
         app.logger.info('STARTING.')
