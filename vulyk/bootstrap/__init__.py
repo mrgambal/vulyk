@@ -29,12 +29,16 @@ def init_app(name):
 
     if not hasattr(init_app, key):
         app = flask.Flask(name)
+
         app.config.from_object('vulyk.settings')
 
         try:
             app.config.from_object('local_settings')
         except ImportError:
             pass
+
+        app.template_folder = app.config.get('TEMPLATES_FOLDER', 'templates')
+        app.static_folder = app.config.get('STATIC_FOLDER', 'static')
 
         _logging.init_logger(app=app)
         app.logger.info('STARTING.')
