@@ -67,13 +67,13 @@ JS_ASSETS = ['vendor/jquery/jquery.js',
              'scripts/base.js']
 JS_ASSETS_OUTPUT = ENV('JS_ASSETS_OUTPUT', 'scripts/packed.js')
 
-JS_ASSETS_FILTERS = ENV('JS_ASSETS_FILTERS', 'yui_js')
+JS_ASSETS_FILTERS = ENV('JS_ASSETS_FILTERS', 'slimit')
 
 CSS_ASSETS = ['vendor/bootstrap/bootstrap.css',
               'vendor/jquery.magnific-popup/jquery.magnific-popup.css',
               'styles/style.css']
 CSS_ASSETS_OUTPUT = ENV('CSS_ASSETS_OUTPUT', 'styles/packed.css')
-CSS_ASSETS_FILTERS = ENV('CSS_ASSETS_FILTERS', 'yui_css')
+CSS_ASSETS_FILTERS = ENV('CSS_ASSETS_FILTERS', 'cssmin')
 # static files for plugin X get stored in COLLECT_STATIC_ROOT/plugin_X/static
 COLLECT_PLUGIN_DIR_PREFIX = 'plugin_'
 
