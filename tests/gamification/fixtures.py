@@ -4,6 +4,10 @@ from vulyk.blueprints.gamification.models.task_types import \
 
 from ..fixtures import FakeModel, FakeAnswer
 
+__all__ = [
+    'FakeType'
+]
+
 
 class FakeType(AbstractGamifiedTaskType):
     task_model = FakeModel
