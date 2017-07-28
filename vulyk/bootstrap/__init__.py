@@ -52,6 +52,12 @@ def init_app(name):
 
         _assets.init(app)
         _social_login.init_social_login(app, db)
+
+        if app.config.get('ENABLE_ADMIN', False):
+            from . import _admin
+            admin = _admin.init_admin(app)
+            app.admin = admin
+
         _blueprints.init_blueprints(app)
 
         setattr(init_app, key, app)

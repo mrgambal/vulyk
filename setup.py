@@ -34,6 +34,7 @@ setup(
         'vulyk.blueprints.gamification.models',
         'vulyk.bootstrap',
         'vulyk.cli',
+        'vulyk.admin',
         'vulyk.ext',
         'vulyk.models'
     ],
