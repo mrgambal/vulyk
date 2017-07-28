@@ -67,7 +67,7 @@ JS_ASSETS = ['vendor/jquery/jquery.js',
              'scripts/base.js']
 JS_ASSETS_OUTPUT = ENV('JS_ASSETS_OUTPUT', 'scripts/packed.js')
 
-JS_ASSETS_FILTERS = ENV('JS_ASSETS_FILTERS', 'slimit')
+JS_ASSETS_FILTERS = ENV('JS_ASSETS_FILTERS', 'rjsmin')
 
 CSS_ASSETS = ['vendor/bootstrap/bootstrap.css',
               'vendor/jquery.magnific-popup/jquery.magnific-popup.css',
