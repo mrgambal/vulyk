@@ -17,6 +17,8 @@ from vulyk.blueprints.gamification.models.state import UserStateModel
 from vulyk.blueprints.gamification.services import (
     DonationResult, DonationsService)
 from vulyk.models.user import User
+from vulyk.admin.models import AuthModelView
+
 
 from . import listeners
 from .models.events import EventModel
@@ -34,6 +36,12 @@ class GamificationModule(VulykModule):
         self.config["levels"] = {
             k: 1 if k == 1 else (k - 1) * 25 for k in range(1, 51)
         }
+
+    def register(self, app, options, first_registration=False):
+        super().register(app, options, first_registration)
+
+        if app.config.get('ENABLE_ADMIN', False):
+            app.admin.add_view(AuthModelView(FundModel))
 
     def get_level(self, points):
         """

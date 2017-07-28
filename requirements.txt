@@ -24,4 +24,4 @@ veryprettytable==0.8.1
 webassets==0.12.1
 Werkzeug==0.12.2
 wheel==0.29.0
-yuicompressor==2.4.8
+Flask-Admin==1.5.0

@@ -109,3 +109,5 @@ ENABLED_BLUEPRINTS = [
         "url_prefix": "gamification"
     }
 ]
+
+ENABLE_ADMIN = False
