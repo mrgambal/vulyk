@@ -31,7 +31,7 @@ class GamificationModule(VulykModule):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.config["levels"] = {
+        self.config['levels'] = {
             k: 1 if k == 1 else (k - 1) * 25 for k in range(1, 51)
         }
 
@@ -46,8 +46,8 @@ class GamificationModule(VulykModule):
         :rtype: int
         """
 
-        for k in sorted(self.config["levels"].keys(), reverse=True):
-            if points >= self.config["levels"][k]:
+        for k in sorted(self.config['levels'].keys(), reverse=True):
+            if points >= self.config['levels'][k]:
                 return k
 
         return 0
