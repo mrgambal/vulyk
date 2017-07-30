@@ -1,4 +1,7 @@
+# coding=utf-8
+from flask import Flask
 from werkzeug.utils import import_string
+
 from vulyk.blueprints import VulykModule
 
 __all__ = [
@@ -6,13 +9,20 @@ __all__ = [
 ]
 
 
-def init_blueprints(app):
+def init_blueprints(app: Flask) -> None:
+    """
+    :param app: Current application instance
+    :type app: Flask
+    """
     enabled_blueprints = app.config.get('ENABLED_BLUEPRINTS', [])
+
     for blueprint in enabled_blueprints:
         try:
             blueprint_obj = import_string(blueprint['path'])
+
             if not isinstance(blueprint_obj, VulykModule):
-                raise ImportError
+                raise ImportError(
+                    'Wrong blueprint type: {}'.format(blueprint_obj))
 
             blueprint_obj.configure(blueprint.get('config', {}))
 
