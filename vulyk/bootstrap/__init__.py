@@ -55,8 +55,7 @@ def init_app(name):
 
         if app.config.get('ENABLE_ADMIN', False):
             from . import _admin
-            admin = _admin.init_admin(app)
-            app.admin = admin
+            app.admin = _admin.init_admin(app)
 
         _blueprints.init_blueprints(app)
 

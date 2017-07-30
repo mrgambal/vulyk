@@ -42,6 +42,7 @@ class GamificationModule(VulykModule):
 
         if app.config.get('ENABLE_ADMIN', False):
             app.admin.add_view(AuthModelView(FundModel))
+            app.admin.add_view(AuthModelView(RuleModel))
 
     def get_level(self, points):
         """

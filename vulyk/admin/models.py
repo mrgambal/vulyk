@@ -1,5 +1,11 @@
+# -*- coding: utf-8 -*-
+
 from flask_admin.contrib.mongoengine import ModelView
 import flask_login as login
+
+__all__ = [
+    'AuthModelView'
+]
 
 
 class AuthModelView(ModelView):
