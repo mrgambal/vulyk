@@ -18,7 +18,7 @@ class VulykModule(flask.Blueprint):
                          template_folder, url_prefix, subdomain, url_defaults,
                          root_path)
 
-        self.context_processor(self._get_module_view_context)
+        self.app_context_processor(self._get_module_view_context)
 
     def configure(self, config: dict) -> None:
         """
