@@ -82,3 +82,33 @@ class DonationsService:
                 return DonationResult.BEGGAR
         except (Exception, IOError):
             return DonationResult.ERROR
+
+
+class StatsService:
+    """
+    Facade, the root stats collector to provide aggregated data from different
+    repositories.
+    """
+
+    @classmethod
+    def tasks_done_by_user(cls, user: User) -> int:
+        """
+        :param user: Current user
+        :type user: User
+
+        :return: Number of tasks done or None
+        :rtype: int
+        """
+        return EventModel.tasks_done_by_user(user)
+
+    @classmethod
+    def projects_count(cls, user: User):
+        """
+
+        :param user: Current user
+        :type user: User
+
+        :return:
+        :rtype: int
+        """
+        return len(list(EventModel.batches_user_worked(user)))

@@ -2,6 +2,8 @@
 """
 Contains all DB models related to game events.
 """
+from collections import Iterator
+
 from flask_mongoengine import Document
 from mongoengine import (
     DecimalField, ComplexDateTimeField, ReferenceField, BooleanField,
@@ -9,7 +11,7 @@ from mongoengine import (
     IntField
 )
 
-from vulyk.models.tasks import AbstractAnswer
+from vulyk.models.tasks import AbstractAnswer, Batch
 from vulyk.models.user import User
 
 from .foundations import FundModel
@@ -132,6 +134,31 @@ class EventModel(Document):
         ).update(set__viewed=True)
 
         return events
+
+    @classmethod
+    def tasks_done_by_user(cls, user: User) -> int:
+        """
+        Number of tasks finished by current user
+
+        :param user: User instance
+        :type user: User
+
+        :return:count of tasks done
+        :rtype: int
+        """
+        return cls.objects(user=user, answer__exists=True).count()
+
+    @classmethod
+    def batches_user_worked(cls, user: User) -> Iterator:
+        """
+        :param user: User instance
+        :type user: User
+
+        :return:
+        :rtype: Iterator[Batch]
+        """
+        for ev in cls.objects(user=user, answer__exists=True).only('answer'):
+            yield ev.answer.task.batch
 
     def __str__(self):
         return 'EventModel({model})'.format(model=str(self.to_event()))

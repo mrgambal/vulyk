@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-import base64
 from datetime import datetime
 from decimal import Decimal
-from tempfile import TemporaryFile
 from unittest.mock import patch
 
 from mongoengine import OperationError
 
-from vulyk.blueprints.gamification.core.foundations import Fund
 from vulyk.blueprints.gamification.core.state import UserState
 from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.foundations import FundModel
@@ -16,14 +13,12 @@ from vulyk.blueprints.gamification.services import (
     DonationResult, DonationsService)
 from vulyk.models.user import Group, User
 
-from .fixtures import FakeType
+from .fixtures import FakeType, FixtureFund
 from ..base import BaseTest
 from ..fixtures import FakeType as BaseFakeType
 
 
 class TestDonation(BaseTest):
-    FUND_ID = 'newfund'
-    FUND_NAME = 'New fund'
 
     def setUp(self):
         Group.objects.create(
@@ -41,11 +36,11 @@ class TestDonation(BaseTest):
         User.objects.delete()
         EventModel.objects.delete()
         FundModel.objects.delete()
-        FundModel._get_db().drop_collection('images.files')
-        FundModel._get_db().drop_collection('images.chunks')
+        FundModel._get_db()['images.files'].remove()
+        FundModel._get_db()['images.chunks'].remove()
 
     def test_donation_service_success(self):
-        fund = self._get_fund()
+        fund = FixtureFund.get_fund()
         amount = Decimal(100)
         state = UserStateModel.from_state(
             UserState(
@@ -66,7 +61,7 @@ class TestDonation(BaseTest):
                          'Actual coins value must be 100')
 
     def test_donation_service_success_event(self):
-        fund = self._get_fund()
+        fund = FixtureFund.get_fund()
         amount = Decimal(100)
         UserStateModel.from_state(
             UserState(
@@ -85,7 +80,7 @@ class TestDonation(BaseTest):
         self.assertTrue(event.acceptor_fund.id, fund.id)
 
     def test_donation_service_beggar(self):
-        fund = self._get_fund()
+        fund = FixtureFund.get_fund()
         amount = Decimal(200)
         state = UserStateModel.from_state(
             UserState(
@@ -106,7 +101,7 @@ class TestDonation(BaseTest):
                          'Actual coins value must be 100')
 
     def test_donation_service_stingy_zero(self):
-        fund = self._get_fund()
+        fund = FixtureFund.get_fund()
         amount = Decimal(0)
         state = UserStateModel.from_state(
             UserState(
@@ -127,7 +122,7 @@ class TestDonation(BaseTest):
                          'Actual coins value must be 100')
 
     def test_donation_service_stingy_negative(self):
-        fund = self._get_fund()
+        fund = FixtureFund.get_fund()
         amount = Decimal(-10)
         state = UserStateModel.from_state(
             UserState(
@@ -175,7 +170,7 @@ class TestDonation(BaseTest):
             raise OperationError('oops')
 
         with patch(to_patch, erroneous):
-            fund = self._get_fund()
+            fund = FixtureFund.get_fund()
             amount = Decimal(100)
             state = UserStateModel.from_state(
                 UserState(
@@ -194,32 +189,4 @@ class TestDonation(BaseTest):
                              'Donation result should be ERROR')
             self.assertEqual(state.actual_coins, Decimal(100),
                              'Actual coins value must be 100')
-
-    def _get_fund(self) -> Fund:
-        """
-        :return: Fully fledged fund instance
-        :rtype: Fund
-        """
-        fund_description = 'description'
-        fund_site = 'site.com'
-        fund_email = 'email@email.ek'
-        load = b'iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAAbElEQVR' \
-               b'4nO3Q0QmAMBAFwWitKSvFWsOKECIz/8c7dgwAAAAAAAAAAAAAADjHtW' \
-               b'15zve3a333R3BvWT2UWIFYgViBWIFYgViBWIFYgViBWIFYgViBWIFYg' \
-               b'ViBWIFYgVgAAAAAAAAAAAAAAPBTD1i3AiiQSFCiAAAAAElFTkSuQmCC'
-        logo_bytes = base64.b64decode(load)
-
-        with TemporaryFile('w+b', suffix='.jpg') as f:
-            f.write(logo_bytes)
-
-            fund = Fund(
-                fund_id=self.FUND_ID,
-                name=self.FUND_NAME,
-                description=fund_description,
-                site=fund_site,
-                email=fund_email,
-                logo=f,
-                donatable=True)
-            FundModel.from_fund(fund).save()
-
             return fund

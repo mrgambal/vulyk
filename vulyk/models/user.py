@@ -8,7 +8,7 @@ from flask_login import UserMixin, AnonymousUserMixin
 from flask_mongoengine import Document
 from mongoengine import (
     StringField, BooleanField, DateTimeField, IntField, ReferenceField, PULL,
-    ListField, signals)
+    ListField, signals, ValidationError)
 
 
 class Group(Document):
@@ -136,7 +136,6 @@ class User(Document, UserMixin):
     @classmethod
     def get_by_id(cls, user_id: str):
         """
-
         :param user_id: Needed user ID
         :type user_id: str
 
@@ -145,7 +144,7 @@ class User(Document, UserMixin):
         """
         try:
             return cls.objects.get(id=user_id)
-        except cls.DoesNotExist:
+        except (cls.DoesNotExist, ValidationError):
             return None
 
     def __str__(self):
