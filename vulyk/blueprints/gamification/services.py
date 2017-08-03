@@ -10,6 +10,7 @@ from vulyk.blueprints.gamification.core.events import DonateEvent
 from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.foundations import FundModel
 from vulyk.blueprints.gamification.models.state import UserStateModel
+from vulyk.ext.worksession import WorkSessionManager
 from vulyk.models.user import User
 
 __all__ = [
@@ -93,22 +94,48 @@ class StatsService:
     @classmethod
     def tasks_done_by_user(cls, user: User) -> int:
         """
+        Returns optional of the total number of tasks were finished by user.
+
         :param user: Current user
         :type user: User
 
         :return: Number of tasks done or None
         :rtype: int
         """
-        return EventModel.tasks_done_by_user(user)
+        return EventModel.count_of_tasks_done_by_user(user)
 
     @classmethod
     def projects_count(cls, user: User):
         """
+        Aggregate the number of batches in which user has done at least
+        single tiny task.
 
         :param user: Current user
         :type user: User
 
-        :return:
+        :return: Number of batches
         :rtype: int
         """
-        return len(list(EventModel.batches_user_worked(user)))
+        return len(list(EventModel.batches_user_worked_on(user)))
+
+    @classmethod
+    def total_time_for_user(cls, user: User) -> int:
+        """
+        Count and return number of hours, spent on the site doing tasks.
+
+        :param user: Current user
+        :type user: User
+        :return: Full hours
+        :rtype: int
+        """
+        from vulyk.app import TASKS_TYPES
+
+        seconds = 0
+
+        for task_type in TASKS_TYPES.values():
+            ws = task_type.work_session_manager  # type: WorkSessionManager
+            # TODO: must be changed after time tracking on frontend is done
+            seconds += ws.work_session.get_total_user_time_approximate(user.id)
+
+        return seconds // 3600
+

@@ -387,9 +387,9 @@ class TestEventModels(BaseTest):
                 viewed=False)
             EventModel.from_event(ev).save()
 
-        done = EventModel.tasks_done_by_user(self.USER)
-
-        self.assertEqual(done, 3)
+        self.assertEqual(
+            EventModel.count_of_tasks_done_by_user(self.USER),
+            3)
 
     def test_done_by_user_returns_only_related(self):
         users = [
@@ -422,9 +422,9 @@ class TestEventModels(BaseTest):
                 viewed=False)
             EventModel.from_event(ev).save()
 
-        done = EventModel.tasks_done_by_user(user=users[0])
-
-        self.assertEqual(done, 3)
+        self.assertEqual(
+            EventModel.count_of_tasks_done_by_user(user=users[0]),
+            3)
 
     def test_done_by_user_only_answers(self):
         fund = FixtureFund.get_fund()
@@ -451,7 +451,9 @@ class TestEventModels(BaseTest):
             viewed=True)
         EventModel.from_event(ev2).save()
 
-        self.assertEqual(EventModel.tasks_done_by_user(self.USER), 1)
+        self.assertEqual(
+            EventModel.count_of_tasks_done_by_user(self.USER),
+            1)
 
     def test_batches_worked(self):
         for i in range(0, 3):
@@ -481,9 +483,8 @@ class TestEventModels(BaseTest):
                 viewed=False)
             EventModel.from_event(ev).save()
 
-        result = list(EventModel.batches_user_worked(self.USER))
+        result = list(EventModel.batches_user_worked_on(self.USER))
 
-        self.assertEqual(len(result), 3)
         self.assertSequenceEqual(
             ['batch_0', 'batch_1', 'batch_2'],
             [batch.id for batch in result]
@@ -522,9 +523,9 @@ class TestEventModels(BaseTest):
                 viewed=False)
             EventModel.from_event(ev).save()
 
-        result_first = list(EventModel.batches_user_worked(users[0]))
-        result_second = list(EventModel.batches_user_worked(users[1]))
-        result_third = list(EventModel.batches_user_worked(users[2]))
+        result_first = list(EventModel.batches_user_worked_on(users[0]))
+        result_second = list(EventModel.batches_user_worked_on(users[1]))
+        result_third = list(EventModel.batches_user_worked_on(users[2]))
 
         self.assertSequenceEqual(
             ['batch_0', 'batch_3', 'batch_6'],
@@ -537,4 +538,39 @@ class TestEventModels(BaseTest):
         self.assertSequenceEqual(
             ['batch_2', 'batch_5', 'batch_8'],
             [batch.id for batch in result_third]
+        )
+
+    def test_batches_worked_dedup(self):
+        for i in range(0, 3):
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=self.USER,
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task_%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch=Batch(
+                            id='batch_0',
+                            task_type=self.TASK_TYPE).save(),
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=self.USER,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=Decimal(10),
+                coins=Decimal(10),
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+
+        result = list(EventModel.batches_user_worked_on(self.USER))
+
+        self.assertSequenceEqual(
+            ['batch_0'],
+            [batch.id for batch in result]
         )

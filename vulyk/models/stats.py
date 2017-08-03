@@ -3,11 +3,11 @@
 Module contains all models used to keep some metadata we could use to perform
 any kind of analysis.
 """
-
+from bson import ObjectId
 from mongoengine import (
     CASCADE,
     DateTimeField,
-    IntField,
+    LongField,
     ReferenceField,
     StringField
 )
@@ -34,12 +34,46 @@ class WorkSession(Document):
 
     start_time = DateTimeField(required=True)
     end_time = DateTimeField(required=False)
-    activity = IntField()
+    activity = LongField()
 
     meta = {
+        'allow_inheritance': True,
         'collection': 'work_sessions',
         'indexes': [
             ('user', 'task'),
             'task'
         ]
     }
+
+    @classmethod
+    def get_total_user_time_precise(cls, user_id: ObjectId) -> int:
+        """
+        Aggregated time spent doing tasks on all projects by certain user.
+        As the source we use more precise value of activity field.
+
+        :param user_id: User ID
+        :type user_id: ObjectId
+
+        :return: Total time (in seconds)
+        :rtype: int
+        """
+        return sum(
+            map(lambda session: session.activity,
+                cls.objects(user=user_id)))
+
+    @classmethod
+    def get_total_user_time_approximate(cls, user_id: ObjectId) -> int:
+        """
+        Aggregated time spent doing tasks on all projects by certain user.
+        As the source we use approximate values of start time and end time.
+        Might be useful if no proper time accounting is done on frontend.
+
+        :param user_id: User ID
+        :type user_id: ObjectId
+
+        :return: Total time (in seconds)
+        :rtype: int
+        """
+        return sum(map(
+            lambda session: (session.end_time - session.start_time).seconds,
+            cls.objects(user=user_id)))

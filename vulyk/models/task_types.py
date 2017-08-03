@@ -130,6 +130,16 @@ class AbstractTaskType:
         """
         return self._description if len(self._description) > 0 else ''
 
+    @property
+    def work_session_manager(self) -> WorkSessionManager:
+        """
+        Returns current instance of WorkSessionManager used in the task type.
+
+        :return: Active WorkSessionManager instance.
+        :rtype: WorkSessionManager
+        """
+        return self._work_session_manager
+
     def import_tasks(self, tasks, batch):
         """Imports tasks from an iterable over dicts
         io is left out of scope here.

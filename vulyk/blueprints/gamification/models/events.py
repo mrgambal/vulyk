@@ -136,29 +136,38 @@ class EventModel(Document):
         return events
 
     @classmethod
-    def tasks_done_by_user(cls, user: User) -> int:
+    def count_of_tasks_done_by_user(cls, user: User) -> int:
         """
         Number of tasks finished by current user
 
         :param user: User instance
         :type user: User
 
-        :return:count of tasks done
+        :return: Count of tasks done
         :rtype: int
         """
         return cls.objects(user=user, answer__exists=True).count()
 
     @classmethod
-    def batches_user_worked(cls, user: User) -> Iterator:
+    def batches_user_worked_on(cls, user: User) -> Iterator:
         """
+        Returns an iterable of deduplicated batches user has worked on before.
+
         :param user: User instance
         :type user: User
 
-        :return:
+        :return: Iterator over batches
         :rtype: Iterator[Batch]
         """
+        seen = set()
+
         for ev in cls.objects(user=user, answer__exists=True).only('answer'):
-            yield ev.answer.task.batch
+            batch = ev.answer.task.batch
+
+            if batch.id not in seen:
+                seen.add(batch.id)
+
+                yield batch
 
     def __str__(self):
         return 'EventModel({model})'.format(model=str(self.to_event()))
