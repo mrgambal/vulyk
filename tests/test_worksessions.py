@@ -50,9 +50,9 @@ class TestTaskTypes(BaseTest):
             users_processed=[],
             users_skipped=[],
             task_data={'data': 'data'}).save()
-        task_type._work_session_manager.start_work_session(task, user.id)
+        task_type.work_session_manager.start_work_session(task, user.id)
 
-        ws = task_type._work_session_manager.work_session.objects.get(
+        ws = task_type.work_session_manager.work_session.objects.get(
             user=user,
             task=task)
 
@@ -78,15 +78,15 @@ class TestTaskTypes(BaseTest):
 
         with patch('vulyk.ext.worksession.datetime') as mock_date:
             mock_date.now = lambda: fake_datetime
-            task_type._work_session_manager.start_work_session(task, user.id)
+            task_type.work_session_manager.start_work_session(task, user.id)
 
-        ws_first = task_type._work_session_manager.work_session.objects.get(
+        ws_first = task_type.work_session_manager.work_session.objects.get(
             user=user,
             task=task)
         # re-create later
-        task_type._work_session_manager.start_work_session(task, user.id)
+        task_type.work_session_manager.start_work_session(task, user.id)
 
-        ws_second = task_type._work_session_manager.work_session.objects.get(
+        ws_second = task_type.work_session_manager.work_session.objects.get(
             user=user,
             task=task)
 
@@ -112,7 +112,7 @@ class TestTaskTypes(BaseTest):
 
         with patch('vulyk.ext.worksession.datetime') as mock_date:
             mock_date.now = lambda: fake_datetime
-            task_type._work_session_manager.start_work_session(task, user.id)
+            task_type.work_session_manager.start_work_session(task, user.id)
 
         task_type.record_activity(user.id, task.id, duration)
 
@@ -137,7 +137,7 @@ class TestTaskTypes(BaseTest):
 
         with patch('vulyk.ext.worksession.datetime') as mock_date:
             mock_date.now = lambda: fake_datetime
-            task_type._work_session_manager.start_work_session(task, user.id)
+            task_type.work_session_manager.start_work_session(task, user.id)
 
         task_type.record_activity(user.id, task.id, duration)
         task_type.record_activity(user.id, task.id, duration)
@@ -163,7 +163,7 @@ class TestTaskTypes(BaseTest):
 
         with patch('vulyk.ext.worksession.datetime') as mock_date:
             mock_date.now = lambda: fake_datetime
-            task_type._work_session_manager.start_work_session(task, user.id)
+            task_type.work_session_manager.start_work_session(task, user.id)
 
         self.assertRaises(
             WorkSessionUpdateError,
@@ -191,7 +191,7 @@ class TestTaskTypes(BaseTest):
 
         with patch('vulyk.ext.worksession.datetime') as mock_date:
             mock_date.now = lambda: fake_datetime
-            task_type._work_session_manager.start_work_session(task, user.id)
+            task_type.work_session_manager.start_work_session(task, user.id)
 
         self.assertRaises(
             WorkSessionUpdateError,
@@ -222,10 +222,10 @@ class TestTaskTypes(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task, user.id)
+        task_type.work_session_manager.start_work_session(task, user.id)
         task_type.on_task_done(user, task.id, {'result': 'result'})
 
-        ws = task_type._work_session_manager.work_session.objects.get(
+        ws = task_type.work_session_manager.work_session.objects.get(
             user=user,
             task=task)
         answer = task_type.answer_model.objects.get(created_by=user, task=task)
@@ -233,3 +233,90 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(ws.answer, answer)
         self.assertLess(ws.end_time - datetime.now(), timedelta(seconds=1))
     # endregion On task done
+
+    # region Stats
+    def test_total_time_approximate(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        tasks = [
+            task_type.task_model(
+                id='task0',
+                task_type=task_type.type_name,
+                batch=None,
+                closed=False,
+                users_count=0,
+                users_processed=[],
+                users_skipped=[],
+                task_data={'data': 'data'}).save(),
+            task_type.task_model(
+                id='task1',
+                task_type=task_type.type_name,
+                batch=None,
+                closed=False,
+                users_count=0,
+                users_processed=[],
+                users_skipped=[],
+                task_data={'data': 'data'}).save(),
+        ]
+
+        for i, task in enumerate(tasks):
+            fake_datetime = datetime.now() - timedelta(seconds=30 * (i + 1))
+
+            with patch('vulyk.ext.worksession.datetime') as mock_date:
+                mock_date.now = lambda: fake_datetime
+                task_type.work_session_manager.start_work_session(
+                    task,
+                    user.id)
+
+            task_type.on_task_done(user, task.id, {'result': 'result'})
+
+        ws = task_type.work_session_manager.work_session
+
+        self.assertEqual(
+            ws.get_total_user_time_approximate(user.id),
+            90
+        )
+
+    def test_total_time_precise(self):
+        task_type = FakeType({})
+        user = User(username='user0', email='user0@email.com').save()
+        tasks = [
+            task_type.task_model(
+                id='task0',
+                task_type=task_type.type_name,
+                batch=None,
+                closed=False,
+                users_count=0,
+                users_processed=[],
+                users_skipped=[],
+                task_data={'data': 'data'}).save(),
+            task_type.task_model(
+                id='task1',
+                task_type=task_type.type_name,
+                batch=None,
+                closed=False,
+                users_count=0,
+                users_processed=[],
+                users_skipped=[],
+                task_data={'data': 'data'}).save(),
+        ]
+
+        for i, task in enumerate(tasks):
+            fake_datetime = datetime.now() - timedelta(seconds=100 * (i + 1))
+
+            with patch('vulyk.ext.worksession.datetime') as mock_date:
+                mock_date.now = lambda: fake_datetime
+                task_type.work_session_manager.start_work_session(
+                    task,
+                    user.id)
+
+            task_type.record_activity(user.id, task.id, 50 * (i + 1))
+            task_type.on_task_done(user, task.id, {'result': 'result'})
+
+        ws = task_type.work_session_manager.work_session
+
+        self.assertEqual(
+            ws.get_total_user_time_precise(user.id),
+            150
+        )
+    # endregion Stats

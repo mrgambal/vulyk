@@ -114,6 +114,18 @@ class TestUser(BaseTest):
             }
         )
 
+    def test_get_by_id(self):
+        user = User(username='mutumba', email='mutumba@email.com').save()
+        uid = str(user.id)
+
+        self.assertEqual(user, User.get_by_id(uid))
+
+    def test_get_by_id_not_found(self):
+        User(username='mutumba', email='mutumba@email.com').save()
+        uid = 'mutumba'
+
+        self.assertEqual(None, User.get_by_id(uid))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,22 +2,20 @@
 """
 test_event_models
 """
-import base64
 from datetime import datetime, timedelta
 from decimal import Decimal
-from tempfile import TemporaryFile
 
 from vulyk.blueprints.gamification.core.events import (
     Event, NoAchievementsEvent, LevelEvent, AchievementsEvent,
     AchievementsLevelEvent, DonateEvent)
-from vulyk.blueprints.gamification.core.foundations import Fund
 from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.foundations import FundModel
 from vulyk.blueprints.gamification.models.rules import RuleModel
-from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
 from vulyk.models.user import Group, User
 
+from .fixtures import FixtureFund
 from ..base import BaseTest
 from ..fixtures import FakeType
 
@@ -34,11 +32,12 @@ class TestEventModels(BaseTest):
 
         Group.objects.create(
             description='test', id='default', allowed_types=[self.TASK_TYPE])
+        self.BATCH = Batch(id='default', task_type=self.TASK_TYPE).save()
         self.USER = User(username='user0', email='user0@email.com').save()
         self.TASK = FakeType.task_model(
             id='task1',
             task_type=self.TASK_TYPE,
-            batch='default',
+            batch=self.BATCH,
             closed=False,
             users_count=0,
             users_processed=[],
@@ -51,16 +50,19 @@ class TestEventModels(BaseTest):
             result={}).save()
 
     def tearDown(self):
-        super().tearDown()
-
         User.objects.delete()
         Group.objects.delete()
         AbstractTask.objects.delete()
         AbstractAnswer.objects.delete()
+        Batch.objects.delete()
 
         EventModel.objects.delete()
         FundModel.objects.delete()
+        FundModel._get_db()['images.files'].remove()
+        FundModel._get_db()['images.chunks'].remove()
         RuleModel.objects.delete()
+
+        super().tearDown()
 
     def test_no_achievements_ok(self):
         ev = Event.build(
@@ -156,40 +158,25 @@ class TestEventModels(BaseTest):
         self.assertEqual(ev, ev2, 'Event was not saved and restored fine')
 
     def test_donate_ok(self):
-        with TemporaryFile('w+b', suffix='.jpg') as f:
-            load = b'iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAAbElEQVR' \
-                   b'4nO3Q0QmAMBAFwWitKSvFWsOKECIz/8c7dgwAAAAAAAAAAAAAADjHtW' \
-                   b'15zve3a333R3BvWT2UWIFYgViBWIFYgViBWIFYgViBWIFYgViBWIFYg' \
-                   b'ViBWIFYgVgAAAAAAAAAAAAAAPBTD1i3AiiQSFCiAAAAAElFTkSuQmCC'
-            f.write(base64.b64decode(load))
+        fund = FixtureFund.get_fund()
+        ev = Event.build(
+            timestamp=self.TIMESTAMP,
+            user=self.USER,
+            answer=None,
+            points_given=0,
+            coins=Decimal(-10),
+            achievements=[],
+            acceptor_fund=fund,
+            level_given=None,
+            viewed=True)
+        EventModel.from_event(ev).save()
+        ev2 = EventModel.objects.get(
+            user=self.USER,
+            acceptor_fund=fund.id
+        ).to_event()
 
-            fund = Fund(
-                fund_id='newfund',
-                name='New fund',
-                description='description',
-                site='site.com',
-                email='email@email.ek',
-                logo=f,
-                donatable=True)
-            fm = FundModel.from_fund(fund).save()
-            ev = Event.build(
-                timestamp=self.TIMESTAMP,
-                user=self.USER,
-                answer=None,
-                points_given=0,
-                coins=Decimal(-10),
-                achievements=[],
-                acceptor_fund=fund,
-                level_given=None,
-                viewed=True)
-            EventModel.from_event(ev).save()
-            ev2 = EventModel.objects.get(
-                user=self.USER,
-                acceptor_fund=fm
-            ).to_event()
-
-            self.assertIsInstance(ev, DonateEvent, 'Event is of a wrong type')
-            self.assertEqual(ev, ev2, 'Event was not saved and restored fine')
+        self.assertIsInstance(ev, DonateEvent, 'Event is of a wrong type')
+        self.assertEqual(ev, ev2, 'Event was not saved and restored fine')
 
     def test_level_badge_to_dict(self):
         rule = Rule(
@@ -227,44 +214,30 @@ class TestEventModels(BaseTest):
                              'Event was not translated to dict correctly')
 
     def test_donate_to_dict(self):
-        with TemporaryFile('w+b', suffix='.jpg') as f:
-            load = b'iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAAbElEQVR' \
-                   b'4nO3Q0QmAMBAFwWitKSvFWsOKECIz/8c7dgwAAAAAAAAAAAAAADjHtW' \
-                   b'15zve3a333R3BvWT2UWIFYgViBWIFYgViBWIFYgViBWIFYgViBWIFYg' \
-                   b'ViBWIFYgVgAAAAAAAAAAAAAAPBTD1i3AiiQSFCiAAAAAElFTkSuQmCC'
-            f.write(base64.b64decode(load))
+        fund = FixtureFund.get_fund()
+        ev = Event.build(
+            timestamp=self.TIMESTAMP,
+            user=self.USER,
+            answer=None,
+            points_given=0,
+            coins=Decimal(-10),
+            achievements=[],
+            acceptor_fund=fund,
+            level_given=None,
+            viewed=True)
+        expected = {
+            'timestamp': self.TIMESTAMP,
+            'user': self.USER.username,
+            'answer': None,
+            'points_given': 0,
+            'coins': -10,
+            'achievements': [],
+            'acceptor_fund': fund.to_dict(),
+            'level_given': None,
+            'viewed': True}
 
-            fund = Fund(
-                fund_id='newfund',
-                name='New fund',
-                description='description',
-                site='site.com',
-                email='email@email.ek',
-                logo=f,
-                donatable=True)
-            ev = Event.build(
-                timestamp=self.TIMESTAMP,
-                user=self.USER,
-                answer=None,
-                points_given=0,
-                coins=Decimal(-10),
-                achievements=[],
-                acceptor_fund=fund,
-                level_given=None,
-                viewed=True)
-            expected = {
-                'timestamp': self.TIMESTAMP,
-                'user': self.USER.username,
-                'answer': None,
-                'points_given': 0,
-                'coins': -10,
-                'achievements': [],
-                'acceptor_fund': fund.to_dict(),
-                'level_given': None,
-                'viewed': True}
-
-            self.assertDictEqual(expected, ev.to_dict(),
-                                 'Event was not translated to dict correctly')
+        self.assertDictEqual(expected, ev.to_dict(),
+                             'Event was not translated to dict correctly')
 
     def test_unread_events_correct_user(self):
         users = [
@@ -355,7 +328,7 @@ class TestEventModels(BaseTest):
             user = users[i % 3]
             ev = Event.build(
                 timestamp=self.TIMESTAMP + timedelta(seconds=i),
-                user=users[i % 3],
+                user=user,
                 answer=FakeType.answer_model(
                     task=FakeType.task_model(
                         id='task%s' % i,
@@ -387,3 +360,217 @@ class TestEventModels(BaseTest):
             self.assertEqual(
                 len(new_events), 0,
                 'Unexpected unread events for %s.' % user.username)
+
+    def test_done_by_user_returns_all(self):
+        for i in range(0, 3):
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=self.USER,
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task_%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch='default',
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=self.USER,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=Decimal(10),
+                coins=Decimal(10),
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+
+        self.assertEqual(
+            EventModel.count_of_tasks_done_by_user(self.USER),
+            3)
+
+    def test_done_by_user_returns_only_related(self):
+        users = [
+            User(username='user%s' % i, email='user%s@email.com' % i).save()
+            for i in range(0, 3)]
+
+        for i in range(0, 9):
+            user = users[i % 3]
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=user,
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch='default',
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=user,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=Decimal(10),
+                coins=Decimal(10),
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+
+        self.assertEqual(
+            EventModel.count_of_tasks_done_by_user(user=users[0]),
+            3)
+
+    def test_done_by_user_only_answers(self):
+        fund = FixtureFund.get_fund()
+        ev = Event.build(
+            timestamp=self.TIMESTAMP,
+            user=self.USER,
+            answer=self.ANSWER,
+            points_given=Decimal(10),
+            coins=Decimal(10),
+            achievements=[],
+            acceptor_fund=None,
+            level_given=None,
+            viewed=False)
+        EventModel.from_event(ev).save()
+        ev2 = Event.build(
+            timestamp=self.TIMESTAMP,
+            user=self.USER,
+            answer=None,
+            points_given=Decimal(0),
+            coins=Decimal(-10),
+            achievements=[],
+            acceptor_fund=fund,
+            level_given=None,
+            viewed=True)
+        EventModel.from_event(ev2).save()
+
+        self.assertEqual(
+            EventModel.count_of_tasks_done_by_user(self.USER),
+            1)
+
+    def test_batches_worked(self):
+        for i in range(0, 3):
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=self.USER,
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task_%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch=Batch(
+                            id='batch_%s' % i,
+                            task_type=self.TASK_TYPE).save(),
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=self.USER,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=Decimal(10),
+                coins=Decimal(10),
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+
+        result = list(EventModel.batches_user_worked_on(self.USER))
+
+        self.assertSequenceEqual(
+            ['batch_0', 'batch_1', 'batch_2'],
+            [batch.id for batch in result]
+        )
+
+    def test_batches_worked_user_restricted(self):
+        users = [
+            User(username='user%s' % i, email='user%s@email.com' % i).save()
+            for i in range(0, 3)]
+
+        for i in range(0, 9):
+            user = users[i % 3]
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=user,
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task_%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch=Batch(
+                            id='batch_%s' % i,
+                            task_type=self.TASK_TYPE).save(),
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=user,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=Decimal(10),
+                coins=Decimal(10),
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+
+        result_first = list(EventModel.batches_user_worked_on(users[0]))
+        result_second = list(EventModel.batches_user_worked_on(users[1]))
+        result_third = list(EventModel.batches_user_worked_on(users[2]))
+
+        self.assertSequenceEqual(
+            ['batch_0', 'batch_3', 'batch_6'],
+            [batch.id for batch in result_first]
+        )
+        self.assertSequenceEqual(
+            ['batch_1', 'batch_4', 'batch_7'],
+            [batch.id for batch in result_second]
+        )
+        self.assertSequenceEqual(
+            ['batch_2', 'batch_5', 'batch_8'],
+            [batch.id for batch in result_third]
+        )
+
+    def test_batches_worked_dedup(self):
+        for i in range(0, 3):
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=self.USER,
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task_%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch=Batch(
+                            id='batch_0',
+                            task_type=self.TASK_TYPE).save(),
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=self.USER,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=Decimal(10),
+                coins=Decimal(10),
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+
+        result = list(EventModel.batches_user_worked_on(self.USER))
+
+        self.assertSequenceEqual(
+            ['batch_0'],
+            [batch.id for batch in result]
+        )

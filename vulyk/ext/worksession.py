@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 import logging
+from datetime import datetime
 
-from flask_mongoengine import Document
+from bson import ObjectId
 from mongoengine.errors import OperationError
 
-from vulyk.signals import on_task_done
 from vulyk.models.exc import WorkSessionLookUpError, WorkSessionUpdateError
+from vulyk.models.stats import WorkSession
+from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.signals import on_task_done
 
 __all__ = [
     'WorkSessionManager'
@@ -26,21 +28,25 @@ class WorkSessionManager:
     Could be overridden in plugins.
     """
 
-    def __init__(self, work_session_model):
+    def __init__(self, work_session_model: type) -> None:
         """
         Constructor.
 
         :param work_session_model: Underlying mongoDB Document subclass.
         :type work_session_model: type
         """
-        assert issubclass(work_session_model, Document), \
+        assert issubclass(work_session_model, WorkSession), \
             'You should define working session model properly'
 
         self._logger = logging.getLogger('vulyk.app')
 
         self.work_session = work_session_model
 
-    def start_work_session(self, task, user_id):
+    def start_work_session(
+        self,
+        task: AbstractTask,
+        user_id: ObjectId
+    ) -> None:
         """
         Starts new WorkSession for given user.
         By default we use `datetime.now` in the underlying model to save in
@@ -74,7 +80,12 @@ class WorkSessionManager:
             msg = 'Can not create a session: {}.'.format(err)
             raise WorkSessionUpdateError(msg)
 
-    def record_activity(self, task, user_id, seconds):
+    def record_activity(
+        self,
+        task: AbstractTask,
+        user_id: ObjectId,
+        seconds: int
+    ) -> None:
         """
         Update an activity counter.
         The intention is to find out how much time was actually spent
@@ -113,7 +124,12 @@ class WorkSessionManager:
                 user_id, task.id)
             raise WorkSessionLookUpError(msg)
 
-    def end_work_session(self, task, user_id, answer):
+    def end_work_session(
+        self,
+        task: AbstractTask,
+        user_id: ObjectId,
+        answer: AbstractAnswer
+    ) -> None:
         """
         Ends given WorkSession for given user.
         This is the route for correctly finished tasks: given session to be
@@ -149,7 +165,11 @@ class WorkSessionManager:
         except OperationError as e:
             raise WorkSessionUpdateError(e)
 
-    def delete_work_session(self, task, user_id):
+    def delete_work_session(
+        self,
+        task: AbstractTask,
+        user_id: ObjectId
+    ) -> None:
         """
         Deletes current WorkSession if skipped.
 
