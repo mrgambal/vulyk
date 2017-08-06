@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from vulyk.models.stats import WorkSession
+from vulyk.models.tasks import AbstractAnswer
 from vulyk.signals import on_task_done
 
 from .core.events import Event
@@ -22,7 +23,7 @@ __all__ = [
 
 
 @on_task_done.connect
-def track_events(sender, answer) -> None:
+def track_events(sender, answer: AbstractAnswer) -> None:
     """
     The most important gear of the gamification module.
 
@@ -82,7 +83,9 @@ def track_events(sender, answer) -> None:
                 coins=coins,
                 achievements=badges,
                 acceptor_fund=None,
-                level_given=None if current_level == updated_level else updated_level,
+                level_given=None
+                    if current_level == updated_level
+                    else updated_level,
                 viewed=False)
         ).save()
 

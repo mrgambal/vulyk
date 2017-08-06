@@ -15,7 +15,8 @@ from vulyk.models.user import User
 
 __all__ = [
     'DonationResult',
-    'DonationsService'
+    'DonationsService',
+    'StatsService'
 ]
 
 
