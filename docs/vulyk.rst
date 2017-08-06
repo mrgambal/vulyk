@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+    vulyk.admin
     vulyk.blueprints
     vulyk.bootstrap
     vulyk.cli

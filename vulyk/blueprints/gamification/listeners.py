@@ -3,9 +3,11 @@ from collections import Iterator
 from datetime import datetime
 from decimal import Decimal
 
+from bson import ObjectId
+
 from vulyk.models.stats import WorkSession
-from vulyk.models.tasks import AbstractAnswer
-from vulyk.signals import on_task_done
+from vulyk.models.tasks import AbstractAnswer, Batch
+from vulyk.signals import on_batch_done, on_task_done
 
 from .core.events import Event
 from .core.queries import MongoRuleExecutor
@@ -112,3 +114,38 @@ def get_actual_rules(
         skip_ids=list(state.achievements.keys()),
         rule_filter=ProjectAndFreeRules(task_type_name),
         is_weekend=now.weekday() in [5, 6])
+
+
+@on_batch_done.connect
+def materialize_coins(sender: Batch) -> None:
+    """
+    Convert potential coins to active ones for every member participated upon
+    the batch in some gamified task type has been closed.
+
+    :param sender: Batch that was closed
+    :type sender: Batch
+    """
+    from vulyk.app import TASKS_TYPES
+
+    if sender.task_type not in TASKS_TYPES:
+        return
+
+    task_type = TASKS_TYPES[sender.task_type]
+
+    if not isinstance(task_type, AbstractGamifiedTaskType):
+        return
+
+    coins = sender.batch_meta[COINS_PER_TASK_KEY]
+    # potentially expensive on memory
+    task_ids = task_type.task_model.objects(batch=sender).distinct('id')
+    # potentially expensive on memory/CPU (it isn't an generator or something)
+    aggregate = task_type.answer_model \
+        .objects(task__in=task_ids) \
+        .item_frequencies('created_by')  # type: list[tuple[ObjectId, int]]
+
+    # forgive me, Father, I have sinned so bad...
+    for (uid, freq) in aggregate:
+        amount = freq * coins
+        UserStateModel \
+            .objects(user=uid) \
+            .update(inc__actual_coins=amount, dec__potential_coins=amount)

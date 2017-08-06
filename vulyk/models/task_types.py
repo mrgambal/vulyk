@@ -46,8 +46,8 @@ class AbstractTaskType:
      task type name and description to separate your tasks from any other.
     """
     # models
-    answer_model = None
-    task_model = None
+    answer_model = None  # type: ClassVar[AbstractAnswer]
+    task_model = None  # type: ClassVar[AbstractTask]
 
     template = ''
     helptext_template = ''
@@ -65,8 +65,8 @@ class AbstractTaskType:
     _task_type_meta = {}
 
     # managers
-    _work_session_manager = None
-    _leaderboard_manager = None
+    _work_session_manager = None  # type: WorkSessionManager
+    _leaderboard_manager = None  # type: LeaderBoardManager
 
     def __init__(self, settings):
         """

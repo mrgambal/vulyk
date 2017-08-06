@@ -50,13 +50,13 @@ class Batch(Document):
     @classmethod
     def task_done_in(cls, batch_id: str) -> BatchUpdateResult:
         """
-
+        Increment needed values upon a task from the batch is done. In case if
+        all tasks are finished – close the batch.
 
         :param batch_id: Batch ID
         :type batch_id: str
 
-        :return: Special aggregate which represents complex effect of
-        the method
+        :return: Aggregate which represents complex effect of the method
         :rtype: BatchUpdateResult
         """
         num_changed = 0
