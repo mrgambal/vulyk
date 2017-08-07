@@ -2,6 +2,7 @@
 """
 test_user_login
 """
+import unittest
 from unittest.mock import patch
 
 import flask
@@ -56,3 +57,7 @@ class TestUserLogin(BaseTest):
         resp = app.test_client().get('/test')
 
         self.assertEqual(resp.data.decode('utf8'), self.USER_PROXY.username)
+
+
+if __name__ == '__main__':
+    unittest.main()

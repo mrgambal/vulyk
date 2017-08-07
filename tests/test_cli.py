@@ -20,12 +20,23 @@ from .fixtures import FakeType
 
 
 class TestAdmin(BaseTest):
-    def setUp(self):
-        super().setUp()
 
+    @classmethod
+    def setUpClass(cls):
         Group(id='default',
               description='test',
               allowed_types=[FakeType.type_name]).save()
+
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        Group.objects.delete()
+
+        super().tearDownClass()
+
+    def setUp(self):
+        super().setUp()
 
         for i in range(1, 4):
             User(username='1',
@@ -34,8 +45,6 @@ class TestAdmin(BaseTest):
 
     def tearDown(self):
         User.objects.delete()
-        Group.objects.delete()
-        Batch.objects.delete()
 
         super().tearDown()
 

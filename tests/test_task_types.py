@@ -28,15 +28,21 @@ from .fixtures import FakeType
 class TestTaskTypes(BaseTest):
     TASK_TYPE = FakeType.type_name
 
-    def setUp(self):
-        super().setUp()
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
 
         Group.objects.create(
-            description='test', id='default', allowed_types=[self.TASK_TYPE])
+            description='test', id='default', allowed_types=[cls.TASK_TYPE])
+
+    @classmethod
+    def tearDownClass(cls):
+        Group.objects.delete()
+
+        super().tearDownClass()
 
     def tearDown(self):
         User.objects.delete()
-        Group.objects.delete()
         AbstractTask.objects.delete()
         AbstractAnswer.objects.delete()
         Batch.objects.delete()

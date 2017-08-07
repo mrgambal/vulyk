@@ -46,8 +46,8 @@ class AbstractTaskType:
      task type name and description to separate your tasks from any other.
     """
     # models
-    answer_model = None  # type: ClassVar[AbstractAnswer]
-    task_model = None  # type: ClassVar[AbstractTask]
+    answer_model = None
+    task_model = None
 
     template = ''
     helptext_template = ''

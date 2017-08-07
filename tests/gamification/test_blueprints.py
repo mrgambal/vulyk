@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 """
+import unittest
+
 import flask
 
 from vulyk.blueprints import VulykModule
@@ -10,9 +12,6 @@ from ..base import BaseTest
 
 
 class TestGetLevel(BaseTest):
-    def setUp(self):
-        super().setUp()
-
     def test_configured_levels(self):
         gamification = GamificationModule('gamification', __name__)
         levels = gamification.config['levels']
@@ -88,3 +87,7 @@ class TestGetLevel(BaseTest):
         resp = app.test_client().get('/test')
 
         self.assertEqual(resp.data.decode('utf8'), 'you speak bollocks')
+
+
+if __name__ == '__main__':
+    unittest.main()

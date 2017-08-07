@@ -133,6 +133,19 @@ class AbstractTask(Document):
             'data': self.task_data
         }
 
+    @classmethod
+    def ids_in_batch(cls, batch: Batch) -> list:
+        """
+        Collects IDs of all tasks that belong to certain batch.
+
+        :param batch: Batch instance
+        :type batch: Batch
+
+        :return: List of IDs
+        :rtype: list[str]
+        """
+        return cls.objects(batch=batch).distinct('id')
+
     def __str__(self):
         return str(self.id)
 
@@ -186,6 +199,20 @@ class AbstractAnswer(Document):
     @corrections.deleter
     def corrections(self):
         pass
+
+    @classmethod
+    def answers_numbers_by_tasks(cls, task_ids: list) -> dict:
+        """
+        Groups answers, filtered by tasks they belong to, by user and count
+        number of answers for every user.
+
+        :param task_ids: List of tasks IDs
+        :type task_ids: list[str]
+
+        :return: Map having user IDs as keys and answers numbers as values
+        :rtype: dict[ObjectId, int]
+        """
+        return cls.objects(task__in=task_ids).item_frequencies('created_by')
 
     def as_dict(self):
         """

@@ -2,6 +2,7 @@
 """
 test_fund_models
 """
+import unittest
 
 import flask
 
@@ -78,3 +79,7 @@ class TestFundModels(BaseTest):
 
         self.assertEqual(len(result), 1, 'A single fund must be fetched')
         self.assertEqual(result[0].name, 'Fund 2')
+
+
+if __name__ == '__main__':
+    unittest.main()

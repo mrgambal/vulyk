@@ -5,6 +5,7 @@ test_state_models
 from datetime import datetime, timedelta
 from decimal import Decimal
 from operator import attrgetter
+import unittest
 
 from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.core.state import UserState
@@ -21,23 +22,28 @@ class TestStateModels(BaseTest):
     TASK_TYPE = FakeType.type_name
     TIMESTAMP = datetime.now()
     TIMESTAMP_NEXT = TIMESTAMP + timedelta(seconds=1)
-    USER = None
+    USER = None  # type: User
 
-    def setUp(self):
-        super().setUp()
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
 
         Group.objects.create(
-            description='test', id='default', allowed_types=[self.TASK_TYPE])
-        self.USER = User(username='user0', email='user0@email.com').save()
+            description='test', id='default', allowed_types=[cls.TASK_TYPE])
+        cls.USER = User(username='user0', email='user0@email.com').save()
 
-    def tearDown(self):
-        super().tearDown()
-
+    @classmethod
+    def tearDownClass(cls):
         User.objects.delete()
         Group.objects.delete()
 
+        super().tearDownClass()
+
+    def tearDown(self):
         RuleModel.objects.delete()
         UserStateModel.objects.delete()
+
+        super().tearDown()
 
     def test_rookie_ok(self):
         state = UserState(
@@ -589,3 +595,7 @@ class TestStateModels(BaseTest):
 
         self.assertEqual(state_model.actual_coins, Decimal(80))
         self.assertEqual(state_model.potential_coins, Decimal(500))
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -2,6 +2,8 @@
 """
 test_batch_model
 """
+import unittest
+
 from vulyk.models.tasks import Batch, BatchUpdateResult
 from vulyk.signals import on_batch_done
 
@@ -89,3 +91,7 @@ class TestBatchModel(BaseTest):
         self.assertTrue(batch.closed)
         self.assertEqual(batch.tasks_processed, 5)
         self.assertEqual(called_times, 0)
+
+
+if __name__ == '__main__':
+    unittest.main()

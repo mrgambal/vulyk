@@ -59,7 +59,7 @@ def track_events(sender, answer: AbstractAnswer) -> None:
             get_actual_rules(
                 state=state,
                 task_type_name=batch.task_type,
-                now=dt)))
+                now=dt)))  # type: list[Rule]
         points = batch.batch_meta[POINTS_PER_TASK_KEY]
         coins = batch.batch_meta[COINS_PER_TASK_KEY]
 
@@ -72,8 +72,8 @@ def track_events(sender, answer: AbstractAnswer) -> None:
                 user=user,
                 level=updated_level,
                 points=Decimal(points),
-                actual_coins=Decimal(coins),
-                potential_coins=Decimal(),
+                actual_coins=Decimal(),
+                potential_coins=Decimal(coins),
                 achievements=badges,
                 last_changed=dt))
         EventModel.from_event(
@@ -135,17 +135,15 @@ def materialize_coins(sender: Batch) -> None:
     if not isinstance(task_type, AbstractGamifiedTaskType):
         return
 
-    coins = sender.batch_meta[COINS_PER_TASK_KEY]
+    coins = sender.batch_meta[COINS_PER_TASK_KEY]  # type: float
     # potentially expensive on memory
-    task_ids = task_type.task_model.objects(batch=sender).distinct('id')
+    task_ids = task_type.task_model.ids_in_batch(sender)  # type: list[str]
     # potentially expensive on memory/CPU (it isn't an generator or something)
-    aggregate = task_type.answer_model \
-        .objects(task__in=task_ids) \
-        .item_frequencies('created_by')  # type: list[tuple[ObjectId, int]]
+    group_by_count = task_type.answer_model \
+        .answers_numbers_by_tasks(task_ids)  # type: dict[ObjectId, int]
 
     # forgive me, Father, I have sinned so bad...
-    for (uid, freq) in aggregate:
-        amount = freq * coins
-        UserStateModel \
-            .objects(user=uid) \
-            .update(inc__actual_coins=amount, dec__potential_coins=amount)
+    for (uid, freq) in group_by_count.items():
+        UserStateModel.transfer_coins_to_actual(
+            uid=uid,
+            amount=Decimal(freq * coins))

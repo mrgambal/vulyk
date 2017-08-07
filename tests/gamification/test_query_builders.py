@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-test_rule_parsing
+test_query_builders
 """
 from datetime import date, datetime, timedelta
+import unittest
 
 from bson import ObjectId
 
@@ -1031,3 +1032,7 @@ class TestRuleModel(BaseTest):
 
         self.assertEqual(1, len(rules))
         self.assertTrue(rules[0].id, 600)
+
+
+if __name__ == '__main__':
+    unittest.main()

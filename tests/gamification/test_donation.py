@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from decimal import Decimal
+import unittest
 from unittest.mock import patch
 
 from mongoengine import OperationError
@@ -19,25 +20,33 @@ from ..fixtures import FakeType as BaseFakeType
 
 
 class TestDonation(BaseTest):
+    USER = None  # type: User
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
         Group.objects.create(
             description='test', id='default', allowed_types=[
                 FakeType.type_name, BaseFakeType.type_name
             ])
-        self.USER = User(username='user0', email='user0@email.com').save()
+        cls.USER = User(username='user0', email='user0@email.com').save()
 
-        super().setUp()
+    @classmethod
+    def tearDownClass(cls):
+        Group.objects.delete()
+        User.objects.delete()
+
+        super().tearDownClass()
 
     def tearDown(self):
         super().tearDown()
 
-        Group.objects.delete()
-        User.objects.delete()
         EventModel.objects.delete()
         FundModel.objects.delete()
         FundModel._get_db()['images.files'].remove()
         FundModel._get_db()['images.chunks'].remove()
+        UserStateModel.objects.delete()
 
     def test_donation_service_success(self):
         fund = FixtureFund.get_fund()
@@ -190,3 +199,7 @@ class TestDonation(BaseTest):
             self.assertEqual(state.actual_coins, Decimal(100),
                              'Actual coins value must be 100')
             return fund
+
+
+if __name__ == '__main__':
+    unittest.main()

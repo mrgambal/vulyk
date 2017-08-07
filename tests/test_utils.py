@@ -2,6 +2,7 @@
 """
 test_utils
 """
+import unittest
 from unittest.mock import Mock
 from werkzeug.exceptions import HTTPException
 
@@ -13,17 +14,23 @@ from .fixtures import FakeType
 
 
 class TestUtils(BaseTest):
-    def setUp(self):
-        super().setUp()
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
 
         Group.objects.create(
             id='default',
             description='test',
             allowed_types=[FakeType.type_name])
 
+    @classmethod
+    def tearDownClass(cls):
+        Group.objects.delete()
+
+        super().tearDownClass()
+
     def tearDown(self):
         User.objects.delete()
-        Group.objects.delete()
 
         super().tearDown()
 
@@ -95,3 +102,7 @@ class TestUtils(BaseTest):
             utils.get_template_path(app, 'shekel.html'),
             'base/shekel.html'
         )
+
+
+if __name__ == '__main__':
+    unittest.main()
