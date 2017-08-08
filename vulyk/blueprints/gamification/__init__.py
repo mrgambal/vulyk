@@ -147,7 +147,7 @@ def fund_logo(fund_id: str) -> flask.Response:
     :type fund_id: str
 
     :return: An response with a file or 404 if fund is not found
-    :rtype: Response
+    :rtype: flask.Response
     """
     fund = FundModel.find_by_id(fund_id)  # type: Union[Fund, None]
 
@@ -206,7 +206,7 @@ def donate() -> flask.Response:
     Performs a money donation to specified fund.
 
     :return: Usual JSON response
-    :rtype: Response
+    :rtype: flask.Response
     """
     user = flask.g.user  # type: Union[User, AnonymousUserMixin]
 

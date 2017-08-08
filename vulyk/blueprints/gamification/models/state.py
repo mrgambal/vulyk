@@ -6,6 +6,8 @@ from collections import Iterator
 from decimal import Decimal
 from enum import Enum
 
+from bson import ObjectId
+
 from flask_mongoengine import Document
 from mongoengine import (
     IntField, ComplexDateTimeField, ReferenceField, ListField,
@@ -192,4 +194,22 @@ class UserStateModel(Document):
         update_dict = {'dec__actual_coins': amount}
 
         return cls.objects(user=user, actual_coins__gte=amount) \
-                   .update(**update_dict) == 1
+            .update(**update_dict) == 1
+
+    @classmethod
+    def transfer_coins_to_actual(cls, uid: ObjectId, amount: Decimal) -> bool:
+        """
+        :param uid: Current user ID
+        :type uid: ObjectId
+        :param amount: Money amount
+        :type amount: Decimal
+
+        :return: True if success
+        :rtype: bool
+        """
+        amount = float(amount)
+        result = cls \
+            .objects(user=uid, potential_coins__gte=amount) \
+            .update_one(inc__actual_coins=amount, dec__potential_coins=amount)
+
+        return result == 1

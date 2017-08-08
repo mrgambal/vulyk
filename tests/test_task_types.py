@@ -28,15 +28,21 @@ from .fixtures import FakeType
 class TestTaskTypes(BaseTest):
     TASK_TYPE = FakeType.type_name
 
-    def setUp(self):
-        super().setUp()
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
 
         Group.objects.create(
-            description='test', id='default', allowed_types=[self.TASK_TYPE])
+            description='test', id='default', allowed_types=[cls.TASK_TYPE])
+
+    @classmethod
+    def tearDownClass(cls):
+        Group.objects.delete()
+
+        super().tearDownClass()
 
     def tearDown(self):
         User.objects.delete()
-        Group.objects.delete()
         AbstractTask.objects.delete()
         AbstractAnswer.objects.delete()
         Batch.objects.delete()
@@ -459,7 +465,7 @@ class TestTaskTypes(BaseTest):
         task = task_type.task_model(
             id='task0',
             task_type=task_type.type_name,
-            batch='any_batch',
+            batch=None,
             closed=False,
             users_count=0,
             users_processed=[],
@@ -469,7 +475,7 @@ class TestTaskTypes(BaseTest):
         task_type._work_session_manager.start_work_session(task, user)
         task_type.skip_task(task.id, user)
 
-        task = task_type.task_model.objects.get(id=task.id)
+        task.reload()
 
         self.assertEqual(task.users_skipped, [user])
 
@@ -479,7 +485,7 @@ class TestTaskTypes(BaseTest):
         task = task_type.task_model(
             id='task0',
             task_type=task_type.type_name,
-            batch='any_batch',
+            batch=None,
             closed=False,
             users_count=0,
             users_processed=[],
@@ -492,7 +498,7 @@ class TestTaskTypes(BaseTest):
         self.assertRaises(WorkSessionLookUpError,
                           lambda: task_type.skip_task(task.id, user))
 
-        task = task_type.task_model.objects.get(id=task.id)
+        task.reload()
 
         self.assertEqual(task.users_skipped, [user])
 
@@ -518,7 +524,7 @@ class TestTaskTypes(BaseTest):
         task_type._work_session_manager.start_work_session(task, user.id)
         task_type.on_task_done(user, task.id, {'result': 'result'})
 
-        task = task_type.task_model.objects.get(id=task.id)
+        task.reload()
         user = User.objects.get(id=user.id)
 
         self.assertEqual(task.users_count, 1)
@@ -563,7 +569,7 @@ class TestTaskTypes(BaseTest):
 
         task_type.on_task_done(user, task.id, {'result': 'result'})
 
-        task = task_type.task_model.objects.get(id=task.id)
+        task.reload()
 
         self.assertTrue(task.closed)
 

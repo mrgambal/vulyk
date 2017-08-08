@@ -4,6 +4,7 @@ test_event_models
 """
 from datetime import datetime, timedelta
 from decimal import Decimal
+import unittest
 
 from vulyk.blueprints.gamification.core.events import (
     Event, NoAchievementsEvent, LevelEvent, AchievementsEvent,
@@ -27,21 +28,35 @@ class TestEventModels(BaseTest):
     ANSWER = None
     TIMESTAMP = datetime.now()
 
-    def setUp(self):
-        super().setUp()
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
 
         Group.objects.create(
-            description='test', id='default', allowed_types=[self.TASK_TYPE])
-        self.BATCH = Batch(id='default', task_type=self.TASK_TYPE).save()
-        self.USER = User(username='user0', email='user0@email.com').save()
-        self.TASK = FakeType.task_model(
+            description='test', id='default', allowed_types=[cls.TASK_TYPE])
+        cls.BATCH = Batch(id='default', task_type=cls.TASK_TYPE).save()
+        cls.USER = User(username='user0', email='user0@email.com').save()
+        cls.TASK = FakeType.task_model(
             id='task1',
-            task_type=self.TASK_TYPE,
-            batch=self.BATCH,
+            task_type=cls.TASK_TYPE,
+            batch=cls.BATCH,
             closed=False,
             users_count=0,
             users_processed=[],
             task_data={'data': 'data'}).save()
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.delete()
+        Group.objects.delete()
+        AbstractTask.objects.delete()
+        Batch.objects.delete()
+
+        super().tearDownClass()
+
+    def setUp(self):
+        super().setUp()
+
         self.ANSWER = FakeType.answer_model(
             task=self.TASK,
             created_by=self.USER,
@@ -50,11 +65,7 @@ class TestEventModels(BaseTest):
             result={}).save()
 
     def tearDown(self):
-        User.objects.delete()
-        Group.objects.delete()
-        AbstractTask.objects.delete()
         AbstractAnswer.objects.delete()
-        Batch.objects.delete()
 
         EventModel.objects.delete()
         FundModel.objects.delete()
@@ -574,3 +585,7 @@ class TestEventModels(BaseTest):
             ['batch_0'],
             [batch.id for batch in result]
         )
+
+
+if __name__ == '__main__':
+    unittest.main()

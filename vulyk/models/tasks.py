@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Module contains all models directly related to the main entity - tasks."""
+from collections import namedtuple
 
 from flask_mongoengine import Document
 from mongoengine import (
@@ -14,6 +15,16 @@ from mongoengine import (
 )
 
 from vulyk.models.user import User
+from vulyk.signals import on_batch_done
+
+__all__ = [
+    'AbstractAnswer',
+    'AbstractTask',
+    'Batch',
+    'BatchUpdateResult'
+]
+
+BatchUpdateResult = namedtuple('BatchUpdateResult', ['success', 'closed'])
 
 
 class Batch(Document):
@@ -24,20 +35,60 @@ class Batch(Document):
     task_type = StringField(max_length=50, required=True, db_field='taskType')
     tasks_count = IntField(default=0, required=True, db_field='tasksCount')
     tasks_processed = IntField(default=0, db_field='tasksProcessed')
+    closed = BooleanField(default=False, required=False)
     batch_meta = DictField(db_field='batchMeta')
 
     meta = {
         'collection': 'batches',
         'allow_inheritance': True,
         'indexes': [
-            'task_type'
+            'task_type',
+            'closed'
         ]
     }
 
-    def __str__(self):
+    @classmethod
+    def task_done_in(cls, batch_id: str) -> BatchUpdateResult:
+        """
+        Increment needed values upon a task from the batch is done. In case if
+        all tasks are finished – close the batch.
+
+        :param batch_id: Batch ID
+        :type batch_id: str
+
+        :return: Aggregate which represents complex effect of the method
+        :rtype: BatchUpdateResult
+        """
+        num_changed = 0
+        batch = cls.objects.get(id=batch_id)  # type: Batch
+        processed = batch.tasks_processed + 1
+
+        if processed > batch.tasks_count:
+            return BatchUpdateResult(success=False, closed=False)
+
+        closed = processed == batch.tasks_count
+        update_q = {'inc__tasks_processed': 1}
+
+        if closed:
+            update_q['set__closed'] = closed
+            num_changed = cls \
+                .objects(id=batch.id, closed=False) \
+                .update(**update_q)
+
+        if num_changed == 0:
+            update_q.pop('set__closed', None)
+            closed = False
+
+            num_changed = batch.update(**update_q)
+        elif closed:
+            on_batch_done.send(batch)
+
+        return BatchUpdateResult(success=num_changed > 0, closed=closed)
+
+    def __str__(self) -> str:
         return str(self.id)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Batch [{id}] ({processed}/{count})'.format(
             id=self.id,
             processed=self.tasks_processed,
@@ -81,6 +132,19 @@ class AbstractTask(Document):
             'closed': self.closed,
             'data': self.task_data
         }
+
+    @classmethod
+    def ids_in_batch(cls, batch: Batch) -> list:
+        """
+        Collects IDs of all tasks that belong to certain batch.
+
+        :param batch: Batch instance
+        :type batch: Batch
+
+        :return: List of IDs
+        :rtype: list[str]
+        """
+        return cls.objects(batch=batch).distinct('id')
 
     def __str__(self):
         return str(self.id)
@@ -135,6 +199,20 @@ class AbstractAnswer(Document):
     @corrections.deleter
     def corrections(self):
         pass
+
+    @classmethod
+    def answers_numbers_by_tasks(cls, task_ids: list) -> dict:
+        """
+        Groups answers, filtered by tasks they belong to, by user and count
+        number of answers for every user.
+
+        :param task_ids: List of tasks IDs
+        :type task_ids: list[str]
+
+        :return: Map having user IDs as keys and answers numbers as values
+        :rtype: dict[ObjectId, int]
+        """
+        return cls.objects(task__in=task_ids).item_frequencies('created_by')
 
     def as_dict(self):
         """

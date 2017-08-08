@@ -3,8 +3,11 @@ from collections import Iterator
 from datetime import datetime
 from decimal import Decimal
 
+from bson import ObjectId
+
 from vulyk.models.stats import WorkSession
-from vulyk.signals import on_task_done
+from vulyk.models.tasks import AbstractAnswer, Batch
+from vulyk.signals import on_batch_done, on_task_done
 
 from .core.events import Event
 from .core.queries import MongoRuleExecutor
@@ -22,7 +25,7 @@ __all__ = [
 
 
 @on_task_done.connect
-def track_events(sender, answer) -> None:
+def track_events(sender, answer: AbstractAnswer) -> None:
     """
     The most important gear of the gamification module.
 
@@ -56,7 +59,7 @@ def track_events(sender, answer) -> None:
             get_actual_rules(
                 state=state,
                 task_type_name=batch.task_type,
-                now=dt)))
+                now=dt)))  # type: list[Rule]
         points = batch.batch_meta[POINTS_PER_TASK_KEY]
         coins = batch.batch_meta[COINS_PER_TASK_KEY]
 
@@ -69,8 +72,8 @@ def track_events(sender, answer) -> None:
                 user=user,
                 level=updated_level,
                 points=Decimal(points),
-                actual_coins=Decimal(coins),
-                potential_coins=Decimal(),
+                actual_coins=Decimal(),
+                potential_coins=Decimal(coins),
                 achievements=badges,
                 last_changed=dt))
         EventModel.from_event(
@@ -82,7 +85,9 @@ def track_events(sender, answer) -> None:
                 coins=coins,
                 achievements=badges,
                 acceptor_fund=None,
-                level_given=None if current_level == updated_level else updated_level,
+                level_given=None
+                    if current_level == updated_level
+                    else updated_level,
                 viewed=False)
         ).save()
 
@@ -109,3 +114,36 @@ def get_actual_rules(
         skip_ids=list(state.achievements.keys()),
         rule_filter=ProjectAndFreeRules(task_type_name),
         is_weekend=now.weekday() in [5, 6])
+
+
+@on_batch_done.connect
+def materialize_coins(sender: Batch) -> None:
+    """
+    Convert potential coins to active ones for every member participated upon
+    the batch in some gamified task type has been closed.
+
+    :param sender: Batch that was closed
+    :type sender: Batch
+    """
+    from vulyk.app import TASKS_TYPES
+
+    if sender.task_type not in TASKS_TYPES:
+        return
+
+    task_type = TASKS_TYPES[sender.task_type]
+
+    if not isinstance(task_type, AbstractGamifiedTaskType):
+        return
+
+    coins = sender.batch_meta[COINS_PER_TASK_KEY]  # type: float
+    # potentially expensive on memory
+    task_ids = task_type.task_model.ids_in_batch(sender)  # type: list[str]
+    # potentially expensive on memory/CPU (it isn't an generator or something)
+    group_by_count = task_type.answer_model \
+        .answers_numbers_by_tasks(task_ids)  # type: dict[ObjectId, int]
+
+    # forgive me, Father, I have sinned so bad...
+    for (uid, freq) in group_by_count.items():
+        UserStateModel.transfer_coins_to_actual(
+            uid=uid,
+            amount=Decimal(freq * coins))

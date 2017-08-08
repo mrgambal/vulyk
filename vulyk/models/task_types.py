@@ -65,8 +65,8 @@ class AbstractTaskType:
     _task_type_meta = {}
 
     # managers
-    _work_session_manager = None
-    _leaderboard_manager = None
+    _work_session_manager = None  # type: WorkSessionManager
+    _leaderboard_manager = None  # type: LeaderBoardManager
 
     def __init__(self, settings):
         """
@@ -344,7 +344,12 @@ class AbstractTaskType:
         except OperationError as err:
             raise TaskSkipError('Can not skip the task: {0}.'.format(err))
 
-    def on_task_done(self, user, task_id, result):
+    def on_task_done(
+        self,
+        user: User,
+        task_id: str,
+        result: dict
+    ) -> None:
         """
         Saves user's answers for a given task.
         Assumes that user is eligible for this kind of tasks.
@@ -352,7 +357,7 @@ class AbstractTaskType:
         :param task_id: Given task ID
         :type task_id: str
         :param user: an instance of User model who provided an answer
-        :type user: vulyk.models.user.User
+        :type user: User
         :param result: Task solving result
         :type result: dict
 
@@ -388,8 +393,7 @@ class AbstractTaskType:
             self._logger.debug('User %s has done task %s', user.id, task_id)
 
             if closed and task.batch is not None:
-                batch_id = task.batch.id
-                Batch.objects(id=batch_id).update_one(inc__tasks_processed=1)
+                Batch.task_done_in(batch_id=task.batch.id)
         except NotUniqueError:
             raise TaskValidationError('Attempt to save over the existing '
                                       'answer for task {id} by user {user!r}'
@@ -414,7 +418,12 @@ class AbstractTaskType:
         """
         return False
 
-    def _update_task_on_answer(self, task, answer, user):
+    def _update_task_on_answer(
+        self,
+        task: AbstractTask,
+        answer: AbstractAnswer,
+        user: User
+    ) -> bool:
         """
         Sets flag 'closed' to True if task's goal has been reached
 
@@ -423,20 +432,30 @@ class AbstractTaskType:
         :param answer: Task solving result
         :type answer: AbstractAnswer
         :param user: an instance of User model who provided an answer
-        :type user: models.User
+        :type user: User
 
         :rtype: bool
         """
-        task.users_count += 1
-        task.users_processed.append(user)
+        users_count = task.users_count + 1
+        update_q = {
+            'inc__users_count': 1,
+            'add_to_set__users_processed': user}
 
         closed = self._is_ready_for_autoclose(task, answer) \
-            or (task.users_count >= self.redundancy)
+            or (users_count >= self.redundancy)
 
         if closed:
-            task.closed = closed
+            update_q['set__closed'] = closed
 
-        task.save()
+        num_changed = self.task_model \
+            .objects(id=task.id, closed=False) \
+            .update_one(**update_q)  # type: int
+
+        if closed and num_changed == 0:
+            update_q.pop('set__closed', None)
+            closed = False
+
+            task.update(**update_q)
 
         return closed
 

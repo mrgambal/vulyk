@@ -3,6 +3,7 @@
 """
 from datetime import datetime
 from decimal import Decimal
+import unittest
 from unittest.mock import patch
 
 from vulyk.app import TASKS_TYPES
@@ -29,16 +30,28 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
     TIMESTAMP = datetime.now()
     USER = None
     BATCH = None
+    TASKS_TYPES.clear()
 
-    def setUp(self):
-        super().setUp()
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
 
-        TASKS_TYPES = []
         Group.objects.create(
             description='test', id='default', allowed_types=[
                 FakeType.type_name, BaseFakeType.type_name
             ])
-        self.USER = User(username='user0', email='user0@email.com').save()
+        cls.USER = User(username='user0', email='user0@email.com').save()
+
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.delete()
+        Group.objects.delete()
+
+        super().tearDownClass()
+
+    def setUp(self):
+        super().setUp()
+
         self.BATCH = Batch(
             id='default',
             task_type=FakeType.type_name,
@@ -51,8 +64,8 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         ).save()
 
     def tearDown(self):
-        User.objects.delete()
-        Group.objects.delete()
+        TASKS_TYPES.clear()
+
         AbstractTask.objects.delete()
         AbstractAnswer.objects.delete()
         WorkSession.objects.delete()
@@ -62,7 +75,6 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         EventModel.objects.delete()
         RuleModel.objects.delete()
 
-        TASKS_TYPES = []
         super().tearDown()
 
     def test_single_allocation(self):
@@ -79,7 +91,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task, self.USER.id)
+        task_type.work_session_manager.start_work_session(task, self.USER.id)
         task_type.on_task_done(self.USER, task.id, {'result': 'result'})
 
         events = EventModel.objects.filter(user=self.USER)
@@ -94,8 +106,8 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         self.assertEqual(ev.viewed, False)
 
         self.assertEqual(state.points, ev.points_given)
-        self.assertEqual(state.actual_coins, ev.coins)
-        self.assertEqual(state.potential_coins, Decimal())
+        self.assertEqual(state.actual_coins, Decimal())
+        self.assertEqual(state.potential_coins, ev.coins)
         self.assertEqual(state.level, 1)
         self.assertEqual(state.achievements, {})
         self.assertEqual(ev.timestamp, state.last_changed)
@@ -126,7 +138,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             rule_id=100)
         RuleModel.from_rule(rule).save()
 
-        task_type._work_session_manager.start_work_session(task, self.USER.id)
+        task_type.work_session_manager.start_work_session(task, self.USER.id)
         task_type.on_task_done(self.USER, task.id, {'result': 'result'})
 
         events = EventModel.objects.filter(user=self.USER)
@@ -140,8 +152,8 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         self.assertEqual(ev.achievements, [rule])
 
         self.assertEqual(state.points, ev.points_given)
-        self.assertEqual(state.actual_coins, ev.coins)
-        self.assertEqual(state.potential_coins, Decimal())
+        self.assertEqual(state.actual_coins, Decimal())
+        self.assertEqual(state.potential_coins, ev.coins)
         self.assertEqual(state.level, 1)
         self.assertEqual(ev.timestamp, state.last_changed)
         self.assertEqual(state.achievements, {rule.id: rule})
@@ -181,15 +193,16 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task1, self.USER.id)
+        task_type.work_session_manager.start_work_session(task1, self.USER.id)
         task_type.on_task_done(self.USER, task1.id, {'result': 'result'})
-        task_type._work_session_manager.start_work_session(task2, self.USER.id)
+        task_type.work_session_manager.start_work_session(task2, self.USER.id)
         task_type.on_task_done(self.USER, task2.id, {'result': 'result'})
 
         state = UserStateModel.get_or_create_by_user(user=self.USER)
         self.assertEqual(state.points, Decimal('5.0'))
         self.assertEqual(state.level, 1)
-        self.assertEqual(state.actual_coins, Decimal('3.0'))
+        self.assertEqual(state.actual_coins, Decimal())
+        self.assertEqual(state.potential_coins, Decimal('3.0'))
 
         events = EventModel.objects \
             .filter(user=self.USER) \
@@ -230,7 +243,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task, self.USER.id)
+        task_type.work_session_manager.start_work_session(task, self.USER.id)
         self.assertRaises(
             InvalidUserStateException,
             lambda: task_type.on_task_done(self.USER,
@@ -284,15 +297,16 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task1, self.USER.id)
+        task_type.work_session_manager.start_work_session(task1, self.USER.id)
         task_type.on_task_done(self.USER, task1.id, {'result': 'result'})
-        task_type._work_session_manager.start_work_session(task2, self.USER.id)
+        task_type.work_session_manager.start_work_session(task2, self.USER.id)
         task_type.on_task_done(self.USER, task2.id, {'result': 'result'})
 
         state = UserStateModel.get_or_create_by_user(user=self.USER)
         self.assertEqual(state.points, Decimal('27.5'))
         self.assertEqual(state.level, 2)
-        self.assertEqual(state.actual_coins, Decimal('16.5'))
+        self.assertEqual(state.actual_coins, Decimal())
+        self.assertEqual(state.potential_coins, Decimal('16.5'))
 
         events = EventModel.objects \
             .filter(user=self.USER) \
@@ -330,7 +344,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type._work_session_manager.start_work_session(task, self.USER.id)
+        task_type.work_session_manager.start_work_session(task, self.USER.id)
         task_type.on_task_done(self.USER, task.id, {'result': 'result'})
 
         self.assertEqual(UserStateModel.objects(user=self.USER).count(), 0)
@@ -380,17 +394,18 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             users_skipped=[],
             task_data={'data': 'data'}).save()
 
-        task_type_base._work_session_manager.start_work_session(task1,
+        task_type_base.work_session_manager.start_work_session(task1,
                                                                 self.USER.id)
         task_type_base.on_task_done(self.USER, task1.id, {'result': 'result'})
-        task_type_new._work_session_manager.start_work_session(task2,
+        task_type_new.work_session_manager.start_work_session(task2,
                                                                self.USER.id)
         task_type_new.on_task_done(self.USER, task2.id, {'result': 'result'})
 
         state = UserStateModel.get_or_create_by_user(user=self.USER)
         self.assertEqual(state.points, Decimal('25'))
         self.assertEqual(state.level, 2)
-        self.assertEqual(state.actual_coins, Decimal('15'))
+        self.assertEqual(state.actual_coins, Decimal())
+        self.assertEqual(state.potential_coins, Decimal('15'))
 
         events = EventModel.objects.filter(user=self.USER)
         self.assertEqual(len(events), 1)
@@ -408,24 +423,26 @@ class TestAllocationBadges(BaseTest):
     SATURDAY = datetime(2017, 7, 8)
     SUNDAY = datetime(2017, 7, 9)
     MONDAY = datetime(2017, 7, 10)
-    USER = None
+    USER = None  # type: User
     GET_ACTUAL_RULES = 'vulyk.blueprints.gamification.models.rules.' \
                        'RuleModel.get_actual_rules'
 
-    def setUp(self):
-        super().setUp()
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
 
         Group.objects.create(
             description='test', id='default', allowed_types=[
                 FakeType.type_name, BaseFakeType.type_name
             ])
-        self.USER = User(username='user0', email='user0@email.com').save()
+        cls.USER = User(username='user0', email='user0@email.com').save()
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         User.objects.delete()
         Group.objects.delete()
 
-        super().tearDown()
+        super().tearDownClass()
 
     def test_get_rules_no_earned_no_batch_no_weekend(self):
         rookie_state = UserState(
@@ -529,3 +546,7 @@ class TestAllocationBadges(BaseTest):
 
         with patch(self.GET_ACTUAL_RULES, patched_rules):
             listeners.get_actual_rules(state, 'batch_1', self.SUNDAY)
+
+
+if __name__ == '__main__':
+    unittest.main()

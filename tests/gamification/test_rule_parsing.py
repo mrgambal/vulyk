@@ -2,6 +2,8 @@
 """
 test_rule_parsing
 """
+import unittest
+
 import ujson as json
 
 from vulyk.blueprints.gamification.core.parsing import (
@@ -278,3 +280,7 @@ class TestJsonRulesParsing(BaseTest):
 
         self.assertRaises(RuleValidationException,
                           lambda: JsonRuleParser.parse(string))
+
+
+if __name__ == '__main__':
+    unittest.main()
