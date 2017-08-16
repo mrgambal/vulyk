@@ -7,10 +7,12 @@ from decimal import Decimal
 from enum import Enum
 
 from vulyk.blueprints.gamification.core.events import DonateEvent
+from vulyk.blueprints.gamification.core.state import UserState
 from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.foundations import FundModel
 from vulyk.blueprints.gamification.models.state import UserStateModel
 from vulyk.ext.worksession import WorkSessionManager
+from vulyk.models.tasks import AbstractTask
 from vulyk.models.user import User
 
 __all__ = [
@@ -140,3 +142,60 @@ class StatsService:
 
         return seconds // 3600
 
+    @classmethod
+    def total_number_of_open_tasks(cls) -> int:
+        """
+        Count and return number of open tasks in all projects
+
+        :return: Number of open tasks
+        :rtype: int
+        """
+
+        return AbstractTask.objects.filter(closed=False).count()
+
+    @classmethod
+    def total_number_of_users(cls) -> int:
+        """
+        Count and return number of users registered in the system
+
+        :return: Number of active users
+        :rtype: int
+        """
+
+        return User.objects.filter(active=True).count()
+
+    @classmethod
+    def total_money_donated(cls) -> float:
+        """
+        Count and return total amount of money donated
+        by all users to all foundations
+
+        :return: Total amount in UAH
+        :rtype: float
+        """
+
+        return EventModel.amount_of_money_donated(None)
+
+    @classmethod
+    def total_money_donated_by_user(cls, user: User) -> float:
+        """
+        Count and return total amount of money donated
+        by current user
+
+        :return: Total amount in UAH
+        :rtype: float
+        """
+
+        return EventModel.amount_of_money_donated(user)
+
+    @classmethod
+    def state_of_user(cls, user: User) -> UserState:
+        """
+        Return current state of given user
+
+        :return: Object which holds aggregated values
+        on user current state
+        :rtype: UserState
+        """
+
+        return UserStateModel.get_or_create_by_user(user)

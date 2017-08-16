@@ -149,6 +149,22 @@ class EventModel(Document):
         return cls.objects(user=user, answer__exists=True).count()
 
     @classmethod
+    def amount_of_money_donated(cls, user: User) -> float:
+        """
+        Amount of money donatedby current user
+
+        :param user: User instance
+        :type user: User
+
+        :return: Amount of money
+        :rtype: float
+        """
+        if user is None:
+            return -cls.objects(user=user, acceptor_fund__ne=None).sum("coins")
+        else:
+            return -cls.objects(acceptor_fund__ne=None).sum("coins")
+
+    @classmethod
     def batches_user_worked_on(cls, user: User) -> Iterator:
         """
         Returns an iterable of deduplicated batches user has worked on before.
