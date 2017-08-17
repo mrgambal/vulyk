@@ -252,10 +252,10 @@ def donate() -> flask.Response:
             status=utils.HTTPStatus.BAD_REQUEST)
 
 
-def get_stats():
+def get_stats_service():
     return {
-        "stats": StatsService
+        'stats_service': StatsService
     }
 
 
-gamification.add_context_filler(get_stats)
+gamification.add_context_filler(get_stats_service)

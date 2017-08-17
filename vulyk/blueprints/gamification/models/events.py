@@ -7,12 +7,12 @@ from collections import Iterator
 from flask_mongoengine import Document
 from mongoengine import (
     DecimalField, ComplexDateTimeField, ReferenceField, BooleanField,
-    ListField,
-    IntField
+    ListField, IntField, Q
 )
 
-from vulyk.models.tasks import AbstractAnswer, Batch
+from vulyk.models.tasks import AbstractAnswer
 from vulyk.models.user import User
+
 
 from .foundations import FundModel
 from .rules import RuleModel
@@ -159,10 +159,13 @@ class EventModel(Document):
         :return: Amount of money
         :rtype: float
         """
-        if user is None:
-            return -cls.objects(user=user, acceptor_fund__ne=None).sum("coins")
-        else:
-            return -cls.objects(acceptor_fund__ne=None).sum("coins")
+
+        query = Q(acceptor_fund__ne=None)
+
+        if user is not None:
+            query &= Q(user=user)
+
+        return -cls.objects(query).sum('coins')
 
     @classmethod
     def batches_user_worked_on(cls, user: User) -> Iterator:
