@@ -11,22 +11,27 @@ from vulyk import utils
 from vulyk.blueprints.gamification.core.foundations import Fund
 from vulyk.blueprints.gamification.models.foundations import (
     FundModel, FundFilterBy)
+from vulyk.blueprints.gamification import listeners
 from vulyk.blueprints.gamification.models.rules import (
     AllRules, ProjectAndFreeRules, RuleModel, StrictProjectRules)
 from vulyk.blueprints.gamification.models.state import UserStateModel
+from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.services import (
-    DonationResult, DonationsService)
+    DonationResult, DonationsService, StatsService)
 from vulyk.models.user import User
-from vulyk.admin.models import AuthModelView
+from vulyk.admin.models import AuthModelView, CKTextAreaField
 
 
-from . import listeners
-from .models.events import EventModel
 from .. import VulykModule
 
 __all__ = [
     'gamification'
 ]
+
+
+class FundAdmin(AuthModelView):
+    form_overrides = dict(description=CKTextAreaField)
+    column_exclude_list = ['description', 'logo']
 
 
 class GamificationModule(VulykModule):
@@ -41,7 +46,7 @@ class GamificationModule(VulykModule):
         super().register(app, options, first_registration)
 
         if app.config.get('ENABLE_ADMIN', False):
-            app.admin.add_view(AuthModelView(FundModel))
+            app.admin.add_view(FundAdmin(FundModel))
             app.admin.add_view(AuthModelView(RuleModel))
 
     def get_level(self, points):
@@ -245,3 +250,12 @@ def donate() -> flask.Response:
             result={'done': False},
             errors=['Something wrong happened'],
             status=utils.HTTPStatus.BAD_REQUEST)
+
+
+def get_stats_service():
+    return {
+        'stats_service': StatsService
+    }
+
+
+gamification.add_context_filler(get_stats_service)

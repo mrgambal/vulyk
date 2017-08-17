@@ -9,7 +9,6 @@ class VulykModule(flask.Blueprint):
     Slightly altered Blueprint to fit our kinky needs.
     """
     config = {}
-    _context_fillers = []  # type: list[LambdaType[None -> dict]]
 
     def __init__(self, name, import_name, static_folder=None,
                  static_url_path=None, template_folder=None, url_prefix=None,
@@ -18,6 +17,7 @@ class VulykModule(flask.Blueprint):
                          template_folder, url_prefix, subdomain, url_defaults,
                          root_path)
 
+        self._context_fillers = []  # type: list[LambdaType[None -> dict]]
         self.app_context_processor(self._get_module_view_context)
 
     def configure(self, config: dict) -> None:
