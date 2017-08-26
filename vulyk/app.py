@@ -33,7 +33,7 @@ def index():
         task_types = [x.to_dict() for x in TASKS_TYPES.values()
                       if user.is_eligible_for(x.type_name)]
 
-    if len(task_types) == 1:
+    if len(task_types) == 1 and app.config["REDIRECT_USER_AFTER_LOGIN"]:
         return flask.redirect(
             flask.url_for('task_home', type_name=task_types[0]['type']))
 
