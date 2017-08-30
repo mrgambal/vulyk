@@ -85,7 +85,8 @@ class TestTaskTypes(BaseTest):
             'name': 'Fake name',
             'description': 'Fake description',
             'type': 'FakeTaskType',
-            'tasks': 22
+            'tasks': 22,
+            'open_tasks': 22,
         }
 
         self.assertDictEqual(FakeType({}).to_dict(), got)

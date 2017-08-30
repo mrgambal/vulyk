@@ -259,7 +259,8 @@ class AbstractTaskType:
             & Q(users_processed__nin=[user]) \
             & Q(closed__ne=True)
 
-        for batch in Batch.objects.order_by('id'):
+        for batch in Batch.objects(
+                task_type=self.type_name, closed__ne=True).order_by('id'):
             if batch.tasks_count == batch.tasks_processed:
                 continue
 
@@ -470,5 +471,6 @@ class AbstractTaskType:
             'name': self.name,
             'description': self.description,
             'type': self.type_name,
-            'tasks': self.task_model.objects.count()
+            'tasks': self.task_model.objects.count(),
+            'open_tasks': self.task_model.objects(closed__ne=True).count()
         }
