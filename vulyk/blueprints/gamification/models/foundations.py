@@ -36,7 +36,7 @@ class FundModel(Document):
     description = StringField(required=True)
     site = StringField(required=False)
     email = EmailField(required=False, allow_utf8_user=True)
-    logo = ImageField(unique=True)
+    logo = ImageField(unique=True, thumbnail_size=(141, 106, True))
     donatable = BooleanField(required=True)
 
     meta = {
