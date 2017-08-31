@@ -44,9 +44,7 @@ class AbstractGamifiedTaskType(AbstractTaskType):
         batch = self._get_next_open_batch()
         if batch:
             resp['batch_info'] = batch.batch_meta
-            resp['has_tasks'] = True
         else:
             resp['batch_info'] = None
-            resp['has_tasks'] = False
 
         return resp
