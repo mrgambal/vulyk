@@ -54,7 +54,8 @@ class TestTaskTypes(BaseTest):
             'description': 'Fake description',
             'type': 'FakeGamifiedTaskType',
             'tasks': 22,
-            'open_tasks': 22,
+            'open_tasks': 0,
+            'closed_tasks': 22,
             'batch_info': None,
             'has_tasks': False
         }
@@ -68,13 +69,14 @@ class TestTaskTypes(BaseTest):
             'description': 'Fake description',
             'type': 'FakeGamifiedTaskType',
             'tasks': 33,
-            'open_tasks': 33,
+            'closed_tasks': 33,
+            'open_tasks': 0,
             'batch_info': {
                 POINTS_PER_TASK_KEY: 5.0,
                 COINS_PER_TASK_KEY: 3.0,
                 IMPORTANT_KEY: True,
             },
-            'has_tasks': True
+            'has_tasks': False
         }
 
         task_type = FakeType({})
@@ -99,7 +101,8 @@ class TestTaskTypes(BaseTest):
             'description': 'Fake description',
             'type': 'FakeGamifiedTaskType',
             'tasks': 33,
-            'open_tasks': 33,
+            'closed_tasks': 33,
+            'open_tasks': 0,
             'batch_info': None,
             'has_tasks': False
         }
@@ -127,13 +130,14 @@ class TestTaskTypes(BaseTest):
             'description': 'Fake description',
             'type': 'FakeGamifiedTaskType',
             'tasks': 44,
-            'open_tasks': 44,
+            'open_tasks': 0,
+            'closed_tasks': 44,
             'batch_info': {
                 POINTS_PER_TASK_KEY: 15.0,
                 COINS_PER_TASK_KEY: 13.0,
                 IMPORTANT_KEY: True,
             },
-            'has_tasks': True
+            'has_tasks': False
         }
 
         task_type = FakeType({})

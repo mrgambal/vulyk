@@ -467,10 +467,17 @@ class AbstractTaskType:
         :return: distilled dict with basic info
         :rtype: dict
         """
+
+        closed_tasks = self.task_model.objects(closed=True).count()
+        tasks = self.task_model.objects().count()
+        open_tasks = tasks - closed_tasks
+
         return {
             'name': self.name,
             'description': self.description,
             'type': self.type_name,
-            'tasks': self.task_model.objects.count(),
-            'open_tasks': self.task_model.objects(closed__ne=True).count()
+            'tasks': tasks,
+            'open_tasks': open_tasks,
+            'closed_tasks': closed_tasks,
+            'has_tasks': open_tasks > 0
         }
