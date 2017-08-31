@@ -54,7 +54,10 @@ def add_batch(batch_id, count, task_type, default_batch,
 
                 try:
                     cast_to = type(task_type.task_type_meta[m_key])
-                    meta[m_key] = cast_to(m_val)
+                    if cast_to != bool:
+                        meta[m_key] = cast_to(m_val)
+                    else:
+                        meta[m_key] = m_val.lower() in ('true', '1')
                 except ValueError:
                     raise click.BadParameter(
                         'Value for meta key {} cannot be converted '

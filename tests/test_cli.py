@@ -84,6 +84,8 @@ class TestBatches(BaseTest):
             "foo": "bar",
             "int": 1,
             "float": 0.1,
+            "bool1": False,
+            "bool2": True,
         }
 
     class AnotherTaskType(TestTaskType):
@@ -108,13 +110,20 @@ class TestBatches(BaseTest):
         self.assertEqual(batch.tasks_processed, 0)
         self.assertEqual(
             batch.batch_meta,
-            {"foo": "bar", "int": 1, "float": 0.1}
+            {
+                'foo': 'bar', 'int': 1, 'float': 0.1,
+                'bool1': False, 'bool2': True,
+            }
         )
 
     def test_override_meta_information(self):
-        batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
-                          self.DEFAULT_BATCH,
-                          batch_meta={"foo": "barbaz"})
+        batches.add_batch(
+            self.DEFAULT_BATCH, 10, self.TASK_TYPE,
+            self.DEFAULT_BATCH,
+            batch_meta={
+                'foo': 'barbaz', 'bool1': 'true', 'bool2': 'false'
+            })
+
         batch = Batch.objects.get(id=self.DEFAULT_BATCH)
 
         self.assertEqual(batch.task_type, self.TASK_TYPE_NAME)
@@ -122,7 +131,10 @@ class TestBatches(BaseTest):
         self.assertEqual(batch.tasks_processed, 0)
         self.assertEqual(
             batch.batch_meta,
-            {"foo": "barbaz", "int": 1, "float": 0.1}
+            {
+                "foo": "barbaz", "int": 1, "float": 0.1,
+                "bool1": True, "bool2": False
+            }
         )
 
     def test_broken_meta1(self):
@@ -176,7 +188,10 @@ class TestBatches(BaseTest):
         self.assertEqual(batch.tasks_processed, 0)
         self.assertEqual(
             batch.batch_meta,
-            {"foo": "bar", "int": 1, "float": 0.1}
+            {
+                'foo': 'bar', 'int': 1, 'float': 0.1,
+                'bool1': False, 'bool2': True
+            }
         )
 
     def test_extend_not_default_batch(self):
