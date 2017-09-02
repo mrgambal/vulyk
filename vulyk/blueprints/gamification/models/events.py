@@ -136,6 +136,26 @@ class EventModel(Document):
         return events
 
     @classmethod
+    def get_all_events(cls, user: User) -> list:
+        """
+        Returns aggregated and sorted list of events (achievements & level-ups)
+        user'd been given
+
+        :param user: The user to extract events for
+        :type user: User
+
+        :return: A list of events in ascending chronological order.
+        :rtype: list[Event]
+        """
+
+        events = []
+
+        for ev in cls.objects(user=user):
+            events.append(ev.to_event())
+
+        return events
+
+    @classmethod
     def count_of_tasks_done_by_user(cls, user: User) -> int:
         """
         Number of tasks finished by current user

@@ -372,6 +372,61 @@ class TestEventModels(BaseTest):
                 len(new_events), 0,
                 'Unexpected unread events for %s.' % user.username)
 
+    def test_all_events(self):
+        users = [
+            User(username='user%s' % i, email='user%s@email.com' % i).save()
+            for i in range(0, 3)]
+
+        for i in range(0, 9):
+            user = users[i % 3]
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=user,
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch='default',
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=user,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=Decimal(10),
+                coins=Decimal(10),
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+
+        for user in users:
+            events = EventModel.get_all_events(user)
+            self.assertEqual(
+                len(events), 3,
+                '%s should have 3 events' % user.username)
+
+            # Still 3!
+            new_events = EventModel.get_all_events(user)
+            self.assertEqual(
+                len(new_events), 3,
+                '%s should have 3 events' % user.username)
+
+            # Checking that get_unread_events doesn't have
+            # side effect on get_all_events
+            new_events = EventModel.get_unread_events(user)
+            self.assertEqual(
+                len(new_events), 3,
+                '%s should have 3 events' % user.username)
+
+            new_events = EventModel.get_all_events(user)
+            self.assertEqual(
+                len(new_events), 3,
+                '%s should have 3 events' % user.username)
+
     def test_done_by_user_returns_all(self):
         for i in range(0, 3):
             ev = Event.build(

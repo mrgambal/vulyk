@@ -38,6 +38,16 @@ class TestUtils(BaseTest):
         self.assertEqual([2, 4, 6, 8], utils.unique([2, 2, 4, 2, 6, 4, 8]),
                          'Unique function returns duplicates')
 
+    def test_blacklist(self):
+        self.assertEqual(
+            {"foo": "bar"},
+            utils.blacklist(
+                {"foo": "bar", "bar": "oh"},
+                ["bar", "baz"]
+            ),
+            'Blacklist function isn\'t black enough'
+        )
+
     def test_resolve_task_type_ok(self):
         task_type = FakeType({})
         tasks = {task_type.type_name: task_type}
