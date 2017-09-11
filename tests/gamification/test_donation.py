@@ -85,8 +85,36 @@ class TestDonation(BaseTest):
         DonationsService(self.USER, fund.id, amount).donate()
         event = EventModel.objects.get(user=self.USER)
 
-        self.assertTrue(event.coins, Decimal(-100))
-        self.assertTrue(event.acceptor_fund.id, fund.id)
+        self.assertEqual(event.coins, Decimal(-100))
+        self.assertEqual(event.acceptor_fund.id, fund.id)
+
+    def test_donation_service_two_success_events(self):
+        fund = FixtureFund.get_fund()
+        amount = Decimal(100)
+        UserStateModel.from_state(
+            UserState(
+                user=self.USER,
+                level=0,
+                points=Decimal(3000.67),
+                actual_coins=Decimal(500),
+                potential_coins=Decimal(500),
+                achievements=[],
+                last_changed=datetime.now()
+            )).save()
+        result = DonationsService(self.USER, fund.id, amount).donate()
+        event = EventModel.objects.get(user=self.USER)
+
+        self.assertEqual(event.coins, Decimal(-100))
+        self.assertEqual(result, DonationResult.SUCCESS)
+        self.assertEqual(event.acceptor_fund.id, fund.id)
+
+        amount = Decimal(50)
+        result = DonationsService(self.USER, fund.id, amount).donate()
+        event = EventModel.objects.filter(user=self.USER).order_by("-timestamp")[0]
+
+        self.assertEqual(event.coins, Decimal(-50))
+        self.assertEqual(result, DonationResult.SUCCESS)
+        self.assertEqual(event.acceptor_fund.id, fund.id)
 
     def test_donation_service_beggar(self):
         fund = FixtureFund.get_fund()

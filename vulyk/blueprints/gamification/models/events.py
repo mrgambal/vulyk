@@ -31,8 +31,7 @@ class EventModel(Document):
     user = ReferenceField(
         document_type=User, db_field='user', required=True)
     answer = ReferenceField(
-        document_type=AbstractAnswer, db_field='answer', required=False,
-        unique=True)
+        document_type=AbstractAnswer, db_field='answer', required=False)
     # points must only be added
     points_given = DecimalField(min_value=0, required=True, db_field='points')
     # coins can be both given and withdrawn
@@ -53,7 +52,8 @@ class EventModel(Document):
             'user',
             {
                 'fields': ['answer'],
-                'unique': True
+                'unique': True,
+                'sparse': True
             },
             'acceptor_fund',
             'timestamp'
