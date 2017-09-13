@@ -110,50 +110,47 @@ class EventModel(Document):
     @classmethod
     def get_unread_events(cls, user: User) -> list:
         """
-        Returns aggregated and sorted list of events (achievements & level-ups)
-        user'd been given but hasn't checked yet. Simultaneously, those events
-        are being marked as viewed to prevent subsequent displaying.
+        Returns aggregated and sorted list of generator (achievements & level-ups)
+        user'd been given but hasn't checked yet.
 
         :param user: The user to extract events for
         :type user: User
 
-        :return: A list of events in ascending chronological order.
-        :rtype: list[Event]
+        :return: A generator of events in ascending chronological order.
+        :rtype: generator[Event]
         """
-
-        events = []
-        ids_to_set_viewed = []
 
         for ev in cls.objects(user=user, viewed=False):
-            events.append(ev.to_event())
-            ids_to_set_viewed.append(ev.id)
-
-        cls.objects(
-            id__in=ids_to_set_viewed,
-            viewed=False
-        ).update(set__viewed=True)
-
-        return events
+            yield ev.to_event()
 
     @classmethod
-    def get_all_events(cls, user: User) -> list:
+    def mark_events_as_read(cls, user: User):  # -> generator:
         """
-        Returns aggregated and sorted list of events (achievements & level-ups)
+        Mark all user events as viewed
+
+        :param user: The user to mark unseed events as viewed
+        :type user: User
+
+        :return: Nothing. None. Empty. Long Gone
+        :rtype: None
+        """
+        cls.objects(user=user, viewed=False).update(set__viewed=True)
+
+    @classmethod
+    def get_all_events(cls, user: User):  # -> generator:
+        """
+        Returns aggregated and sorted generator of events (achievements & level-ups)
         user'd been given
 
         :param user: The user to extract events for
         :type user: User
 
-        :return: A list of events in ascending chronological order.
-        :rtype: list[Event]
+        :return: A generator of events in ascending chronological order.
+        :rtype: generator[Event]
         """
 
-        events = []
-
         for ev in cls.objects(user=user):
-            events.append(ev.to_event())
-
-        return events
+            yield ev.to_event()
 
     @classmethod
     def count_of_tasks_done_by_user(cls, user: User) -> int:

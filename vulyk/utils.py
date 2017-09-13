@@ -122,22 +122,6 @@ def get_template_path(app, name):
     return 'base/%s' % name
 
 
-def blacklist(dct, fields):
-    """
-    Drop those fields which keys are present in `fields`
-
-    :param dct: Source dictionary
-    :type dct: dict
-    :param fields: List of keys to drop from the dictionary
-    :type fields: list
-    :return: Resulting dictionary with corresponding fields dropped
-    :rtype: dict
-    """
-    return {
-        k: v for k, v in dct.items() if k not in fields
-    }
-
-
 def json_response(result, errors=None, status=HTTPStatus.OK):
     """
     Handy helper to prepare unified responses.

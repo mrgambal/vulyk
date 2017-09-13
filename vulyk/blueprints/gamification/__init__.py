@@ -178,8 +178,24 @@ def unseen_events() -> flask.Response:
     if isinstance(user, User):
         return utils.json_response({
             'events': map(
-                lambda e: utils.blacklist(e.to_dict(), ["answer"]),
+                lambda e: e.to_dict(ignore_answer=True),
                 EventModel.get_unread_events(user))})
+    else:
+        flask.abort(utils.HTTPStatus.FORBIDDEN)
+
+
+@gamification.route('/events/mark_viewed', methods=['GET'])
+def mark_viewed() -> flask.Response:
+    """
+    Mark all events as viewed for currently logged in user.
+
+    :return: Successful response or Forbidden if not authorized.
+    :rtype: flask.Response
+    """
+    user = flask.g.user  # type: Union[User, AnonymousUserMixin]
+
+    if isinstance(user, User):
+        return utils.json_response({})
     else:
         flask.abort(utils.HTTPStatus.FORBIDDEN)
 
@@ -197,7 +213,7 @@ def all_events() -> flask.Response:
     if isinstance(user, User):
         return utils.json_response({
             'events': map(
-                lambda e: utils.blacklist(e.to_dict(), ["answer"]),
+                lambda e: e.to_dict(ignore_answer=True),
                 EventModel.get_all_events(user))})
     else:
         flask.abort(utils.HTTPStatus.FORBIDDEN)

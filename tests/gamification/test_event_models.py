@@ -224,6 +224,10 @@ class TestEventModels(BaseTest):
         self.assertDictEqual(expected, ev.to_dict(),
                              'Event was not translated to dict correctly')
 
+        del expected["answer"]
+        self.assertDictEqual(expected, ev.to_dict(ignore_answer=True),
+                             'Event was not translated to dict correctly')
+
     def test_donate_to_dict(self):
         fund = FixtureFund.get_fund()
         ev = Event.build(
@@ -248,6 +252,10 @@ class TestEventModels(BaseTest):
             'viewed': True}
 
         self.assertDictEqual(expected, ev.to_dict(),
+                             'Event was not translated to dict correctly')
+
+        del expected["answer"]
+        self.assertDictEqual(expected, ev.to_dict(ignore_answer=True),
                              'Event was not translated to dict correctly')
 
     def test_unread_events_correct_user(self):
@@ -282,7 +290,7 @@ class TestEventModels(BaseTest):
                 viewed=False)
             EventModel.from_event(ev).save()
         index = 2
-        events = EventModel.get_unread_events(users[index])
+        events = list(EventModel.get_unread_events(users[index]))
 
         self.assertEqual(
             len(events), 3,
@@ -362,12 +370,13 @@ class TestEventModels(BaseTest):
             EventModel.from_event(ev).save()
 
         for user in users:
-            events = EventModel.get_unread_events(user)
+            events = list(EventModel.get_unread_events(user))
             self.assertEqual(
                 len(events), 3,
                 '%s should have 3 unread events' % user.username)
 
-            new_events = EventModel.get_unread_events(user)
+            EventModel.mark_events_as_read(user)
+            new_events = list(EventModel.get_unread_events(user))
             self.assertEqual(
                 len(new_events), 0,
                 'Unexpected unread events for %s.' % user.username)
@@ -406,25 +415,25 @@ class TestEventModels(BaseTest):
         for user in users:
             events = EventModel.get_all_events(user)
             self.assertEqual(
-                len(events), 3,
+                len(list(events)), 3,
                 '%s should have 3 events' % user.username)
 
             # Still 3!
             new_events = EventModel.get_all_events(user)
             self.assertEqual(
-                len(new_events), 3,
+                len(list(new_events)), 3,
                 '%s should have 3 events' % user.username)
 
             # Checking that get_unread_events doesn't have
             # side effect on get_all_events
             new_events = EventModel.get_unread_events(user)
             self.assertEqual(
-                len(new_events), 3,
+                len(list(new_events)), 3,
                 '%s should have 3 events' % user.username)
 
             new_events = EventModel.get_all_events(user)
             self.assertEqual(
-                len(new_events), 3,
+                len(list(new_events)), 3,
                 '%s should have 3 events' % user.username)
 
     def test_done_by_user_returns_all(self):
