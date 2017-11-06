@@ -122,14 +122,12 @@ def get_template_path(app, name):
     return 'base/%s' % name
 
 
-def json_response(result, template='', errors=None, status=HTTPStatus.OK):
+def json_response(result, errors=None, status=HTTPStatus.OK):
     """
     Handy helper to prepare unified responses.
 
     :param result: Data to be sent
     :type result: dict
-    :param template: Template name or id
-    :type template: str
     :param errors: List of errors
     :type errors: list | set | tuple | dict
     :param status: Response http-status
@@ -143,7 +141,6 @@ def json_response(result, template='', errors=None, status=HTTPStatus.OK):
 
     data = json.dumps({
         'result': result,
-        'template': template,
         'errors': errors})
 
     return flask.Response(
@@ -156,6 +153,5 @@ def json_response(result, template='', errors=None, status=HTTPStatus.OK):
 
 
 NO_TASKS = json_response({},
-                         '',
                          ['There is no task having type like this'],
                          HTTPStatus.NOT_FOUND)

@@ -165,7 +165,7 @@ def fund_logo(fund_id: str) -> flask.Response:
         cache_timeout=360000)
 
 
-@gamification.route('/events', methods=['GET'])
+@gamification.route('/events/unseen', methods=['GET'])
 def unseen_events() -> flask.Response:
     """
     The list of yet unseen events we return for currently logged in user.
@@ -178,14 +178,50 @@ def unseen_events() -> flask.Response:
     if isinstance(user, User):
         return utils.json_response({
             'events': map(
-                lambda e: e.to_dict(),
-                EventModel.get_unread_events(flask.g.user))})
+                lambda e: e.to_dict(ignore_answer=True),
+                EventModel.get_unread_events(user))})
     else:
         flask.abort(utils.HTTPStatus.FORBIDDEN)
 
 
+@gamification.route('/events/mark_viewed', methods=['GET'])
+def mark_viewed() -> flask.Response:
+    """
+    Mark all events as viewed for currently logged in user.
+
+    :return: Successful response or Forbidden if not authorized.
+    :rtype: flask.Response
+    """
+    user = flask.g.user  # type: Union[User, AnonymousUserMixin]
+
+    if isinstance(user, User):
+        return utils.json_response({})
+    else:
+        flask.abort(utils.HTTPStatus.FORBIDDEN)
+
+
+@gamification.route('/events/all', methods=['GET'])
+def all_events() -> flask.Response:
+    """
+    The list of all events we return for currently logged in user.
+
+    :return: Events list (may be empty) or Forbidden if not authorized.
+    :rtype: flask.Response
+    """
+    user = flask.g.user  # type: Union[User, AnonymousUserMixin]
+
+    if isinstance(user, User):
+        return utils.json_response({
+            'events': map(
+                lambda e: e.to_dict(ignore_answer=True),
+                EventModel.get_all_events(user))})
+    else:
+        flask.abort(utils.HTTPStatus.FORBIDDEN)
+
+
+@gamification.route('/users/me/state', methods=['GET'])
 @gamification.route('/users/<string:user_id>/state', methods=['GET'])
-def users_state(user_id: str) -> flask.Response:
+def users_state(user_id: str = None) -> flask.Response:
     """
     The collected state of the user within the gamification subsystem.
     Could be created for the very first time asked (if hasn't yet).
@@ -196,7 +232,11 @@ def users_state(user_id: str) -> flask.Response:
     :return: An response with a state or 404 if user is not found.
     :rtype: flask.Response
     """
-    user = User.get_by_id(user_id)  # type: Union[User, None]
+
+    if user_id is not None:
+        user = User.get_by_id(user_id)  # type: Union[User, None]
+    else:
+        user = flask.g.user  # type: Union[User, AnonymousUserMixin]
 
     if isinstance(user, User):
         state = UserStateModel.get_or_create_by_user(user)

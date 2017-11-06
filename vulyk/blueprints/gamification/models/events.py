@@ -31,8 +31,7 @@ class EventModel(Document):
     user = ReferenceField(
         document_type=User, db_field='user', required=True)
     answer = ReferenceField(
-        document_type=AbstractAnswer, db_field='answer', required=False,
-        unique=True)
+        document_type=AbstractAnswer, db_field='answer', required=False)
     # points must only be added
     points_given = DecimalField(min_value=0, required=True, db_field='points')
     # coins can be both given and withdrawn
@@ -53,7 +52,8 @@ class EventModel(Document):
             'user',
             {
                 'fields': ['answer'],
-                'unique': True
+                'unique': True,
+                'sparse': True
             },
             'acceptor_fund',
             'timestamp'
@@ -110,30 +110,47 @@ class EventModel(Document):
     @classmethod
     def get_unread_events(cls, user: User) -> list:
         """
-        Returns aggregated and sorted list of events (achievements & level-ups)
-        user'd been given but hasn't checked yet. Simultaneously, those events
-        are being marked as viewed to prevent subsequent displaying.
+        Returns aggregated and sorted list of generator (achievements & level-ups)
+        user'd been given but hasn't checked yet.
 
         :param user: The user to extract events for
         :type user: User
 
-        :return: A list of events in ascending chronological order.
-        :rtype: list[Event]
+        :return: A generator of events in ascending chronological order.
+        :rtype: generator[Event]
         """
 
-        events = []
-        ids_to_set_viewed = []
-
         for ev in cls.objects(user=user, viewed=False):
-            events.append(ev.to_event())
-            ids_to_set_viewed.append(ev.id)
+            yield ev.to_event()
 
-        cls.objects(
-            id__in=ids_to_set_viewed,
-            viewed=False
-        ).update(set__viewed=True)
+    @classmethod
+    def mark_events_as_read(cls, user: User):  # -> generator:
+        """
+        Mark all user events as viewed
 
-        return events
+        :param user: The user to mark unseed events as viewed
+        :type user: User
+
+        :return: Nothing. None. Empty. Long Gone
+        :rtype: None
+        """
+        cls.objects(user=user, viewed=False).update(set__viewed=True)
+
+    @classmethod
+    def get_all_events(cls, user: User):  # -> generator:
+        """
+        Returns aggregated and sorted generator of events (achievements & level-ups)
+        user'd been given
+
+        :param user: The user to extract events for
+        :type user: User
+
+        :return: A generator of events in ascending chronological order.
+        :rtype: generator[Event]
+        """
+
+        for ev in cls.objects(user=user):
+            yield ev.to_event()
 
     @classmethod
     def count_of_tasks_done_by_user(cls, user: User) -> int:

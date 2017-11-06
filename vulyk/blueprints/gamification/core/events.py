@@ -203,19 +203,19 @@ class Event:
                 level_given=ev.level_given,
                 viewed=ev.viewed)
 
-    def to_dict(self) -> dict:
+    def to_dict(self, ignore_answer=False) -> dict:
         """
         Could be used as a source for JSON or any other representation format
-
+        :param ignore_answer: Shows if the method should return answer as
+        a part of a dict
+        :type ignore_answer: boolean
         :return: Dict-ized object view
         :rtype: dict
         """
-        return {
+
+        result = {
             'timestamp': self.timestamp,
             'user': self.user.username,
-            'answer': self.answer.as_dict()
-                if self.answer is not None
-                else None,
             'points_given': self.points_given,
             'coins': self.coins,
             'achievements': [r.to_dict() for r in self.achievements],
@@ -225,6 +225,10 @@ class Event:
             'level_given': self.level_given,
             'viewed': self.viewed
         }
+        if not ignore_answer:
+            result['answer'] = self.answer.as_dict() if self.answer is not None else None
+
+        return result
 
     def __str__(self):
         return 'Event({user}, {answer}, {points}, {coins}, {badges}, {lvl})' \

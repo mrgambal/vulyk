@@ -224,6 +224,10 @@ class TestEventModels(BaseTest):
         self.assertDictEqual(expected, ev.to_dict(),
                              'Event was not translated to dict correctly')
 
+        del expected["answer"]
+        self.assertDictEqual(expected, ev.to_dict(ignore_answer=True),
+                             'Event was not translated to dict correctly')
+
     def test_donate_to_dict(self):
         fund = FixtureFund.get_fund()
         ev = Event.build(
@@ -248,6 +252,10 @@ class TestEventModels(BaseTest):
             'viewed': True}
 
         self.assertDictEqual(expected, ev.to_dict(),
+                             'Event was not translated to dict correctly')
+
+        del expected["answer"]
+        self.assertDictEqual(expected, ev.to_dict(ignore_answer=True),
                              'Event was not translated to dict correctly')
 
     def test_unread_events_correct_user(self):
@@ -282,7 +290,7 @@ class TestEventModels(BaseTest):
                 viewed=False)
             EventModel.from_event(ev).save()
         index = 2
-        events = EventModel.get_unread_events(users[index])
+        events = list(EventModel.get_unread_events(users[index]))
 
         self.assertEqual(
             len(events), 3,
@@ -362,15 +370,71 @@ class TestEventModels(BaseTest):
             EventModel.from_event(ev).save()
 
         for user in users:
-            events = EventModel.get_unread_events(user)
+            events = list(EventModel.get_unread_events(user))
             self.assertEqual(
                 len(events), 3,
                 '%s should have 3 unread events' % user.username)
 
-            new_events = EventModel.get_unread_events(user)
+            EventModel.mark_events_as_read(user)
+            new_events = list(EventModel.get_unread_events(user))
             self.assertEqual(
                 len(new_events), 0,
                 'Unexpected unread events for %s.' % user.username)
+
+    def test_all_events(self):
+        users = [
+            User(username='user%s' % i, email='user%s@email.com' % i).save()
+            for i in range(0, 3)]
+
+        for i in range(0, 9):
+            user = users[i % 3]
+            ev = Event.build(
+                timestamp=self.TIMESTAMP + timedelta(seconds=i),
+                user=user,
+                answer=FakeType.answer_model(
+                    task=FakeType.task_model(
+                        id='task%s' % i,
+                        task_type=self.TASK_TYPE,
+                        batch='default',
+                        closed=False,
+                        users_count=0,
+                        users_processed=[],
+                        task_data={'data': 'data'}).save(),
+                    created_by=user,
+                    created_at=datetime.now(),
+                    task_type=self.TASK_TYPE,
+                    result={}).save(),
+                points_given=Decimal(10),
+                coins=Decimal(10),
+                achievements=[],
+                acceptor_fund=None,
+                level_given=2,
+                viewed=False)
+            EventModel.from_event(ev).save()
+
+        for user in users:
+            events = EventModel.get_all_events(user)
+            self.assertEqual(
+                len(list(events)), 3,
+                '%s should have 3 events' % user.username)
+
+            # Still 3!
+            new_events = EventModel.get_all_events(user)
+            self.assertEqual(
+                len(list(new_events)), 3,
+                '%s should have 3 events' % user.username)
+
+            # Checking that get_unread_events doesn't have
+            # side effect on get_all_events
+            new_events = EventModel.get_unread_events(user)
+            self.assertEqual(
+                len(list(new_events)), 3,
+                '%s should have 3 events' % user.username)
+
+            new_events = EventModel.get_all_events(user)
+            self.assertEqual(
+                len(list(new_events)), 3,
+                '%s should have 3 events' % user.username)
 
     def test_done_by_user_returns_all(self):
         for i in range(0, 3):
