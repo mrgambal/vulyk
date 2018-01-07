@@ -19,7 +19,7 @@ from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.services import (
     DonationResult, DonationsService, StatsService)
 from vulyk.models.user import User
-from vulyk.admin.models import AuthModelView, CKTextAreaField
+from vulyk.admin.models import AuthModelView, CKTextAreaField, RequiredBooleanField
 
 
 from .. import VulykModule
@@ -30,7 +30,10 @@ __all__ = [
 
 
 class FundAdmin(AuthModelView):
-    form_overrides = dict(description=CKTextAreaField)
+    form_overrides = {
+        "description": CKTextAreaField,
+        "donatable": RequiredBooleanField,
+    }
     column_exclude_list = ['description', 'logo']
 
 
@@ -156,7 +159,7 @@ def fund_logo(fund_id: str) -> flask.Response:
     """
     fund = FundModel.find_by_id(fund_id)  # type: Union[Fund, None]
 
-    if fund is None:
+    if fund is None or fund.logo is None:
         flask.abort(utils.HTTPStatus.NOT_FOUND)
 
     return flask.send_file(

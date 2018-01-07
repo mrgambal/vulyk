@@ -8,6 +8,7 @@ __all__ = [
     'AuthModelView'
 ]
 
+
 class CKTextAreaWidget(wtforms.widgets.TextArea):
     def __call__(self, field, **kwargs):
         if kwargs.get('class'):
@@ -19,6 +20,23 @@ class CKTextAreaWidget(wtforms.widgets.TextArea):
 
 class CKTextAreaField(wtforms.fields.TextAreaField):
     widget = CKTextAreaWidget()
+
+
+class RequiredBooleanField(wtforms.fields.SelectField):
+    # Fucking wtforms/flask-admin has a flaw related
+    # to boolean fields with required=True in the model
+    # Ultimatelly false values wouldn't pass validation of the form
+    # thus the workaround
+    def __init__(self, *args, **kwargs):
+        choices = [
+            (True, "True"),
+            (False, "False"),
+        ]
+
+        kwargs["choices"] = choices
+        kwargs["coerce"] = lambda x: str(x) == "True"
+
+        super(RequiredBooleanField, self).__init__(*args, **kwargs)
 
 
 class AuthModelView(ModelView):
