@@ -120,7 +120,7 @@ class TestEventModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         RuleModel.from_rule(rule).save()
         ev = Event.build(
             timestamp=self.TIMESTAMP,
@@ -149,7 +149,7 @@ class TestEventModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         RuleModel.from_rule(rule).save()
         ev = Event.build(
             timestamp=self.TIMESTAMP,
@@ -199,7 +199,7 @@ class TestEventModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         ev = Event.build(
             timestamp=self.TIMESTAMP,
             user=self.USER,

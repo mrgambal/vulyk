@@ -29,7 +29,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=0,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [{'$match': {'user': user_id}}]
@@ -48,7 +48,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=0,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -67,7 +67,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=7,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         then = datetime.combine(date.today() - timedelta(days=7),
@@ -90,7 +90,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=7,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         then = datetime.combine(date.today() - timedelta(days=7),
@@ -114,7 +114,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=0,
             is_weekend=True,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -140,7 +140,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=0,
             is_weekend=True,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -164,7 +164,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=7,
             is_weekend=True,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -191,7 +191,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=7,
             is_weekend=True,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
@@ -216,7 +216,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=5,
             is_weekend=True,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         # multiply by week length
@@ -247,7 +247,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=5,
             is_weekend=True,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         # multiply by week length
@@ -278,7 +278,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         # multiply by week length
@@ -308,7 +308,7 @@ class TestMongoQueryBuilder(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         # multiply by week length
@@ -350,7 +350,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=0,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
 
         WorkSession(user=uid, task=ObjectId(), task_type='fake_task',
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
@@ -378,7 +378,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=0,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
 
         WorkSession(user=uid, task=ObjectId(), task_type='fake_task',
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
@@ -396,7 +396,7 @@ class TestMongoQueryExecutor(BaseTest):
         uid = ObjectId()
         task_type_name = 'fake_task'
         rule = ProjectRule(
-            rule_id=100,
+            rule_id="100",
             task_type_name=task_type_name,
             badge='',
             name='',
@@ -426,7 +426,7 @@ class TestMongoQueryExecutor(BaseTest):
         uid = ObjectId()
         task_type_name = 'fake_task'
         rule = ProjectRule(
-            rule_id=100,
+            rule_id="100",
             task_type_name=task_type_name,
             badge='',
             name='',
@@ -463,7 +463,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=7,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
 
         for i in range(1, 22):
             day_i = self.NOW - self.DAY * (i % 7)
@@ -482,7 +482,7 @@ class TestMongoQueryExecutor(BaseTest):
         uid = ObjectId()
         task_type_name = 'fake_task'
         rule = ProjectRule(
-            rule_id=100,
+            rule_id="100",
             task_type_name=task_type_name,
             badge='',
             name='',
@@ -517,7 +517,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=7,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
 
         for i in range(1, 22):
             # tasks are spread across 9 days, which is more
@@ -544,7 +544,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=7,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         # less tasks
         for i in range(1, 21):
             day_i = self.NOW - self.DAY * (i % 3)
@@ -570,7 +570,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=0,
             is_weekend=True,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         to_sun = timedelta(days=(self.NOW.weekday() + 1) % 7)
 
         for i in range(1, 22):
@@ -597,7 +597,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=0,
             is_weekend=True,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         to_sat = timedelta(days=(self.NOW.weekday() + 1) % 6)
 
         for i in range(1, 22):
@@ -624,7 +624,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=0,
             is_weekend=True,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         to_mon = timedelta(days=self.NOW.weekday())
 
         for i in range(1, 22):
@@ -651,7 +651,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=7,
             is_weekend=True,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         to_sun = timedelta(days=(self.NOW.weekday() + 1) % 7)
 
         for i in range(1, 8):
@@ -672,7 +672,7 @@ class TestMongoQueryExecutor(BaseTest):
         uid = ObjectId()
         task_type_name = 'fake_task'
         rule = ProjectRule(
-            rule_id=100,
+            rule_id="100",
             task_type_name=task_type_name,
             badge='',
             name='',
@@ -709,7 +709,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=7,
             is_weekend=True,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         to_sun = timedelta(days=(self.NOW.weekday() + 1) % 7)
 
         for i in range(0, 8):
@@ -730,7 +730,7 @@ class TestMongoQueryExecutor(BaseTest):
         uid = ObjectId()
         task_type_name = 'fake_task'
         rule = ProjectRule(
-            rule_id=100,
+            rule_id="100",
             task_type_name=task_type_name,
             badge='',
             name='',
@@ -767,7 +767,7 @@ class TestMongoQueryExecutor(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
 
         for i in range(1, 6):
             WorkSession(user=uid,
@@ -785,7 +785,7 @@ class TestMongoQueryExecutor(BaseTest):
         uid = ObjectId()
         task_type_name = 'fake_task'
         rule = ProjectRule(
-            rule_id=100,
+            rule_id="100",
             task_type_name=task_type_name,
             badge='',
             name='',
@@ -812,7 +812,7 @@ class TestMongoQueryExecutor(BaseTest):
         uid = ObjectId()
         task_type_name = 'fake_task'
         rule = ProjectRule(
-            rule_id=100,
+            rule_id="100",
             task_type_name=task_type_name,
             badge='',
             name='',
@@ -847,7 +847,7 @@ class TestRuleModel(BaseTest):
             days_number=0,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100),
+            rule_id="100"),
         Rule(
             badge='',
             name='rule_2',
@@ -857,9 +857,9 @@ class TestRuleModel(BaseTest):
             days_number=0,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=200),
+            rule_id="200"),
         ProjectRule(
-            rule_id=300,
+            rule_id="300",
             task_type_name='project_1',
             badge='',
             name='rule_3',
@@ -870,7 +870,7 @@ class TestRuleModel(BaseTest):
             is_weekend=False,
             is_adjacent=False),
         ProjectRule(
-            rule_id=400,
+            rule_id="400",
             task_type_name='project_2',
             badge='',
             name='rule_4',
@@ -904,16 +904,16 @@ class TestRuleModel(BaseTest):
             [], ProjectAndFreeRules('project_1'), False))
 
         self.assertEqual(3, len(rules))
-        self.assertTrue(any(r.id == 300 for r in rules))
-        self.assertTrue(all(r.id != 400 for r in rules))
+        self.assertTrue(any(r.id == "300" for r in rules))
+        self.assertTrue(all(r.id != "400" for r in rules))
 
     def test_everything_project_2(self):
         rules = list(RuleModel.get_actual_rules(
             [], ProjectAndFreeRules('project_2'), False))
 
         self.assertEqual(3, len(rules))
-        self.assertTrue(any(r.id == 400 for r in rules))
-        self.assertTrue(all(r.id != 300 for r in rules))
+        self.assertTrue(any(r.id == "400" for r in rules))
+        self.assertTrue(all(r.id != "300" for r in rules))
 
     def test_everything_and_weekend(self):
         RuleModel.from_rule(
@@ -926,31 +926,31 @@ class TestRuleModel(BaseTest):
                 days_number=0,
                 is_weekend=True,
                 is_adjacent=False,
-                rule_id=500)).save()
+                rule_id="500")).save()
         rules = list(RuleModel.get_actual_rules([], AllRules(), True))
         rules_no_weekend = list(
             RuleModel.get_actual_rules([], AllRules(), False))
 
         self.assertEqual(5, len(rules))
-        self.assertTrue(any(r.id == 500 for r in rules))
+        self.assertTrue(any(r.id == "500" for r in rules))
 
         self.assertEqual(4, len(rules_no_weekend))
-        self.assertTrue(all(r.id != 500 for r in rules_no_weekend))
+        self.assertTrue(all(r.id != "500" for r in rules_no_weekend))
 
     def test_exclude_ids(self):
-        ids = [100, 200]
+        ids = ["100", "200"]
         rules = list(RuleModel.get_actual_rules(ids, AllRules(), False))
 
         self.assertEqual(2, len(rules))
         self.assertTrue(all(r.id not in ids for r in rules))
 
     def test_exclude_ids_project(self):
-        ids = [100, 200]
+        ids = ["100", "200"]
         rules = list(RuleModel.get_actual_rules(
             ids, ProjectAndFreeRules('project_1'), False))
 
         self.assertEqual(1, len(rules))
-        self.assertTrue(rules[0].id, 300)
+        self.assertTrue(rules[0].id, "300")
 
     def test_exclude_ids_weekend(self):
         RuleModel.from_rule(
@@ -963,12 +963,12 @@ class TestRuleModel(BaseTest):
                 days_number=0,
                 is_weekend=True,
                 is_adjacent=False,
-                rule_id=500)).save()
-        ids = [100, 200]
+                rule_id="500")).save()
+        ids = ["100", "200"]
         rules = list(RuleModel.get_actual_rules(ids, AllRules(), True))
 
         self.assertEqual(3, len(rules))
-        self.assertTrue(any(r.id == 500 for r in rules))
+        self.assertTrue(any(r.id == "500" for r in rules))
 
     def test_exclude_ids_project_weekend(self):
         RuleModel.from_rule(
@@ -981,7 +981,7 @@ class TestRuleModel(BaseTest):
                 days_number=0,
                 is_weekend=True,
                 is_adjacent=False,
-                rule_id=500)).save()
+                rule_id="500")).save()
         RuleModel.from_rule(
             ProjectRule(
                 task_type_name='project_3',
@@ -993,14 +993,14 @@ class TestRuleModel(BaseTest):
                 days_number=0,
                 is_weekend=True,
                 is_adjacent=False,
-                rule_id=600)).save()
-        ids = [100, 500]
+                rule_id="600")).save()
+        ids = ["100", "500"]
         rules = list(RuleModel.get_actual_rules(
             ids, ProjectAndFreeRules('project_3'), True))
 
         self.assertEqual(2, len(rules))
-        self.assertTrue(all(r.id in [200, 600] for r in rules))
-        self.assertTrue(all(r.id != 500 for r in rules))
+        self.assertTrue(all(r.id in ["200", "600"] for r in rules))
+        self.assertTrue(all(r.id != "500" for r in rules))
 
     def test_exclude_ids_strict_project_weekend(self):
         RuleModel.from_rule(
@@ -1013,7 +1013,7 @@ class TestRuleModel(BaseTest):
                 days_number=0,
                 is_weekend=True,
                 is_adjacent=False,
-                rule_id=500)).save()
+                rule_id="500")).save()
         RuleModel.from_rule(
             ProjectRule(
                 task_type_name='project_3',
@@ -1025,13 +1025,13 @@ class TestRuleModel(BaseTest):
                 days_number=0,
                 is_weekend=True,
                 is_adjacent=False,
-                rule_id=600)).save()
-        ids = [100, 500]
+                rule_id="600")).save()
+        ids = ["100", "500"]
         rules = list(RuleModel.get_actual_rules(
             ids, StrictProjectRules('project_3'), True))
 
         self.assertEqual(1, len(rules))
-        self.assertTrue(rules[0].id, 600)
+        self.assertTrue(rules[0].id, "600")
 
 
 if __name__ == '__main__':

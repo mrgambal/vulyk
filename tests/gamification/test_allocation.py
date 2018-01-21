@@ -135,7 +135,7 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
             days_number=0,
             is_weekend=False,
             is_adjacent=False,
-            rule_id=100)
+            rule_id="100")
         RuleModel.from_rule(rule).save()
 
         task_type.work_session_manager.start_work_session(task, self.USER.id)
@@ -479,7 +479,7 @@ class TestAllocationBadges(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         state = UserState(
             user=self.USER,
             level=20,
@@ -491,7 +491,7 @@ class TestAllocationBadges(BaseTest):
         )
 
         def patched_rules(**kwargs):
-            assert kwargs['skip_ids'] == [100]
+            assert kwargs['skip_ids'] == ["100"]
             assert kwargs['rule_filter'] == ProjectAndFreeRules('')
             assert not kwargs['is_weekend']
 
@@ -528,7 +528,7 @@ class TestAllocationBadges(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         state = UserState(
             user=self.USER,
             level=20,
@@ -540,7 +540,7 @@ class TestAllocationBadges(BaseTest):
         )
 
         def patched_rules(**kwargs):
-            assert kwargs['skip_ids'] == [100]
+            assert kwargs['skip_ids'] == ["100"]
             assert kwargs['rule_filter'] == ProjectAndFreeRules('batch_1')
             assert kwargs['is_weekend']
 
