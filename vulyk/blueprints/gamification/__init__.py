@@ -223,6 +223,7 @@ def mark_viewed() -> flask.Response:
     user = flask.g.user  # type: Union[User, AnonymousUserMixin]
 
     if isinstance(user, User):
+        EventModel.mark_events_as_read(user)
         return utils.json_response({})
     else:
         flask.abort(utils.HTTPStatus.FORBIDDEN)
