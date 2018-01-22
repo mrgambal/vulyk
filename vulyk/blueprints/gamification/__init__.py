@@ -5,6 +5,7 @@ The core of gamification sub-project.
 from decimal import Decimal
 
 import flask
+import wtforms
 from flask_login import AnonymousUserMixin
 
 from vulyk import utils
@@ -34,7 +35,16 @@ class FundAdmin(AuthModelView):
         "description": CKTextAreaField,
         "donatable": RequiredBooleanField,
     }
+
     column_exclude_list = ['description', 'logo']
+
+
+class RuleAdmin(AuthModelView):
+    form_overrides = {
+        "description": CKTextAreaField
+    }
+
+    column_exclude_list = ['description', 'badge']
 
 
 class GamificationModule(VulykModule):
@@ -50,7 +60,22 @@ class GamificationModule(VulykModule):
 
         if app.config.get('ENABLE_ADMIN', False):
             app.admin.add_view(FundAdmin(FundModel))
-            app.admin.add_view(AuthModelView(RuleModel))
+
+            if self.config.get("badges"):
+                if not getattr(RuleAdmin, "form_overrides"):
+                    RuleAdmin.form_overrides = {}
+
+                RuleAdmin.form_overrides["badge"] = wtforms.fields.SelectField
+
+                if not getattr(RuleAdmin, "form_args"):
+                    RuleAdmin.form_args = {}
+
+                RuleAdmin.form_args['badge'] = {
+                    'label': 'Pick badge image',
+                    'choices': self.config["badges"]
+                }
+
+            app.admin.add_view(RuleAdmin(RuleModel))
 
     def get_level(self, points):
         """
