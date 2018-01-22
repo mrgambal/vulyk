@@ -64,9 +64,9 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
 
         # we filter out tasks older than given date in these cases:
         # - n tasks in m days
-        is_tasks_in_days = rule.days_number > 0 and rule.tasks_number > 0
+        is_tasks_in_days = (rule.days_number or 0) > 0 and (rule.tasks_number or 0) > 0
         # - has been working for m adjacent days/weekends
-        is_adjacent = rule.days_number > 0 and rule.is_adjacent
+        is_adjacent = (rule.days_number or 0) > 0 and rule.is_adjacent
 
         if is_tasks_in_days or is_adjacent:
             days_ago = timedelta(days=rule.days_number)
@@ -91,7 +91,7 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
             self._filter_second = {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}
 
         # count by days with at least one task closed
-        count_by_days = rule.days_number > 0 and rule.tasks_number == 0
+        count_by_days = (rule.days_number or 0) > 0 and (rule.tasks_number or 0) == 0
 
         if count_by_days:
             if rule.is_weekend:

@@ -72,7 +72,7 @@ class EventModel(Document):
             answer=self.answer,
             points_given=self.points_given,
             coins=self.coins,
-            achievements=[a.to_rule() for a in self.achievements],
+            achievements=[a.to_rule() for a in self.achievements if hasattr(a, "to_rule")],
             acceptor_fund=None
             if self.acceptor_fund is None
             else self.acceptor_fund.to_fund(),
