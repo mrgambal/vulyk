@@ -61,6 +61,11 @@ def track_events(sender: object, answer: AbstractAnswer) -> None:
                 task_type_name=batch.task_type,
                 now=dt)))  # type: list[Rule]
         points = batch.batch_meta[POINTS_PER_TASK_KEY]
+
+        for b in badges:
+            if b.bonus:
+                points += b.bonus
+
         coins = batch.batch_meta[COINS_PER_TASK_KEY]
 
         current_level = gamification.get_level(state.points)
