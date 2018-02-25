@@ -44,7 +44,7 @@ class RuleAdmin(AuthModelView):
         "description": CKTextAreaField
     }
 
-    column_exclude_list = ['description', 'badge']
+    column_exclude_list = ['description']
 
 
 class GamificationModule(VulykModule):
