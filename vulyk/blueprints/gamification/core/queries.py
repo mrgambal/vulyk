@@ -59,6 +59,7 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
         """
         super().__init__()
 
+        self._filter_first['answer'] = {'$exists': True}
         if isinstance(rule, ProjectRule):
             self._filter_first['taskType'] = rule.task_type_name
 

@@ -32,7 +32,7 @@ class TestMongoQueryBuilder(BaseTest):
             rule_id="100")
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
-        expected = [{'$match': {'user': user_id}}]
+        expected = [{'$match': {'user': user_id, 'answer': {'$exists': True}}}]
 
         self.assertEqual(expected, builder.build_for(user_id))
 
@@ -52,7 +52,7 @@ class TestMongoQueryBuilder(BaseTest):
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
-            {'$match': {'user': user_id, 'taskType': project}}
+            {'$match': {'user': user_id, 'taskType': project, 'answer': {'$exists': True}}}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -73,7 +73,7 @@ class TestMongoQueryBuilder(BaseTest):
         then = datetime.combine(date.today() - timedelta(days=7),
                                 datetime.min.time())
         expected = [
-            {'$match': {'user': user_id, 'end_time': {'$gt': then}}}
+            {'$match': {'user': user_id, 'answer': {'$exists': True}, 'end_time': {'$gt': then}}}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -98,6 +98,7 @@ class TestMongoQueryBuilder(BaseTest):
         expected = [
             {'$match': {
                 'user': user_id,
+                'answer': {'$exists': True},
                 'end_time': {'$gt': then},
                 'taskType': project}}
         ]
@@ -118,7 +119,7 @@ class TestMongoQueryBuilder(BaseTest):
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
-            {'$match': {'user': user_id}},
+            {'$match': {'user': user_id, 'answer': {'$exists': True}}},
             {'$project': {
                 'dayOfWeek': {'$dayOfWeek': '$end_time'},
                 'year': {'$year': '$end_time'},
@@ -144,7 +145,7 @@ class TestMongoQueryBuilder(BaseTest):
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
-            {'$match': {'user': user_id, 'taskType': project}},
+            {'$match': {'user': user_id, 'taskType': project, 'answer': {'$exists': True}}},
             {'$project': {
                 'dayOfWeek': {'$dayOfWeek': '$end_time'},
                 'year': {'$year': '$end_time'},
@@ -168,7 +169,7 @@ class TestMongoQueryBuilder(BaseTest):
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
-            {'$match': {'user': user_id}},
+            {'$match': {'user': user_id, 'answer': {'$exists': True}}},
             {'$project': {
                 'dayOfWeek': {'$dayOfWeek': '$end_time'},
                 'year': {'$year': '$end_time'},
@@ -195,7 +196,7 @@ class TestMongoQueryBuilder(BaseTest):
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
-            {'$match': {'user': user_id, 'taskType': project}},
+            {'$match': {'user': user_id, 'answer': {'$exists': True}, 'taskType': project}},
             {'$project': {
                 'dayOfWeek': {'$dayOfWeek': '$end_time'},
                 'year': {'$year': '$end_time'},
@@ -223,7 +224,7 @@ class TestMongoQueryBuilder(BaseTest):
         then = datetime.combine(date.today() - timedelta(days=5 * 7),
                                 datetime.min.time())
         expected = [
-            {'$match': {'user': user_id, 'end_time': {'$gt': then}}},
+            {'$match': {'user': user_id, 'answer': {'$exists': True}, 'end_time': {'$gt': then}}},
             {'$project': {
                 'dayOfWeek': {'$dayOfWeek': '$end_time'},
                 'year': {'$year': '$end_time'},
@@ -256,6 +257,7 @@ class TestMongoQueryBuilder(BaseTest):
         expected = [
             {'$match': {
                 'user': user_id,
+                'answer': {'$exists': True}, 
                 'end_time': {'$gt': then},
                 'taskType': project}},
             {'$project': {
@@ -285,7 +287,7 @@ class TestMongoQueryBuilder(BaseTest):
         then = datetime.combine(date.today() - timedelta(days=5),
                                 datetime.min.time())
         expected = [
-            {'$match': {'user': user_id, 'end_time': {'$gt': then}}},
+            {'$match': {'user': user_id, 'answer': {'$exists': True}, 'end_time': {'$gt': then}}},
             {'$project': {
                 'day': {'$dayOfMonth': '$end_time'},
                 'month': {'$month': '$end_time'},
@@ -317,6 +319,7 @@ class TestMongoQueryBuilder(BaseTest):
         expected = [
             {'$match': {
                 'user': user_id,
+                'answer': {'$exists': True},
                 'end_time': {'$gt': then},
                 'taskType': project}},
             {'$project': {
@@ -353,13 +356,17 @@ class TestMongoQueryExecutor(BaseTest):
             rule_id="100")
 
         WorkSession(user=uid, task=ObjectId(), task_type='fake_task',
+                    answer=ObjectId(),
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
         WorkSession(user=uid, task=ObjectId(), task_type='fake_task_two',
+                    answer=ObjectId(),
                     start_time=self.NOW - self.DAY, end_time=self.NOW).save()
         WorkSession(user=uid, task=ObjectId(), task_type='fake_task_three',
+                    answer=ObjectId(),
                     start_time=self.NOW - self.DAY * 2, end_time=self.NOW) \
             .save()
         WorkSession(user=ObjectId(), task=ObjectId(), task_type='fake_task',
+                    answer=ObjectId(),
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
 
         result = MongoRuleExecutor.achieved(
@@ -407,14 +414,14 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=False,
             is_adjacent=False)
 
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), answer=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), answer=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.DAY, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), answer=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.DAY * 2, end_time=self.NOW) \
             .save()
-        WorkSession(user=ObjectId(), task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=ObjectId(), task=ObjectId(), answer=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
 
         result = MongoRuleExecutor.achieved(
@@ -437,14 +444,14 @@ class TestMongoQueryExecutor(BaseTest):
             is_weekend=False,
             is_adjacent=False)
 
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), answer=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), answer=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.DAY, end_time=self.NOW).save()
-        WorkSession(user=uid, task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=uid, task=ObjectId(), answer=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.DAY * 2, end_time=self.NOW) \
             .save()
-        WorkSession(user=ObjectId(), task=ObjectId(), task_type=task_type_name,
+        WorkSession(user=ObjectId(), task=ObjectId(), answer=ObjectId(), task_type=task_type_name,
                     start_time=self.NOW - self.HOUR, end_time=self.NOW).save()
 
         result = MongoRuleExecutor.achieved(
@@ -469,6 +476,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = self.NOW - self.DAY * (i % 7)
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
                         end_time=day_i).save()
@@ -497,6 +505,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = self.NOW - self.DAY * (i % 7)
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type=task_type_name,
                         start_time=day_i,
                         end_time=day_i).save()
@@ -524,6 +533,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = self.NOW - self.DAY * (i % 9)
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
                         end_time=day_i).save()
@@ -550,6 +560,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = self.NOW - self.DAY * (i % 3)
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
                         end_time=day_i).save()
@@ -577,6 +588,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sun) - self.DAY * 7
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
                         end_time=day_i).save()
@@ -604,6 +616,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sat) - self.DAY * 7
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
                         end_time=day_i).save()
@@ -631,6 +644,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_mon) - self.DAY * 7
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type='fake_task_%s' % (i % 3),
                         start_time=day_i,
                         end_time=day_i).save()
@@ -659,6 +673,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sun) - (self.DAY * 7 * i * 2)
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type='fake_task',
                         start_time=day_i,
                         end_time=day_i).save()
@@ -689,6 +704,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sun) - (self.DAY * 7 * i * 2)
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type=task_type_name,
                         start_time=day_i,
                         end_time=day_i).save()
@@ -717,6 +733,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sun) - (self.DAY * 7 * i)
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type='fake_task',
                         start_time=day_i,
                         end_time=day_i).save()
@@ -747,6 +764,7 @@ class TestMongoQueryExecutor(BaseTest):
             day_i = (self.NOW - to_sun) - (self.DAY * 7 * i)
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type=task_type_name,
                         start_time=day_i,
                         end_time=day_i).save()
@@ -773,6 +791,7 @@ class TestMongoQueryExecutor(BaseTest):
             WorkSession(user=uid,
                         task=ObjectId(),
                         task_type='fake_task',
+                        answer=ObjectId(),
                         start_time=self.NOW - self.DAY * i,
                         end_time=self.NOW - self.DAY * i).save()
 
@@ -799,6 +818,7 @@ class TestMongoQueryExecutor(BaseTest):
         for i in range(1, 6):
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type=task_type_name,
                         start_time=self.NOW - self.DAY * i,
                         end_time=self.NOW - self.DAY * i).save()
@@ -826,6 +846,7 @@ class TestMongoQueryExecutor(BaseTest):
         for i in range(1, 6):
             WorkSession(user=uid,
                         task=ObjectId(),
+                        answer=ObjectId(),
                         task_type='fake_task_%s' % i,
                         start_time=self.NOW - self.DAY * i,
                         end_time=self.NOW - self.DAY * i).save()
