@@ -2,26 +2,32 @@
 from collections import defaultdict
 from operator import itemgetter
 
+from vulyk.models.tasks import AbstractAnswer
+from vulyk.models.user import User
+
 __all__ = [
     'LeaderBoardManager'
 ]
 
 
 class LeaderBoardManager:
-    def __init__(self, task_type_name, answer_model, user_model):
+    def __init__(self,
+                 task_type_name: str,
+                 answer_model: AbstractAnswer,
+                 user_model: type) -> None:
         """
         :param task_type_name: Current task type name
         :type task_type_name: str
         :param answer_model: Current answer model
-        :type answer_model: vulyk.models.tasks.AbstractAnswer
+        :type answer_model: AbstractAnswer
         :param user_model: Active user model
-        :type user_model: type
+        :type user_model: User
         """
         self._task_type_name = task_type_name
         self._answer_model = answer_model
         self._user_model = user_model
 
-    def get_leaders(self):
+    def get_leaders(self) -> list:
         """Return sorted list of tuples (user_id, tasks_done)
 
         :returns: list of tuples (user_id, tasks_done)
@@ -33,11 +39,11 @@ class LeaderBoardManager:
 
         return sorted(scores.items(), key=itemgetter(1), reverse=True)
 
-    def get_leaderboard(self, limit):
+    def get_leaderboard(self, limit: int) -> list:
         """Find users who contributed the most
 
         :param limit: number of top users to return
-        :type limit: integer
+        :type limit: int
 
         :returns: List of dicts {user: user_obj, freq: count}
         :rtype: list[dict]

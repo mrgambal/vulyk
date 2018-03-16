@@ -7,7 +7,6 @@ from decimal import Decimal
 from enum import Enum
 
 from bson import ObjectId
-
 from flask_mongoengine import Document
 from mongoengine import (
     IntField, ComplexDateTimeField, ReferenceField, ListField,
@@ -164,10 +163,10 @@ class UserStateModel(Document):
             cls.objects().order_by('-%s' % sort_by.name.lower()).limit(limit)
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'UserStateModel({model})'.format(model=str(self.to_state()))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
     @classmethod

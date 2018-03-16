@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 """Module contains all models related to task type (plugin root) entity."""
 
-from datetime import datetime
-from hashlib import sha1
 import logging
 import random
-import ujson as json
+from bson import ObjectId
+from collections import Iterator
+from datetime import datetime
+from hashlib import sha1
 
+import ujson as json
 from mongoengine import Q
 from mongoengine.errors import (
     InvalidQueryError,
@@ -68,7 +70,7 @@ class AbstractTaskType:
     _work_session_manager = None  # type: WorkSessionManager
     _leaderboard_manager = None  # type: LeaderBoardManager
 
-    def __init__(self, settings):
+    def __init__(self, settings: dict) -> None:
         """
         Constructor.
 
@@ -101,7 +103,7 @@ class AbstractTaskType:
             'Batch meta must of dict type'
 
     @property
-    def name(self):
+    def name(self) -> str:
         """
         Human-readable name of the plugin.
 
@@ -111,17 +113,17 @@ class AbstractTaskType:
         return self._name if len(self._name) > 0 else self.type_name
 
     @property
-    def task_type_meta(self):
+    def task_type_meta(self) -> dict:
         """
         Dict with task type metadata (freeform dict)
 
         :return: project specific metadata
-         :rtype: dict
+        :rtype: dict
         """
         return self._task_type_meta
 
     @property
-    def description(self):
+    def description(self) -> str:
         """
         Explicit description of the plugin.
 
@@ -140,12 +142,12 @@ class AbstractTaskType:
         """
         return self._work_session_manager
 
-    def import_tasks(self, tasks, batch):
+    def import_tasks(self, tasks: list, batch: str) -> None:
         """Imports tasks from an iterable over dicts
         io is left out of scope here.
 
         :param tasks: An iterable over dicts
-        :type tasks: tuple[dict]
+        :type tasks: list[dict]
         :param batch: Batch ID (optional)
         :type batch: str
 
@@ -172,7 +174,7 @@ class AbstractTaskType:
         except errors as e:
             raise TaskImportError('Can\'t load task: {}'.format(e))
 
-    def export_reports(self, batch, closed=True, qs=None):
+    def export_reports(self, batch: str, closed: bool = True, qs=None) -> Iterator:
         """Exports results. IO is left out of scope here as well
 
         :param batch: Certain batch to extract
@@ -201,15 +203,15 @@ class AbstractTaskType:
             yield from map(lambda a: a.as_dict(),
                            self.answer_model.objects(task=task))
 
-    def get_leaders(self):
+    def get_leaders(self) -> list:
         """Return sorted list of tuples (user_id, tasks_done)
 
         :returns: list of tuples (user_id, tasks_done)
-        :rtype: list[tuple[bson.ObjectId, int]]
+        :rtype: list[tuple[ObjectId, int]]
         """
         return self._leaderboard_manager.get_leaders()
 
-    def get_leaderboard(self, limit=10):
+    def get_leaderboard(self, limit: int = 10) -> list:
         """Find users who contributed the most
 
         :param limit: number of top users to return
@@ -220,12 +222,12 @@ class AbstractTaskType:
         """
         return self._leaderboard_manager.get_leaderboard(limit)
 
-    def get_next(self, user):
+    def get_next(self, user: User) -> dict:
         """
         Finds given user a new task and starts new WorkSession
 
         :param user: an instance of User model
-        :type user: vulyk.models.user.User
+        :type user: User
 
         :returns: Prepared dictionary of model, or empty dictionary
         :rtype: dict
@@ -244,23 +246,24 @@ class AbstractTaskType:
 
             return {}
 
-    def _get_next_task(self, user):
+    def _get_next_task(self, user: User) -> AbstractTask:
         """
         Finds given user a new task
 
         :param user: an instance of User model
-        :type user: models.User
+        :type user: User
 
         :returns: Model instance or None
         :rtype: AbstractTask
         """
         rs = None
         base_q = Q(task_type=self.type_name) \
-            & Q(users_processed__nin=[user]) \
-            & Q(closed__ne=True)
+                 & Q(users_processed__nin=[user]) \
+                 & Q(closed__ne=True)
 
         for batch in Batch.objects(
-                task_type=self.type_name, closed__ne=True).order_by('id'):
+            task_type=self.type_name, closed__ne=True).order_by('id'):
+
             if batch.tasks_count == batch.tasks_processed:
                 continue
 
@@ -295,14 +298,14 @@ class AbstractTaskType:
         else:
             return None
 
-    def record_activity(self, user_id, task_id, seconds):
+    def record_activity(self, user_id: ObjectId, task_id: str, seconds: int) -> None:
         """
         Increases the counter of activity for current user in given task.
 
+        :param user_id: ID of user, who gets new task
+        :type user_id: bytes | str | ObjectId
         :param task_id: Current task
         :type task_id: str
-        :param user_id: ID of user, who gets new task
-        :type user_id: bytes, str, bson.ObjectId
         :param seconds: User was active for
         :type seconds: int
 
@@ -404,7 +407,9 @@ class AbstractTaskType:
         except (OperationError, LookUpError, InvalidQueryError) as err:
             raise TaskSaveError(err, get_tb())
 
-    def _is_ready_for_autoclose(self, task, answer):
+    def _is_ready_for_autoclose(self,
+                                task: AbstractTask,
+                                answer: AbstractAnswer) -> bool:
         """
         Checks if task could be closed before it
         Should be overridden if you need more complex logic.
@@ -443,7 +448,7 @@ class AbstractTaskType:
             'add_to_set__users_processed': user}
 
         closed = self._is_ready_for_autoclose(task, answer) \
-            or (users_count >= self.redundancy)
+                 or (users_count >= self.redundancy)
 
         if closed:
             update_q['set__closed'] = closed
@@ -460,7 +465,7 @@ class AbstractTaskType:
 
         return closed
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Prepare simplified dict that contains basic info about the task type.
 
@@ -468,9 +473,9 @@ class AbstractTaskType:
         :rtype: dict
         """
 
-        closed_tasks = self.task_model.objects(closed=True).count()
-        tasks = self.task_model.objects().count()
-        open_tasks = tasks - closed_tasks
+        closed_tasks = self.task_model.objects(closed=True).count()  # type: int
+        tasks = self.task_model.objects().count()  # type: int
+        open_tasks = tasks - closed_tasks  # type: int
 
         return {
             'name': self.name,

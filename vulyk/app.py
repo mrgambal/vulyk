@@ -4,6 +4,7 @@
 import flask
 import flask_login as login
 import ujson as json
+from flask import Response
 
 from vulyk import cli, bootstrap, utils
 from vulyk.models.exc import TaskNotFoundError
@@ -19,12 +20,12 @@ TASKS_TYPES = bootstrap.init_plugins(app)
 
 # region Views
 @app.route('/', methods=['GET'])
-def index():
+def index() -> Response:
     """
     Main site view.
 
     :returns: Prepared response.
-    :rtype: flask.Response
+    :rtype: Response
     """
     task_types = []
     user = flask.g.user
@@ -42,12 +43,12 @@ def index():
 
 
 @app.route('/logout', methods=['POST'])
-def logout():
+def logout() -> Response:
     """
     An action-view, signs the user out and redirects to the homepage.
 
     :returns: Prepared response.
-    :rtype: flask.Response
+    :rtype: Response
     """
     login.logout_user()
 
@@ -56,7 +57,7 @@ def logout():
 
 @app.route('/type/<string:type_name>/next', methods=['GET'])
 @login.login_required
-def next_page(type_name):
+def next_page(type_name: str) -> Response:
     """
     Provides next available task for user.
     If user isn't eligible for that type of tasks - an exception
@@ -66,7 +67,7 @@ def next_page(type_name):
     :type type_name: str
 
     :returns: Prepared response.
-    :rtype: flask.Response
+    :rtype: Response
     """
     user = flask.g.user
     task_type = utils.resolve_task_type(type_name, TASKS_TYPES, user)
@@ -91,13 +92,13 @@ def next_page(type_name):
 
 @app.route('/type/<string:type_name>/', methods=['GET'])
 @login.login_required
-def task_home(type_name):
+def task_home(type_name: str) -> Response:
     """
     :param type_name: Task type name
     :type type_name: str
 
     :returns: Prepared response.
-    :rtype: flask.Response
+    :rtype: Response
     """
     task_type = utils.resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
 
@@ -110,7 +111,7 @@ def task_home(type_name):
 
 @app.route('/type/<string:type_name>/leaders', methods=['GET'])
 @login.login_required
-def leaders(type_name):
+def leaders(type_name: str) -> Response:
     """
     Display a list of most effective participants.
 
@@ -118,7 +119,7 @@ def leaders(type_name):
     :type type_name: str
 
     :returns: Prepared response.
-    :rtype: flask.Response
+    :rtype: Response
     """
     task_type = utils.resolve_task_type(type_name, TASKS_TYPES, flask.g.user)
 
@@ -133,7 +134,7 @@ def leaders(type_name):
 
 @app.route('/type/<string:type_name>/skip/<string:task_id>', methods=['POST'])
 @login.login_required
-def skip(type_name, task_id):
+def skip(type_name: str, task_id: str) -> Response:
     """
     This action adds the task to the 'skipped' list of current user.
 
@@ -143,7 +144,7 @@ def skip(type_name, task_id):
     :type task_id: str
 
     :returns: Prepared response.
-    :rtype: flask.Response
+    :rtype: Response
     """
     user = flask.g.user
     task_type = utils.resolve_task_type(type_name, TASKS_TYPES, user)
@@ -161,7 +162,7 @@ def skip(type_name, task_id):
 
 @app.route('/type/<string:type_name>/done/<string:task_id>', methods=['POST'])
 @login.login_required
-def done(type_name, task_id):
+def done(type_name: str, task_id: str) -> Response:
     """
     This action adds the task to the 'skipped' list of current user.
 
@@ -171,7 +172,7 @@ def done(type_name, task_id):
     :type task_id: str
 
     :returns: Prepared response.
-    :rtype: flask.Response
+    :rtype: Response
     """
     user = flask.g.user
     task_type = utils.resolve_task_type(type_name, TASKS_TYPES, user)
@@ -186,12 +187,14 @@ def done(type_name, task_id):
         return NO_TASKS
 
     return utils.json_response({'done': True})
+
+
 # endregion Views
 
 
 # region Filters
 @app.template_filter('strip_email')
-def strip_email(s):
+def strip_email(s: str) -> str:
     """
     Filter which extracts the first part of an email to make an shorthand
     for user.
@@ -205,7 +208,7 @@ def strip_email(s):
 
 
 @app.template_filter('app_template')
-def app_template_filter(s):
+def app_template_filter(s: str) -> str:
     """
     Looks for the full path for given template.
 
@@ -216,12 +219,14 @@ def app_template_filter(s):
     :rtype: str
     """
     return utils.get_template_path(app, s)
+
+
 # endregion Filters
 
 
 # region Context processors
 @app.context_processor
-def is_initialized():
+def is_initialized() -> dict:
     """
     Extends the context with the flag showing that the application DB was
     successfully initialized.

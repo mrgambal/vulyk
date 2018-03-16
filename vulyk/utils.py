@@ -2,11 +2,14 @@
 """Every project must have a package called `utils`."""
 import os
 import sys
+from collections import Iterator
 from itertools import islice
 
 import flask
-from flask import abort
 import ujson as json
+from flask import abort, Response
+
+from vulyk.models.user import User
 
 if sys.version_info.minor <= 4:  # PY 3.4
     import http.client as HTTPStatus
@@ -19,27 +22,11 @@ __all__ = [
     'get_template_path',
     'json_response',
     'NO_TASKS',
-    'resolve_task_type',
-    'unique'
+    'resolve_task_type'
 ]
 
 
-# Soooo lame
-def unique(source):
-    """
-    Returns unique values from the list preserving order of initial list.
-
-    :param source: An iterable.
-    :type source: list
-
-    :returns: List with unique values.
-    :rtype: list
-    """
-    seen = set()
-    return [seen.add(x) or x for x in source if x not in seen]
-
-
-def resolve_task_type(type_id, tasks, user):
+def resolve_task_type(type_id: str, tasks: dict, user: User):
     """
     Looks for `type_id` in TASK_TYPES map.
 
@@ -48,7 +35,7 @@ def resolve_task_type(type_id, tasks, user):
     :param tasks: map of `task type id -> task type instance`
     :type tasks: dict
     :param user: Current user.
-    :type user: vulyk.models.user.User
+    :type user: User
 
     :returns: Correct TaskType instance or throws an exception.
     :rtype: vulyk.models.task_types.AbstractTaskType
@@ -66,7 +53,7 @@ def resolve_task_type(type_id, tasks, user):
 
 
 # Borrowed from elasticutils
-def chunked(iterable, n):
+def chunked(iterable: Iterator, n: int) -> Iterator:
     """Returns chunks of n length of iterable
 
     If len(iterable) % n != 0, then the last chunk will have length
@@ -78,7 +65,7 @@ def chunked(iterable, n):
     [(1, 2), (3, 4), (5,)]
 
     :param iterable: Source we need to chop up.
-    :type iterable: list, tuple, set
+    :type iterable: Iterator
     :param n: Slice length
     :type n: int
 
@@ -86,6 +73,7 @@ def chunked(iterable, n):
     :rtype: __generator[tuple]
     """
     iterable = iter(iterable)
+
     while 1:
         t = tuple(islice(iterable, n))
         if t:
@@ -103,7 +91,7 @@ def get_tb():
     return sys.exc_info()[2]
 
 
-def get_template_path(app, name):
+def get_template_path(app, name: str) -> str:
     """
     Finds the path to the template.
 
@@ -122,7 +110,9 @@ def get_template_path(app, name):
     return 'base/%s' % name
 
 
-def json_response(result, errors=None, status=HTTPStatus.OK):
+def json_response(result: dict,
+                  errors: Iterator = None,
+                  status: int = HTTPStatus.OK) -> Response:
     """
     Handy helper to prepare unified responses.
 

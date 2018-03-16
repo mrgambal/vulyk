@@ -46,7 +46,7 @@ class WorkSession(Document):
     }
 
     @classmethod
-    def get_total_user_time_precise(cls, user_id: ObjectId) -> int:
+    def get_total_user_time_precise(cls: Document, user_id: ObjectId) -> int:
         """
         Aggregated time spent doing tasks on all projects by certain user.
         As the source we use more precise value of activity field.
@@ -62,7 +62,7 @@ class WorkSession(Document):
                 cls.objects(user=user_id)))
 
     @classmethod
-    def get_total_user_time_approximate(cls, user_id: ObjectId) -> int:
+    def get_total_user_time_approximate(cls: Document, user_id: ObjectId) -> int:
         """
         Aggregated time spent doing tasks on all projects by certain user.
         As the source we use approximate values of start time and end time.

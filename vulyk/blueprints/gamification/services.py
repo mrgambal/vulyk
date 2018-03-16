@@ -95,7 +95,7 @@ class StatsService:
     """
 
     @classmethod
-    def tasks_done_by_user(cls, user: User) -> int:
+    def tasks_done_by_user(cls: type, user: User) -> int:
         """
         Returns optional of the total number of tasks were finished by user.
 
@@ -108,7 +108,7 @@ class StatsService:
         return EventModel.count_of_tasks_done_by_user(user)
 
     @classmethod
-    def projects_count(cls, user: User):
+    def projects_count(cls: type, user: User) -> int:
         """
         Aggregate the number of batches in which user has done at least
         single tiny task.
@@ -122,7 +122,7 @@ class StatsService:
         return len(list(EventModel.batches_user_worked_on(user)))
 
     @classmethod
-    def total_time_for_user(cls, user: User) -> int:
+    def total_time_for_user(cls: type, user: User) -> int:
         """
         Count and return number of hours, spent on the site doing tasks.
 
@@ -143,7 +143,7 @@ class StatsService:
         return seconds // 3600
 
     @classmethod
-    def total_number_of_open_tasks(cls) -> int:
+    def total_number_of_open_tasks(cls: type) -> int:
         """
         Count and return number of open tasks in all projects
 
@@ -154,7 +154,7 @@ class StatsService:
         return AbstractTask.objects.filter(closed=False).count()
 
     @classmethod
-    def total_number_of_users(cls) -> int:
+    def total_number_of_users(cls: type) -> int:
         """
         Count and return number of users registered in the system
 
@@ -165,7 +165,7 @@ class StatsService:
         return User.objects.filter(active=True).count()
 
     @classmethod
-    def total_money_donated(cls) -> float:
+    def total_money_donated(cls: type) -> float:
         """
         Count and return total amount of money donated
         by all users to all foundations
@@ -177,7 +177,7 @@ class StatsService:
         return EventModel.amount_of_money_donated(None)
 
     @classmethod
-    def total_money_donated_by_user(cls, user: User) -> float:
+    def total_money_donated_by_user(cls: type, user: User) -> float:
         """
         Count and return total amount of money donated
         by current user
@@ -189,7 +189,7 @@ class StatsService:
         return EventModel.amount_of_money_donated(user)
 
     @classmethod
-    def state_of_user(cls, user: User) -> UserState:
+    def state_of_user(cls: type, user: User) -> UserState:
         """
         Return current state of given user
 
