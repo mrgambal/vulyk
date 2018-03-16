@@ -193,8 +193,7 @@ class StatsService:
         """
         Return current state of given user
 
-        :return: Object which holds aggregated values
-        on user current state
+        :return: Object which holds aggregated values on user current state
         :rtype: UserState
         """
 

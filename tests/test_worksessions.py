@@ -20,14 +20,16 @@ from .fixtures import FakeType
 
 
 class TestTaskTypes(BaseTest):
-    TASK_TYPE = FakeType.type_name
+    FAKE_TYPE = FakeType({})
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
 
         Group.objects.create(
-            description='test', id='default', allowed_types=[cls.TASK_TYPE])
+            description='test',
+            id='default',
+            allowed_types=[FakeType.type_name])
 
     @classmethod
     def tearDownClass(cls):
@@ -45,7 +47,7 @@ class TestTaskTypes(BaseTest):
 
     # region Creation
     def test_on_create_ok(self):
-        task_type = FakeType({})
+        task_type = self.FAKE_TYPE
         user = User(username='user0', email='user0@email.com').save()
         task = task_type.task_model(
             id='task0',
@@ -68,7 +70,7 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(ws.user, user)
 
     def test_on_create_twice(self):
-        task_type = FakeType({})
+        task_type = self.FAKE_TYPE
         user = User(username='user0', email='user0@email.com').save()
         task = task_type.task_model(
             id='task0',
@@ -102,7 +104,7 @@ class TestTaskTypes(BaseTest):
 
     # region Record activity
     def test_update_session_normal(self):
-        task_type = FakeType({})
+        task_type = self.FAKE_TYPE
         user = User(username='user0', email='user0@email.com').save()
         task = task_type.task_model(
             id='task0',
@@ -127,7 +129,7 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(session.activity, duration)
 
     def test_update_session_twice(self):
-        task_type = FakeType({})
+        task_type = self.FAKE_TYPE
         user = User(username='user0', email='user0@email.com').save()
         task = task_type.task_model(
             id='task0',
@@ -153,7 +155,7 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(session.activity, duration * 2)
 
     def test_update_session_overdrive(self):
-        task_type = FakeType({})
+        task_type = self.FAKE_TYPE
         user = User(username='user0', email='user0@email.com').save()
         task = task_type.task_model(
             id='task0',
@@ -181,7 +183,7 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(session.activity, 0)
 
     def test_update_session_negative(self):
-        task_type = FakeType({})
+        task_type = self.FAKE_TYPE
         user = User(username='user0', email='user0@email.com').save()
         task = task_type.task_model(
             id='task0',
@@ -209,14 +211,14 @@ class TestTaskTypes(BaseTest):
         self.assertEqual(session.activity, 0)
 
     def test_update_session_not_found(self):
-        fake_type = FakeType({})
+        fake_type = self.FAKE_TYPE
         self.assertRaises(TaskNotFoundError,
                           lambda: fake_type.record_activity('fake_id', '', 0))
     # endregion Record activity
 
     # region On task done
     def test_on_done_ok(self):
-        task_type = FakeType({})
+        task_type = self.FAKE_TYPE
         user = User(username='user0', email='user0@email.com').save()
         task = task_type.task_model(
             id='task0',
@@ -242,7 +244,7 @@ class TestTaskTypes(BaseTest):
 
     # region Stats
     def test_total_time_approximate(self):
-        task_type = FakeType({})
+        task_type = self.FAKE_TYPE
         user = User(username='user0', email='user0@email.com').save()
         tasks = [
             task_type.task_model(
@@ -284,7 +286,7 @@ class TestTaskTypes(BaseTest):
         )
 
     def test_total_time_precise(self):
-        task_type = FakeType({})
+        task_type = self.FAKE_TYPE
         user = User(username='user0', email='user0@email.com').save()
         tasks = [
             task_type.task_model(
