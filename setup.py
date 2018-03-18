@@ -24,10 +24,11 @@ setup(
     description='Crowdsourcing platform for different kinds of tasks',
     long_description=readme + '\n\n' + history,
     author='Dmytro Hambal',
-    author_email='mr_gambal@outlook.com',
+    author_email='mr_hambal@outlook.com',
     url='https://github.com/mrgambal/vulyk',
     packages=[
         'vulyk',
+        'vulyk.admin',
         'vulyk.blueprints',
         'vulyk.blueprints.gamification',
         'vulyk.blueprints.gamification.core',
@@ -51,7 +52,8 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5'
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6'
     ],
     test_suite='tests',
     tests_require=test_requirements,

@@ -56,9 +56,9 @@ class WorkSessionManager:
         an upsert below.
 
         :param task: Given task
-        :type task: vulyk.models.tasks.AbstractTask
+        :type task: AbstractTask
         :param user_id: ID of user, who gets new task
-        :type user_id: bson.ObjectId
+        :type user_id: ObjectId
 
         :raises:
             WorkSessionUpdateError -- can not start a session
@@ -92,9 +92,9 @@ class WorkSessionManager:
         working on the task, excluding sexting, brewing coffee and jogging.
 
         :param task: The task the session belongs to.
-        :type task: vulyk.models.tasks.AbstractTask
+        :type task: AbstractTask
         :param user_id: ID of current user
-        :type user_id: bson.ObjectId
+        :type user_id: ObjectId
         :param seconds: User was active for
         :type seconds: int
 
@@ -136,11 +136,11 @@ class WorkSessionManager:
         marked as closed and a timestamp of the event to be saved.
 
         :param task: Given task
-        :type task: vulyk.models.tasks.AbstractTask
+        :type task: AbstractTask
         :param user_id: ID of user, who finishes a task
-        :type user_id: bson.ObjectId
+        :type user_id: ObjectId
         :param answer: Given answer
-        :type answer: vulyk.models.tasks.AbstractAnswer
+        :type answer: AbstractAnswer
 
         :raises:
             WorkSessionLookUpError -- session is not found;
@@ -174,9 +174,9 @@ class WorkSessionManager:
         Deletes current WorkSession if skipped.
 
         :param task: Given task
-        :type task: vulyk.models.tasks.AbstractTask
+        :type task: AbstractTask
         :param user_id: ID of user, who skips a task
-        :type user_id: bson.ObjectId
+        :type user_id: ObjectId
 
         :raises:
             WorkSessionLookUpError -- session is not found;

@@ -5,6 +5,7 @@ import os
 from click import echo
 import bz2file as bz2
 
+from vulyk.models.task_types import AbstractTaskType
 from vulyk.utils import chunked
 
 
@@ -14,7 +15,7 @@ except ImportError:
     import json
 
 
-def open_anything(filename):
+def open_anything(filename: str):
     if filename.endswith('.bz2'):
         return bz2.BZ2File
     if filename.endswith('.gz'):
@@ -23,10 +24,10 @@ def open_anything(filename):
     return open
 
 
-def load_tasks(task_id, path, batch):
+def load_tasks(task_type: AbstractTaskType, path: str, batch: str) -> int:
     """
 
-    :type task_id: vulyk.models.task_types.AbstractTaskType
+    :type task_type: AbstractTaskType
     :type path: str
     :param batch: Batch ID tasks should be loaded into
     :type batch: str
@@ -42,14 +43,14 @@ def load_tasks(task_id, path, batch):
 
     for i, p in enumerate(path):
         echo('Loading file {0:d} from {1:d}...'.format(i + 1, count))
-        tasks += _load_tasks_file(task_id, p, batch)
+        tasks += _load_tasks_file(task_type, p, batch)
 
     return tasks
 
 
-def _load_tasks_file(task_id, path, batch):
+def _load_tasks_file(task_type: AbstractTaskType, path: str, batch: str) -> int:
     """
-    :type task_id: vulyk.models.task_types.AbstractTaskType
+    :type task_type: AbstractTaskType
     :type path: str
     :param batch: Batch ID tasks should be loaded into
     :type batch: str
@@ -72,7 +73,7 @@ def _load_tasks_file(task_id, path, batch):
     try:
         with open_anything(path)(path, 'rb') as f:
             for chunk in chunked(_safe_load(f), bunch_size):
-                task_id.import_tasks(chunk, batch)
+                task_type.import_tasks(chunk, batch)
 
                 i += len(chunk)
                 echo('{0:d} tasks processed'.format(i))
@@ -86,12 +87,12 @@ def _load_tasks_file(task_id, path, batch):
     return i
 
 
-def export_reports(task_id, path, batch, closed):
+def export_reports(task_id: AbstractTaskType, path: str, batch: str, closed: bool) -> None:
     """
-    :type task_id: vulyk.models.task_types.AbstractTaskType
+    :type task_id: AbstractTaskType
     :type path: str
     :type batch: str
-    :type closed: boolean
+    :type closed: bool
     """
     i = 0
 
@@ -106,6 +107,6 @@ def export_reports(task_id, path, batch, closed):
     except ValueError as e:
         echo('Error while encoding json in {0}: {1}'.format(path, e))
     except IOError as e:
-        echo('Got IO error when tried to decode {0}: {1}'.format(path, e))
+        echo('Got IO error when tried to read {0}: {1}'.format(path, e))
 
     echo('Finished exporting answers for {0:d} tasks'.format(i))

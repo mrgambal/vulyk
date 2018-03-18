@@ -16,40 +16,40 @@ Subpackages
 Submodules
 ----------
 
-vulyk\.app module
------------------
+vulyk.app module
+----------------
 
 .. automodule:: vulyk.app
     :members:
     :undoc-members:
     :show-inheritance:
 
-vulyk\.control module
----------------------
+vulyk.control module
+--------------------
 
 .. automodule:: vulyk.control
     :members:
     :undoc-members:
     :show-inheritance:
 
-vulyk\.settings module
-----------------------
+vulyk.settings module
+---------------------
 
 .. automodule:: vulyk.settings
     :members:
     :undoc-members:
     :show-inheritance:
 
-vulyk\.signals module
----------------------
+vulyk.signals module
+--------------------
 
 .. automodule:: vulyk.signals
     :members:
     :undoc-members:
     :show-inheritance:
 
-vulyk\.utils module
--------------------
+vulyk.utils module
+------------------
 
 .. automodule:: vulyk.utils
     :members:

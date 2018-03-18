@@ -121,7 +121,7 @@ class AbstractTask(Document):
         ]
     }
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
         """
         Converts the model-instance into a safe and lightweight dictionary.
 
@@ -146,11 +146,11 @@ class AbstractTask(Document):
         """
         return cls.objects(batch=batch).distinct('id')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.id)
 
-    def __repr__(self):
-        str(self)
+    def __repr__(self) -> str:
+        return str(self)
 
 
 class AbstractAnswer(Document):
@@ -182,7 +182,7 @@ class AbstractAnswer(Document):
 
     # TODO: decide, if we need it at all
     @property
-    def corrections(self):
+    def corrections(self) -> int:
         """
         Returns whole amount of actions/corrections given by user in this
         particular answer.
@@ -193,11 +193,11 @@ class AbstractAnswer(Document):
         return 1
 
     @corrections.setter
-    def corrections(self, value):
+    def corrections(self, value: int) -> None:
         pass
 
     @corrections.deleter
-    def corrections(self):
+    def corrections(self) -> None:
         pass
 
     @classmethod
@@ -214,7 +214,7 @@ class AbstractAnswer(Document):
         """
         return cls.objects(task__in=task_ids).item_frequencies('created_by')
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
         """
         Converts the model-instance into a safe that will include also task
         and user.
@@ -227,8 +227,8 @@ class AbstractAnswer(Document):
             'user': self.created_by.as_dict()
         }
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.pk)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Report [{} by {}]'.format(self.created_by, self.task)

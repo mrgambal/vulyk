@@ -4,6 +4,7 @@ Module contains all models used to keep some metadata we could use to perform
 any kind of analysis.
 """
 from bson import ObjectId
+from flask_mongoengine import Document
 from mongoengine import (
     CASCADE,
     DateTimeField,
@@ -11,7 +12,6 @@ from mongoengine import (
     ReferenceField,
     StringField
 )
-from flask_mongoengine import Document
 
 from vulyk.models.tasks import AbstractTask, AbstractAnswer
 from vulyk.models.user import User

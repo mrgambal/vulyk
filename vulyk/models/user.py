@@ -21,10 +21,10 @@ class Group(Document):
 
     meta = {'collection': 'groups'}
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.id)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Group ID: {id}. Allowed types: {types}'.format(
             id=self.id,
             types=self.allowed_types)
@@ -45,20 +45,21 @@ class User(Document, UserMixin):
     last_login = DateTimeField(default=datetime.datetime.now)
     processed = IntField(default=0)
 
-    def is_active(self):
+    def is_active(self) -> bool:
         return self.active
 
-    def is_admin(self):
+    def is_admin(self) -> bool:
         return self.admin or False
 
-    def is_eligible_for(self, task_type):
+    def is_eligible_for(self, task_type: str) -> bool:
         """
         Check that user is authorized to work with this tasks type
 
         :param task_type: Tasks type name
-        :type task_type: str | unicode
+        :type task_type: str
 
         :return: True if user is eligible
+        :rtype: bool
 
         :raises: AssertionError - if no `task_type` specified
         """
@@ -66,7 +67,7 @@ class User(Document, UserMixin):
 
         return task_type in chain(*(g.allowed_types for g in self.groups))
 
-    def get_stats(self, task_type):
+    def get_stats(self, task_type) -> dict:
         """
         Returns member's stats containing the number of tasks finished and
         the position in the global rank.
@@ -82,6 +83,7 @@ class User(Document, UserMixin):
         i = 0
         prev_val = -1
         total = 0
+
         for user, freq in leaders:
             if freq != prev_val:
                 i += 1
@@ -96,10 +98,10 @@ class User(Document, UserMixin):
             'position': i
         }
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
         """
         Converts the model-instance into a safe dict that will include some
-         basic info about member.
+        basic info about member.
 
         :return: Reduced set of information about member.
         :rtype: dict[str, str]
@@ -110,7 +112,7 @@ class User(Document, UserMixin):
         }
 
     @classmethod
-    def pre_save(cls, sender, document, **kwargs):
+    def pre_save(cls, sender: type, document: Document, **kwargs: dict) -> Document:
         """
         A signal handler which will put a new member into a default group if
         any hasn't been assigned yet.
@@ -134,7 +136,7 @@ class User(Document, UserMixin):
         return document
 
     @classmethod
-    def get_by_id(cls, user_id: str):
+    def get_by_id(cls, user_id: str) -> Document:
         """
         :param user_id: Needed user ID
         :type user_id: str
@@ -147,7 +149,7 @@ class User(Document, UserMixin):
         except (cls.DoesNotExist, ValidationError):
             return None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.username
 
 

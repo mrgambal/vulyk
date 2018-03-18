@@ -208,8 +208,8 @@ class RuleModel(Document):
 
         yield from [rule_model.to_rule() for rule_model in cls.objects(base_q)]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'RuleModel({model})'.format(model=str(self.to_rule()))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'RuleModel({model})'.format(model=repr(self.to_rule()))

@@ -89,7 +89,7 @@ class Event:
 
         self._validate()
 
-    def _validate(self):
+    def _validate(self) -> None:
         """
         :raises: InvalidEventException
         """
@@ -225,12 +225,13 @@ class Event:
             'level_given': self.level_given,
             'viewed': self.viewed
         }
+
         if not ignore_answer:
             result['answer'] = self.answer.as_dict() if self.answer is not None else None
 
         return result
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'Event({user}, {answer}, {points}, {coins}, {badges}, {lvl})' \
             .format(user=self.user.id,
                     answer=self.answer.id,
@@ -239,7 +240,7 @@ class Event:
                     badges=self.achievements,
                     lvl=self.level_given)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
     def __eq__(self, other: object) -> bool:
@@ -303,7 +304,7 @@ class NoAchievementsEvent(Event):
                          level_given=None,
                          viewed=viewed)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'NoAchievementsEvent({user}, {answer}, {points}, {coins})' \
             .format(user=self.user.id,
                     answer=self.answer.id,
@@ -345,7 +346,7 @@ class AchievementsEvent(Event):
                          level_given=None,
                          viewed=viewed)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'AchievementsEvent(' \
                '{user}, {answer}, {points}, {coins}, {badges})' \
             .format(user=self.user.id,
@@ -389,7 +390,7 @@ class LevelEvent(Event):
                          level_given=level_given,
                          viewed=viewed)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'LevelEvent({user}, {answer}, {points}, {coins}, {lvl})' \
             .format(user=self.user.id,
                     answer=self.answer.id,
@@ -436,7 +437,7 @@ class AchievementsLevelEvent(Event):
                          level_given=level_given,
                          viewed=viewed)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'AchievementsLevelEvent(' \
                '{user}, {answer}, {points}, {coins}, {badges}, {lvl})' \
             .format(user=self.user.id,
@@ -476,7 +477,7 @@ class DonateEvent(Event):
                          level_given=None,
                          viewed=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'DonateEvent({user}, {coins}, {acceptor_fund})' \
             .format(user=self.user.id,
                     coins=self.coins,

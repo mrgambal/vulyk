@@ -42,9 +42,6 @@ class AbstractGamifiedTaskType(AbstractTaskType):
 
         resp = super(AbstractGamifiedTaskType, self).to_dict()
         batch = self._get_next_open_batch()
-        if batch:
-            resp['batch_info'] = batch.batch_meta
-        else:
-            resp['batch_info'] = None
+        resp['batch_info'] = batch.batch_meta if batch else None
 
         return resp

@@ -1,9 +1,6 @@
 Crowdsourcing platform for various tasks
 ========================================
 
-.. image:: https://badge.fury.io/py/vulyk.png
-        :target: http://badge.fury.io/py/vulyk
-
 .. image:: https://travis-ci.org/mrgambal/vulyk.png?branch=master
         :target: https://travis-ci.org/mrgambal/vulyk
 

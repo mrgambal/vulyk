@@ -13,7 +13,6 @@ from mongoengine import (
 from vulyk.models.tasks import AbstractAnswer
 from vulyk.models.user import User
 
-
 from .foundations import FundModel
 from .rules import RuleModel
 from ..core.events import Event
@@ -75,14 +74,14 @@ class EventModel(Document):
             coins=self.coins,
             achievements=[a.to_rule() for a in self.achievements],
             acceptor_fund=None
-                if self.acceptor_fund is None
-                else self.acceptor_fund.to_fund(),
+            if self.acceptor_fund is None
+            else self.acceptor_fund.to_fund(),
             level_given=self.level_given,
             viewed=self.viewed
         )
 
     @classmethod
-    def from_event(cls, event: Event):
+    def from_event(cls: type, event: Event):
         """
         Event to DB-specific model converter.
 
@@ -101,14 +100,14 @@ class EventModel(Document):
             achievements=RuleModel.objects(
                 id__in=[r.id for r in event.achievements]),
             acceptor_fund=None
-                if event.acceptor_fund is None
-                else FundModel.objects.get(id=event.acceptor_fund.id),
+            if event.acceptor_fund is None
+            else FundModel.objects.get(id=event.acceptor_fund.id),
             level_given=event.level_given,
             viewed=event.viewed
         )
 
     @classmethod
-    def get_unread_events(cls, user: User) -> list:
+    def get_unread_events(cls, user: User) -> Iterator:
         """
         Returns aggregated and sorted list of generator (achievements & level-ups)
         user'd been given but hasn't checked yet.
@@ -124,7 +123,7 @@ class EventModel(Document):
             yield ev.to_event()
 
     @classmethod
-    def mark_events_as_read(cls, user: User):  # -> generator:
+    def mark_events_as_read(cls, user: User) -> None:
         """
         Mark all user events as viewed
 
@@ -137,7 +136,7 @@ class EventModel(Document):
         cls.objects(user=user, viewed=False).update(set__viewed=True)
 
     @classmethod
-    def get_all_events(cls, user: User):  # -> generator:
+    def get_all_events(cls, user: User) -> Iterator:
         """
         Returns aggregated and sorted generator of events (achievements & level-ups)
         user'd been given
@@ -205,8 +204,8 @@ class EventModel(Document):
 
                 yield batch
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'EventModel({model})'.format(model=str(self.to_event()))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)

@@ -15,7 +15,8 @@ class PluginWrapper(object):
     """
     Creates Blueprint-like wrapper for our plugins
     """
-    def __init__(self, plugin_name, root_url='/static', prefix=''):
+
+    def __init__(self, plugin_name: str, root_url: str = '/static', prefix: str = '') -> None:
         """
         Let's stub some dumb fields to get this one treated like a regular
         Flask blueprint while collecting static files.
@@ -40,7 +41,7 @@ class PluginWrapper(object):
 class Storage(FileStorage):
     """Storage that copies static files."""
 
-    def __init__(self, collect, verbose=False):
+    def __init__(self, collect, verbose: bool = False) -> None:
         """
         Copy current array of blueprints and store it.
         Substitute the dict with the extended one which contains our plugins
@@ -55,7 +56,7 @@ class Storage(FileStorage):
         self.old_blueprints = blueprints.copy()
         self.collect.app.blueprints = self._convert_plugins(blueprints)
 
-    def _convert_plugins(self, blueprints):
+    def _convert_plugins(self, blueprints: dict) -> dict:
         """
         Here we create stubs for our plugins with blueprint-like interface.
 
@@ -75,7 +76,7 @@ class Storage(FileStorage):
 
         return blueprints
 
-    def __del__(self):
+    def __del__(self) -> None:
         """
         Restore initial list of blueprints and remove the copy.
         """

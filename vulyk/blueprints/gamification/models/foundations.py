@@ -130,8 +130,8 @@ class FundModel(Document):
 
         yield from map(lambda f: f.to_fund(), cls.objects(criteria))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'FundModel({model})'.format(model=str(self.to_fund()))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)

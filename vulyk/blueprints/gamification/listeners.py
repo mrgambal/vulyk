@@ -25,7 +25,7 @@ __all__ = [
 
 
 @on_task_done.connect
-def track_events(sender, answer: AbstractAnswer) -> None:
+def track_events(sender: object, answer: AbstractAnswer) -> None:
     """
     The most important gear of the gamification module.
 
