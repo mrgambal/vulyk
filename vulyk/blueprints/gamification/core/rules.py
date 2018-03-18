@@ -150,8 +150,8 @@ class Rule:
         :rtype: int
         """
         return self._tasks_number \
-            if self._tasks_number > 0 \
-            else self._days_number
+            if (self._tasks_number or 0) > 0 \
+            else (self._days_number or 0)
 
     def to_dict(self) -> dict:
         """
