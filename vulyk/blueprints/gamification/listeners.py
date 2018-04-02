@@ -46,7 +46,7 @@ def track_events(sender: object, answer: AbstractAnswer) -> None:
         return
 
     if isinstance(TASKS_TYPES[batch.task_type], AbstractGamifiedTaskType):
-        dt = datetime.now()  # TODO: TZ Aware?
+        dt = datetime.utcnow()  # TODO: TZ Aware?
         # I. Get current/new state
         state = UserStateModel.get_or_create_by_user(user)
 
