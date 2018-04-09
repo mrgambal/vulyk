@@ -189,6 +189,18 @@ class StatsService:
         return EventModel.amount_of_money_donated(user)
 
     @classmethod
+    def total_money_earned(cls) -> float:
+        """
+        Count and return total amount of money earned
+        by all users on all tasks
+
+        :return: Total amount in UAH
+        :rtype: float
+        """
+
+        return EventModel.amount_of_money_earned(None)
+
+    @classmethod
     def state_of_user(cls, user: User) -> UserState:
         """
         Return current state of given user

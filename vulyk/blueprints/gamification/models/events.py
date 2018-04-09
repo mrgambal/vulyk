@@ -184,6 +184,25 @@ class EventModel(Document):
         return -cls.objects(query).sum('coins')
 
     @classmethod
+    def amount_of_money_earned(cls, user: User) -> float:
+        """
+        Amount of money earned by current user
+
+        :param user: User instance
+        :type user: User
+
+        :return: Amount of money
+        :rtype: float
+        """
+
+        query = Q(coins__gt=0)
+
+        if user is not None:
+            query &= Q(user=user)
+
+        return cls.objects(query).sum('coins')
+
+    @classmethod
     def batches_user_worked_on(cls, user: User) -> Iterator:
         """
         Returns an iterable of deduplicated batches user has worked on before.
