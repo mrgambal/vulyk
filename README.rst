@@ -29,7 +29,7 @@ project. We don't use anything extraordinary: Flask, MongoDB, Bootstrap,
 jQuery etc (all trademarks are the property of their respective owners,
 don't forget that).
 
-How it's build
+How it's built
 --------------
 
 Vulyk itself is a platform that can be stuffed with various plugins (check `this <https://github.com/hotsyk/vulyk-tagging/>`__ `two <https://github.com/hotsyk/vulyk-declaration>`__ for example).
@@ -55,25 +55,22 @@ What for?
 But, God, how?
 --------------
 
-We provide some kind of playground where any interested (or
-procrastination-addicted) person could spent some time doing some manual tasks.
-Site will show you, mr. Solver, some tasks of a given type, which you'll need to solve
-
-In the best case we'll add some gamification (badges, achievement... you
-name it).
+We provide some kind of playground, where any interested (or
+procrastination-addicted) person could spend some time crunching different tasks.
+Site will show you, mr. Solver, some tasks of a given type, which you'll need to solve.
 
 Leaderboard is already in place!
 
 How could I participate?
 ------------------------
 
-You just need to contact me mr_gambal@outlook.com or `@dchaplinsky <http://github.com/dchaplinsky>`__ via
+You just need to contact me mr_hambal@outlook.com or `@dchaplinsky <http://github.com/dchaplinsky>`__ via
 chaplinsky.dmitry@gmail.com. One day we'll find one brave heart who'll
 create a list of issues so the process will be simplified. But not now...
 
 Running it locally
 ------------------
-You'll need MongoDB, Python 2.7 and virtualenv and with little bit of instructions you'll be able to run the Beast (with two real plugins)!
+You'll need MongoDB, Python 3.4+ and virtualenv and with little bit of instructions you'll be able to run the Beast (with two real plugins)!
 
 First of all, check out all required components:
 
@@ -118,7 +115,7 @@ Then let's set things up. Edit local_settings.py and add some stuff into it:
 
 
     MONGODB_SETTINGS = {
-        'DB': "vulyk",
+        'DB': 'vulyk',
     }
 
     ENABLED_TASKS = {

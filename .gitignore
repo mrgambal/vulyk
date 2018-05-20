@@ -15,6 +15,7 @@
 .project
 .pydevproject
 .Python
+.python-version
 .ropeproject
 .tox
 .webassets-cache
@@ -25,6 +26,7 @@ coverage.xml
 develop-eggs/
 dist/
 docs/_build/
+.eggs/
 eggs/
 env/
 htmlcov/

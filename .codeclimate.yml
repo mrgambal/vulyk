@@ -31,3 +31,6 @@ ratings:
 exclude_paths:
   - tests/
   - vulyk/static/vendor/
+plugins:
+  sonar-python:
+    enabled: true
