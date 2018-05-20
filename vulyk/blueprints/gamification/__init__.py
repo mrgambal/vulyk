@@ -9,19 +9,18 @@ import wtforms
 from flask_login import AnonymousUserMixin
 
 from vulyk import utils
+from vulyk.admin.models import AuthModelView, CKTextAreaField, RequiredBooleanField
+from vulyk.blueprints.gamification import listeners
 from vulyk.blueprints.gamification.core.foundations import Fund
+from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.foundations import (
     FundModel, FundFilterBy)
-from vulyk.blueprints.gamification import listeners
 from vulyk.blueprints.gamification.models.rules import (
     AllRules, ProjectAndFreeRules, RuleModel, StrictProjectRules)
 from vulyk.blueprints.gamification.models.state import UserStateModel
-from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.services import (
     DonationResult, DonationsService, StatsService)
 from vulyk.models.user import User
-from vulyk.admin.models import AuthModelView, CKTextAreaField, RequiredBooleanField
-
 
 from .. import VulykModule
 
@@ -32,8 +31,8 @@ __all__ = [
 
 class FundAdmin(AuthModelView):
     form_overrides = {
-        "description": CKTextAreaField,
-        "donatable": RequiredBooleanField,
+        'description': CKTextAreaField,
+        'donatable': RequiredBooleanField,
     }
 
     column_exclude_list = ['description', 'logo']
@@ -41,7 +40,7 @@ class FundAdmin(AuthModelView):
 
 class RuleAdmin(AuthModelView):
     form_overrides = {
-        "description": CKTextAreaField
+        'description': CKTextAreaField
     }
 
     column_exclude_list = ['description']
@@ -61,18 +60,18 @@ class GamificationModule(VulykModule):
         if app.config.get('ENABLE_ADMIN', False):
             app.admin.add_view(FundAdmin(FundModel))
 
-            if self.config.get("badges"):
-                if not getattr(RuleAdmin, "form_overrides"):
+            if self.config.get('badges'):
+                if not getattr(RuleAdmin, 'form_overrides'):
                     RuleAdmin.form_overrides = {}
 
-                RuleAdmin.form_overrides["badge"] = wtforms.fields.SelectField
+                RuleAdmin.form_overrides['badge'] = wtforms.fields.SelectField
 
-                if not getattr(RuleAdmin, "form_args"):
+                if not getattr(RuleAdmin, 'form_args'):
                     RuleAdmin.form_args = {}
 
                 RuleAdmin.form_args['badge'] = {
                     'label': 'Pick badge image',
-                    'choices': self.config["badges"]
+                    'choices': self.config['badges']
                 }
 
             app.admin.add_view(RuleAdmin(RuleModel))

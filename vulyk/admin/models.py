@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from flask_admin.contrib.mongoengine import ModelView
 import flask_login as login
 import wtforms
+from flask_admin.contrib.mongoengine import ModelView
 
 __all__ = [
     'AuthModelView'
@@ -29,12 +29,12 @@ class RequiredBooleanField(wtforms.fields.SelectField):
     # thus the workaround
     def __init__(self, *args, **kwargs):
         choices = [
-            (True, "True"),
-            (False, "False"),
+            (True, 'True'),
+            (False, 'False'),
         ]
 
-        kwargs["choices"] = choices
-        kwargs["coerce"] = lambda x: str(x) == "True"
+        kwargs['choices'] = choices
+        kwargs['coerce'] = lambda x: str(x) == 'True'
 
         super(RequiredBooleanField, self).__init__(*args, **kwargs)
 

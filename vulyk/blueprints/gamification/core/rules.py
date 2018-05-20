@@ -46,7 +46,7 @@ class Rule:
     ]
 
     def __init__(self,
-                 rule_id: int,
+                 rule_id: str,
                  badge: str,
                  name: str,
                  description: str,
@@ -57,7 +57,7 @@ class Rule:
                  is_adjacent: bool) -> None:
         """
         :param rule_id: Unique rule identifier.
-        :type rule_id: int
+        :type rule_id: str
         :param badge: Badge image (either base64 or URL)
         :type badge: str
         :param name: Achievement name
@@ -112,7 +112,7 @@ class Rule:
                                           'numeric bound')
 
     @property
-    def id(self) -> int:
+    def id(self) -> str:
         return self._hash
 
     @property
@@ -207,7 +207,7 @@ class ProjectRule(Rule):
     ]
 
     def __init__(self,
-                 rule_id: int,
+                 rule_id: str,
                  task_type_name: str,
                  badge: str,
                  name: str,
@@ -219,7 +219,7 @@ class ProjectRule(Rule):
                  is_adjacent: bool) -> None:
         """
         :param rule_id: Unique rule identifier.
-        :type rule_id: int
+        :type rule_id: str
         :param task_type_name: Task type name.
         :type task_type_name: str
         :param badge: Badge image (either base64 or URL)

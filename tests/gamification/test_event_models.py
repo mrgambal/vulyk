@@ -120,7 +120,7 @@ class TestEventModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id="100")
+            rule_id='100')
         RuleModel.from_rule(rule).save()
         ev = Event.build(
             timestamp=self.TIMESTAMP,
@@ -149,7 +149,7 @@ class TestEventModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id="100")
+            rule_id='100')
         RuleModel.from_rule(rule).save()
         ev = Event.build(
             timestamp=self.TIMESTAMP,
@@ -199,7 +199,7 @@ class TestEventModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id="100")
+            rule_id='100')
         ev = Event.build(
             timestamp=self.TIMESTAMP,
             user=self.USER,
@@ -224,7 +224,7 @@ class TestEventModels(BaseTest):
         self.assertDictEqual(expected, ev.to_dict(),
                              'Event was not translated to dict correctly')
 
-        del expected["answer"]
+        del expected['answer']
         self.assertDictEqual(expected, ev.to_dict(ignore_answer=True),
                              'Event was not translated to dict correctly')
 
@@ -254,7 +254,7 @@ class TestEventModels(BaseTest):
         self.assertDictEqual(expected, ev.to_dict(),
                              'Event was not translated to dict correctly')
 
-        del expected["answer"]
+        del expected['answer']
         self.assertDictEqual(expected, ev.to_dict(ignore_answer=True),
                              'Event was not translated to dict correctly')
 

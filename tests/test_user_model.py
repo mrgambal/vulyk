@@ -6,7 +6,6 @@ test_user_model
 """
 import unittest
 
-
 from vulyk.models.user import User, Group
 
 from .base import BaseTest

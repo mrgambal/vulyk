@@ -3,11 +3,10 @@
 The factory of achievements. Classes below allow us to query data source we use
 as a source of truth.
 """
-from datetime import date, datetime, timedelta
 from collections import namedtuple
+from datetime import date, datetime, timedelta
 
 from bson import ObjectId
-
 from mongoengine.queryset.base import BaseQuerySet
 
 from .rules import Rule, ProjectRule
@@ -60,6 +59,7 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
         super().__init__()
 
         self._filter_first['answer'] = {'$exists': True}
+
         if isinstance(rule, ProjectRule):
             self._filter_first['taskType'] = rule.task_type_name
 
