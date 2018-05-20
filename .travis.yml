@@ -3,6 +3,11 @@ dist: trusty
 sudo: false
 language: python
 
+env:
+  global:
+    - CC_TEST_REPORTER_ID=5f5adfc666fc988cb9a08d008219776dda4717de685901c6cd2af38c993d26f2
+    - LOGGING_LOCATION=/tmp/vulyk.log
+
 services:
 - mongodb
 
@@ -13,10 +18,13 @@ python:
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -r requirements.txt
-
+# CodeClimate's test coverage stuff
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 # command to run tests, e.g. python setup.py test
 script: python setup.py test
-
-env:
-  global:
-    - LOGGING_LOCATION=/tmp/vulyk.log
+# CodeClimate's test coverage stuff
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
