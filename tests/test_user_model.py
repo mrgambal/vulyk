@@ -6,7 +6,6 @@ test_user_model
 """
 import unittest
 
-
 from vulyk.models.user import User, Group
 
 from .base import BaseTest
@@ -61,9 +60,12 @@ class TestUser(BaseTest):
     def test_is_eligible_for(self):
         another_task_type = 'task_type_2'
         u1 = User(username='1', email='1@email.com', admin=True).save()
+        u2 = User(username='2', email='2@email.com', admin=False).save()
 
         self.assertTrue(u1.is_eligible_for(self.TASK_TYPE))
-        self.assertFalse(u1.is_eligible_for(another_task_type))
+        self.assertTrue(u1.is_eligible_for(another_task_type))
+        self.assertTrue(u2.is_eligible_for(self.TASK_TYPE))
+        self.assertFalse(u2.is_eligible_for(another_task_type))
 
     def test_as_dict(self):
         username = 'mutumba'

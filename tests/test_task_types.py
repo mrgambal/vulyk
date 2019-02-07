@@ -153,7 +153,7 @@ class TestTaskTypes(BaseTest):
                 task_type=task_type.type_name,
                 result={}
             ).save()
-            reports.append(report.as_dict())
+            reports.append([report.as_dict()])
 
         self.assertCountEqual(task_type.export_reports(batch=batch),
                               reports)
@@ -188,7 +188,7 @@ class TestTaskTypes(BaseTest):
                 task_type=task_type.type_name,
                 result={}
             ).save()
-            reports.append(report.as_dict())
+            reports.append([report.as_dict()])
 
         self.assertCountEqual(task_type.export_reports(batch=batches[1]),
                               reports[1:])
@@ -256,7 +256,7 @@ class TestTaskTypes(BaseTest):
                 task_type=task_type.type_name,
                 result={}
             ).save()
-            reports.append(report.as_dict())
+            reports.append([report.as_dict()])
 
         self.assertCountEqual(task_type.export_reports(batch=batch),
                               reports[1:])
@@ -288,7 +288,7 @@ class TestTaskTypes(BaseTest):
                 task_type=task_type.type_name,
                 result={}
             ).save()
-            reports.append(report.as_dict())
+            reports.append([report.as_dict()])
 
         self.assertCountEqual(
             task_type.export_reports(batch=batch, closed=False),

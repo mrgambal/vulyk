@@ -65,7 +65,7 @@ class User(Document, UserMixin):
         """
         assert task_type, 'Empty parameter `task_type` passed'
 
-        return task_type in chain(*(g.allowed_types for g in self.groups))
+        return self.admin or task_type in chain(*(g.allowed_types for g in self.groups))
 
     def get_stats(self, task_type) -> dict:
         """

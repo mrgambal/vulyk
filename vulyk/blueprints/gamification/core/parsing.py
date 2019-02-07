@@ -45,7 +45,7 @@ class JsonRuleParser(RuleParser):
             parsee = json.loads(json_string)
             name = parsee['name']
             task_type_name = parsee.get('task_type_name', '')
-            hash_id = hash('{}{}'.format(name, task_type_name))
+            hash_id = str(hash('{}{}'.format(name, task_type_name)))
 
             rule = Rule(rule_id=hash_id,
                         badge=parsee['badge'],
@@ -53,7 +53,7 @@ class JsonRuleParser(RuleParser):
                         description=parsee['description'],
                         bonus=int(parsee['bonus']),
                         tasks_number=int(parsee['tasks_number']),
-                        days_number=(parsee['days_number']),
+                        days_number=int(parsee['days_number']),
                         is_weekend=bool(parsee['is_weekend']),
                         is_adjacent=bool(parsee['is_adjacent']))
 

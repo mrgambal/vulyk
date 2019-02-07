@@ -94,6 +94,7 @@ class Event:
         :raises: InvalidEventException
         """
         is_donate = self.coins < 0 and self.acceptor_fund is not None
+        is_bonus = self.coins > 0 and self.answer is None
 
         try:
             assert self.user is not None, 'User should be present.'
@@ -117,8 +118,10 @@ class Event:
                     'for task events'
                 assert self.points_given > 0, \
                     'Points amount must be positive for task events'
-                assert self.answer is not None, \
-                    'Answer should be present for task events'
+
+                if not is_bonus:
+                    assert self.answer is not None, \
+                        'Answer should be present for task events'
 
         except AssertionError as e:
             raise InvalidEventException(e)

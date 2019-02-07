@@ -101,7 +101,7 @@ class RuleModel(Document):
     """
     Database-specific rule representation
     """
-    id = IntField(required=True, primary_key=True)
+    id = StringField(required=True, primary_key=True)
     task_type_name = StringField()
     badge = StringField(required=True)
     name = StringField(required=True, max_length=255, unique=True)

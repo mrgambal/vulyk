@@ -70,7 +70,7 @@ class UserStateModel(Document):
             points=self.points,
             actual_coins=self.actual_coins,
             potential_coins=self.potential_coins,
-            achievements=[r.to_rule() for r in self.achievements],
+            achievements=[r.to_rule() for r in self.achievements if hasattr(r, "to_rule")],
             last_changed=self.last_changed
         )
 

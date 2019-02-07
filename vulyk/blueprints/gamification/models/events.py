@@ -72,7 +72,7 @@ class EventModel(Document):
             answer=self.answer,
             points_given=self.points_given,
             coins=self.coins,
-            achievements=[a.to_rule() for a in self.achievements],
+            achievements=[a.to_rule() for a in self.achievements if hasattr(a, "to_rule")],
             acceptor_fund=None
             if self.acceptor_fund is None
             else self.acceptor_fund.to_fund(),
@@ -182,6 +182,25 @@ class EventModel(Document):
             query &= Q(user=user)
 
         return -cls.objects(query).sum('coins')
+
+    @classmethod
+    def amount_of_money_earned(cls, user: User) -> float:
+        """
+        Amount of money earned by current user
+
+        :param user: User instance
+        :type user: User
+
+        :return: Amount of money
+        :rtype: float
+        """
+
+        query = Q(coins__gt=0)
+
+        if user is not None:
+            query &= Q(user=user)
+
+        return cls.objects(query).sum('coins')
 
     @classmethod
     def batches_user_worked_on(cls, user: User) -> Iterator:

@@ -200,8 +200,8 @@ class AbstractTaskType:
             qs = self.task_model.objects(query)
 
         for task in qs:
-            yield from map(lambda a: a.as_dict(),
-                           self.answer_model.objects(task=task))
+            yield list(map(lambda a: a.as_dict(),
+                       self.answer_model.objects(task=task)))
 
     def get_leaders(self) -> list:
         """Return sorted list of tuples (user_id, tasks_done)

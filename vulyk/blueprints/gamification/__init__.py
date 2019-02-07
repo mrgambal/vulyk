@@ -5,22 +5,22 @@ The core of gamification sub-project.
 from decimal import Decimal
 
 import flask
+import wtforms
 from flask_login import AnonymousUserMixin
 
 from vulyk import utils
+from vulyk.admin.models import AuthModelView, CKTextAreaField, RequiredBooleanField
+from vulyk.blueprints.gamification import listeners
 from vulyk.blueprints.gamification.core.foundations import Fund
+from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.foundations import (
     FundModel, FundFilterBy)
-from vulyk.blueprints.gamification import listeners
 from vulyk.blueprints.gamification.models.rules import (
     AllRules, ProjectAndFreeRules, RuleModel, StrictProjectRules)
 from vulyk.blueprints.gamification.models.state import UserStateModel
-from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.services import (
     DonationResult, DonationsService, StatsService)
 from vulyk.models.user import User
-from vulyk.admin.models import AuthModelView, CKTextAreaField
-
 
 from .. import VulykModule
 
@@ -30,8 +30,20 @@ __all__ = [
 
 
 class FundAdmin(AuthModelView):
-    form_overrides = dict(description=CKTextAreaField)
+    form_overrides = {
+        'description': CKTextAreaField,
+        'donatable': RequiredBooleanField,
+    }
+
     column_exclude_list = ['description', 'logo']
+
+
+class RuleAdmin(AuthModelView):
+    form_overrides = {
+        'description': CKTextAreaField
+    }
+
+    column_exclude_list = ['description']
 
 
 class GamificationModule(VulykModule):
@@ -47,7 +59,22 @@ class GamificationModule(VulykModule):
 
         if app.config.get('ENABLE_ADMIN', False):
             app.admin.add_view(FundAdmin(FundModel))
-            app.admin.add_view(AuthModelView(RuleModel))
+
+            if self.config.get('badges'):
+                if not getattr(RuleAdmin, 'form_overrides'):
+                    RuleAdmin.form_overrides = {}
+
+                RuleAdmin.form_overrides['badge'] = wtforms.fields.SelectField
+
+                if not getattr(RuleAdmin, 'form_args'):
+                    RuleAdmin.form_args = {}
+
+                RuleAdmin.form_args['badge'] = {
+                    'label': 'Pick badge image',
+                    'choices': self.config['badges']
+                }
+
+            app.admin.add_view(RuleAdmin(RuleModel))
 
     def get_level(self, points):
         """
@@ -156,7 +183,7 @@ def fund_logo(fund_id: str) -> flask.Response:
     """
     fund = FundModel.find_by_id(fund_id)  # type: Union[Fund, None]
 
-    if fund is None:
+    if fund is None or fund.logo is None:
         flask.abort(utils.HTTPStatus.NOT_FOUND)
 
     return flask.send_file(
@@ -195,6 +222,7 @@ def mark_viewed() -> flask.Response:
     user = flask.g.user  # type: Union[User, AnonymousUserMixin]
 
     if isinstance(user, User):
+        EventModel.mark_events_as_read(user)
         return utils.json_response({})
     else:
         flask.abort(utils.HTTPStatus.FORBIDDEN)

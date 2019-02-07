@@ -121,7 +121,7 @@ class TestStateModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id="100")
         rule_model = RuleModel.from_rule(rule).save()
         state = UserState(
             user=self.USER,
@@ -255,7 +255,7 @@ class TestStateModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id='100')
         RuleModel.from_rule(rule).save()
         diff = UserState(
             user=self.USER,
@@ -290,7 +290,7 @@ class TestStateModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id='100')
         RuleModel.from_rule(rule).save()
         diff = UserState(
             user=self.USER,
@@ -325,7 +325,7 @@ class TestStateModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id='100')
         RuleModel.from_rule(rule).save()
         rule_two = Rule(
             badge='',
@@ -336,7 +336,7 @@ class TestStateModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=200)
+            rule_id='200')
         RuleModel.from_rule(rule_two).save()
         diff = UserState(
             user=self.USER,
@@ -366,7 +366,7 @@ class TestStateModels(BaseTest):
                          diff.actual_coins + diff_two.actual_coins)
         self.assertEqual(new_state.potential_coins,
                          diff.potential_coins + diff_two.potential_coins)
-        self.assertSetEqual(set(new_state.achievements.keys()), {200, 100})
+        self.assertSetEqual(set(new_state.achievements.keys()), {'200', '100'})
         self.assertEqual(new_state.last_changed, diff_two.last_changed)
 
     def test_rookie_to_dict(self):
@@ -385,7 +385,7 @@ class TestStateModels(BaseTest):
             'actual_coins': 0,
             'potential_coins': 0,
             'achievements': [],
-            'last_changed': self.TIMESTAMP.strftime("%d.%m.%Y %H:%M:%S")
+            'last_changed': self.TIMESTAMP.strftime('%d.%m.%Y %H:%M:%S')
         }
 
         self.assertDictEqual(expected, state.to_dict(),
@@ -401,7 +401,7 @@ class TestStateModels(BaseTest):
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id=100)
+            rule_id='100')
         state = UserState(
             user=self.USER,
             level=80,
@@ -417,7 +417,7 @@ class TestStateModels(BaseTest):
             'actual_coins': 20,
             'potential_coins': 100,
             'achievements': [rule.to_dict()],
-            'last_changed': self.TIMESTAMP.strftime("%d.%m.%Y %H:%M:%S")
+            'last_changed': self.TIMESTAMP.strftime('%d.%m.%Y %H:%M:%S')
         }
 
         self.assertDictEqual(expected, state.to_dict(),
