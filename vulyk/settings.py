@@ -20,6 +20,7 @@ MONGODB_SETTINGS = {
 DEBUG_TB_INTERCEPT_REDIRECTS = ENV('DEBUG_TB_INTERCEPT_REDIRECTS', False)
 SESSION_PROTECTION = ENV('SESSION_PROTECTION', 'strong')
 
+LOG_TO_STDERR = ENV('LOG_TO_FILE', "False").lower() in ("true", "t", "1")
 LOGGING_LOCATION = ENV('LOGGING_LOCATION', '/var/log/vulyk/app.log')
 LOGGING_FORMAT = ENV('LOGGING_FORMAT',
                      '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
