@@ -3,7 +3,7 @@
 Project-wide logger configuration.
 """
 import logging
-from logging.handlers import RotatingFileHandler, StreamHandler
+from logging.handlers import RotatingFileHandler
 
 __all__ = [
     'init_logger'
@@ -17,7 +17,7 @@ def init_logger(app):
     """
 
     if app.config['LOG_TO_STDERR']:
-        handler = StreamHandler()
+        handler = logging.StreamHandler()
     else:
         handler = RotatingFileHandler(
             filename=app.config['LOGGING_LOCATION'],
