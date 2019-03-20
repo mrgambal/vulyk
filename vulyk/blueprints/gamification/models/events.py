@@ -2,7 +2,7 @@
 """
 Contains all DB models related to game events.
 """
-from collections import Iterator
+from typing import Generator, Iterator, Optional
 
 from flask_mongoengine import Document
 from mongoengine import (
@@ -10,9 +10,8 @@ from mongoengine import (
     ListField, IntField, Q
 )
 
-from vulyk.models.tasks import AbstractAnswer
+from vulyk.models.tasks import AbstractAnswer, Batch
 from vulyk.models.user import User
-
 from .foundations import FundModel
 from .rules import RuleModel
 from ..core.events import Event
@@ -81,7 +80,7 @@ class EventModel(Document):
         )
 
     @classmethod
-    def from_event(cls: type, event: Event):
+    def from_event(cls, event: Event):
         """
         Event to DB-specific model converter.
 
@@ -107,7 +106,7 @@ class EventModel(Document):
         )
 
     @classmethod
-    def get_unread_events(cls, user: User) -> Iterator:
+    def get_unread_events(cls, user: User) -> Generator[Event, None, None]:
         """
         Returns aggregated and sorted list of generator (achievements & level-ups)
         user'd been given but hasn't checked yet.
@@ -116,7 +115,7 @@ class EventModel(Document):
         :type user: User
 
         :return: A generator of events in ascending chronological order.
-        :rtype: generator[Event]
+        :rtype: Generator[Event, None, None]
         """
 
         for ev in cls.objects(user=user, viewed=False):
@@ -165,12 +164,12 @@ class EventModel(Document):
         return cls.objects(user=user, answer__exists=True).count()
 
     @classmethod
-    def amount_of_money_donated(cls, user: User) -> float:
+    def amount_of_money_donated(cls, user: Optional[User]) -> float:
         """
-        Amount of money donatedby current user
+        Amount of money donated by current user or total donations if None passed.
 
         :param user: User instance
-        :type user: User
+        :type user: Optional[User]
 
         :return: Amount of money
         :rtype: float
@@ -184,12 +183,12 @@ class EventModel(Document):
         return -cls.objects(query).sum('coins')
 
     @classmethod
-    def amount_of_money_earned(cls, user: User) -> float:
+    def amount_of_money_earned(cls, user: Optional[User]) -> float:
         """
-        Amount of money earned by current user
+        Amount of money earned by current user or total amount earned if None is passed.
 
         :param user: User instance
-        :type user: User
+        :type user: Optional[User]
 
         :return: Amount of money
         :rtype: float
@@ -203,7 +202,7 @@ class EventModel(Document):
         return cls.objects(query).sum('coins')
 
     @classmethod
-    def batches_user_worked_on(cls, user: User) -> Iterator:
+    def batches_user_worked_on(cls, user: User) -> Generator[Batch, None, None]:
         """
         Returns an iterable of deduplicated batches user has worked on before.
 
@@ -211,7 +210,7 @@ class EventModel(Document):
         :type user: User
 
         :return: Iterator over batches
-        :rtype: Iterator[Batch]
+        :rtype: Generator[Batch, None, None]
         """
         seen = set()
 

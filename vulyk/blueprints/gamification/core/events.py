@@ -11,10 +11,10 @@ no achievements (at least – for now) and no level changes.
 """
 from datetime import datetime
 from decimal import Decimal
+from typing import Dict, List, Optional, Union
 
 from vulyk.models.tasks import AbstractAnswer
 from vulyk.models.user import User
-
 from ..core.foundations import Fund
 
 __all__ = [
@@ -57,24 +57,24 @@ class Event:
     def __init__(self,
                  timestamp: datetime,
                  user: User,
-                 answer: AbstractAnswer,
+                 answer: Optional[AbstractAnswer],
                  points_given: Decimal,
                  coins: Decimal,
-                 achievements: list,
-                 acceptor_fund: Fund,
-                 level_given: int,
+                 achievements: List,
+                 acceptor_fund: Optional[Fund],
+                 level_given: Optional[int],
                  viewed: bool) -> None:
         """
         Crap, I want python to have private constructors :(
 
         :type timestamp: datetime
         :type user: User
-        :type answer: AbstractAnswer | None
+        :type answer: Optional[AbstractAnswer]
         :type points_given: Decimal
-        :type coins: Dec
-        :type achievements: list[Rule]
-        :type acceptor_fund: Fund
-        :type level_given: int
+        :type coins: Decimal
+        :type achievements: List[vulyk.blueprints.gamification.core.rules.Rule]
+        :type acceptor_fund: Optional[Fund]
+        :type level_given: Optional[int]
         :type viewed: bool
         """
         self.timestamp = timestamp
@@ -127,27 +127,27 @@ class Event:
             raise InvalidEventException(e)
 
     @classmethod
-    def build(cls: type,
+    def build(cls,
               timestamp: datetime,
               user: User,
-              answer: AbstractAnswer,
+              answer: Optional[AbstractAnswer],
               points_given: Decimal,
               coins: Decimal,
-              achievements: list,
-              acceptor_fund: Fund,
-              level_given: int,
+              achievements: List,
+              acceptor_fund: Optional[Fund],
+              level_given: Optional[int],
               viewed: bool):
         """
         Fabric method
 
         :type timestamp: datetime
         :type user: User
-        :type answer: AbstractAnswer | None
+        :type answer: Optional[AbstractAnswer]
         :type points_given: Decimal
         :type coins: Decimal
-        :type achievements: list[Rule]
-        :type acceptor_fund: Fund | None
-        :type level_given: int
+        :type achievements: List[vulyk.blueprints.gamification.core.rules.Rule]
+        :type acceptor_fund: Optional[Fund]
+        :type level_given: Optional[int]
         :type viewed: bool
 
         :rtype: Event
@@ -206,14 +206,15 @@ class Event:
                 level_given=ev.level_given,
                 viewed=ev.viewed)
 
-    def to_dict(self, ignore_answer=False) -> dict:
+    def to_dict(self, ignore_answer=False) -> Dict[str, Union[List, int, str]]:
         """
         Could be used as a source for JSON or any other representation format
         :param ignore_answer: Shows if the method should return answer as
         a part of a dict
-        :type ignore_answer: boolean
+        :type ignore_answer: bool
+
         :return: Dict-ized object view
-        :rtype: dict
+        :rtype: Dict[str, Union[List, int, str]]
         """
 
         result = {
@@ -223,8 +224,8 @@ class Event:
             'coins': self.coins,
             'achievements': [r.to_dict() for r in self.achievements],
             'acceptor_fund': self.acceptor_fund.to_dict()
-                if self.acceptor_fund is not None
-                else None,
+            if self.acceptor_fund is not None
+            else None,
             'level_given': self.level_given,
             'viewed': self.viewed
         }
@@ -262,12 +263,12 @@ class Event:
                 same_answer = self.answer == other.answer
 
             return other.timestamp == self.timestamp \
-                and other.user.id == self.user.id \
-                and other.points_given == self.points_given \
-                and other.achievements == self.achievements \
-                and other.coins == self.coins \
-                and other.level_given == self.level_given \
-                and same_answer and same_fund
+                   and other.user.id == self.user.id \
+                   and other.points_given == self.points_given \
+                   and other.achievements == self.achievements \
+                   and other.coins == self.coins \
+                   and other.level_given == self.level_given \
+                   and same_answer and same_fund
         else:
             return False
 
@@ -285,14 +286,14 @@ class NoAchievementsEvent(Event):
     def __init__(self,
                  timestamp: datetime,
                  user: User,
-                 answer: AbstractAnswer,
+                 answer: Optional[AbstractAnswer],
                  points_given: Decimal,
                  coins: Decimal,
                  viewed: bool) -> None:
         """
         :type timestamp: datetime
         :type user: User
-        :type answer: AbstractAnswer | None
+        :type answer: Optional[AbstractAnswer]
         :type points_given: Decimal
         :type coins: Decimal
         :type viewed: bool
@@ -325,18 +326,18 @@ class AchievementsEvent(Event):
     def __init__(self,
                  timestamp: datetime,
                  user: User,
-                 answer: AbstractAnswer,
+                 answer: Optional[AbstractAnswer],
                  points_given: Decimal,
                  coins: Decimal,
-                 achievements: list,
+                 achievements: List,
                  viewed: bool) -> None:
         """
         :type timestamp: datetime
         :type user: User
-        :type answer: AbstractAnswer | None
+        :type answer: Optional[AbstractAnswer]
         :type points_given: Decimal
         :type coins: Decimal
-        :type achievements: list[Rule]
+        :type achievements: List[vulyk.blueprints.gamification.core.rules.Rule]
         :type viewed: bool
         """
         super().__init__(timestamp=timestamp,
@@ -368,19 +369,19 @@ class LevelEvent(Event):
     def __init__(self,
                  timestamp: datetime,
                  user: User,
-                 answer: AbstractAnswer,
+                 answer: Optional[AbstractAnswer],
                  points_given: Decimal,
                  coins: Decimal,
-                 level_given: int,
+                 level_given: Optional[int],
                  viewed: bool) -> None:
         """
 
         :type timestamp: datetime
         :type user: User
-        :type answer: AbstractAnswer | None
+        :type answer: Optional[AbstractAnswer]
         :type points_given: Decimal
         :type coins: Decimal
-        :type level_given: int
+        :type level_given: Optional[int]
         :type viewed: bool
         """
         super().__init__(timestamp=timestamp,
@@ -415,18 +416,18 @@ class AchievementsLevelEvent(Event):
                  answer: AbstractAnswer,
                  points_given: Decimal,
                  coins: Decimal,
-                 achievements: list,
-                 level_given: int,
+                 achievements: List,
+                 level_given: Optional[int],
                  viewed: bool) -> None:
         """
 
         :type timestamp: datetime
         :type user: User
-        :type answer: AbstractAnswer | None
+        :type answer: Optional[AbstractAnswer]
         :type points_given: Decimal
         :type coins: Decimal
-        :type achievements: list[vulyk.blueprints.gamification.core.rules.Rule]
-        :type level_given: int
+        :type achievements: List[vulyk.blueprints.gamification.core.rules.Rule]
+        :type level_given: Optional[int]
         :type viewed: bool
         """
 
@@ -473,7 +474,7 @@ class DonateEvent(Event):
         super().__init__(timestamp=timestamp,
                          user=user,
                          answer=None,
-                         points_given=0,
+                         points_given=Decimal(0),
                          coins=coins,
                          achievements=[],
                          acceptor_fund=acceptor_fund,

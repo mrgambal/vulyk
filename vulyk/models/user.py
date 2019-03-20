@@ -3,6 +3,7 @@
 
 import datetime
 from itertools import chain
+from typing import Optional, Dict, Type
 
 from flask_login import UserMixin, AnonymousUserMixin
 from flask_mongoengine import Document
@@ -65,9 +66,10 @@ class User(Document, UserMixin):
         """
         assert task_type, 'Empty parameter `task_type` passed'
 
-        return self.admin or task_type in chain(*(g.allowed_types for g in self.groups))
+        return self.admin \
+               or task_type in chain(*(g.allowed_types for g in self.groups))
 
-    def get_stats(self, task_type) -> dict:
+    def get_stats(self, task_type) -> Dict[str, int]:
         """
         Returns member's stats containing the number of tasks finished and
         the position in the global rank.
@@ -77,7 +79,7 @@ class User(Document, UserMixin):
 
         :return: Dictionary that contains total finished tasks count and the
                  position in the global rank.
-        :rtype: dict[str, int]
+        :rtype: Dict[str, int]
         """
         leaders = task_type.get_leaders()
         i = 0
@@ -98,13 +100,13 @@ class User(Document, UserMixin):
             'position': i
         }
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> Dict[str, str]:
         """
         Converts the model-instance into a safe dict that will include some
         basic info about member.
 
         :return: Reduced set of information about member.
-        :rtype: dict[str, str]
+        :rtype: Dict[str, str]
         """
         return {
             'username': self.username,
@@ -112,17 +114,17 @@ class User(Document, UserMixin):
         }
 
     @classmethod
-    def pre_save(cls, sender: type, document: Document, **kwargs: dict) -> Document:
+    def pre_save(cls, sender: Type, document: Document, **kwargs: Dict) -> Document:
         """
         A signal handler which will put a new member into a default group if
         any hasn't been assigned yet.
 
         :param sender: Type of signal emitter.
-        :type sender: type
+        :type sender: Type
         :param document: New instance of User model.
         :type document: User
         :param kwargs: Additional parameters
-        :type kwargs: dict
+        :type kwargs: Dict
 
         :return: Modified User instance.
         :rtype: User
@@ -136,13 +138,13 @@ class User(Document, UserMixin):
         return document
 
     @classmethod
-    def get_by_id(cls, user_id: str) -> Document:
+    def get_by_id(cls, user_id: str) -> Optional[Document]:
         """
         :param user_id: Needed user ID
         :type user_id: str
 
         :return: The user
-        :rtype: User | None
+        :rtype: Optional[User]
         """
         try:
             return cls.objects.get(id=user_id)

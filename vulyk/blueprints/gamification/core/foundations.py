@@ -3,6 +3,7 @@
 Foundations
 """
 from io import IOBase
+from typing import Dict
 
 __all__ = [
     'Fund'
@@ -51,7 +52,7 @@ class Fund:
         self.logo = logo
         self.donatable = donatable
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, str]:
         """
         Could be used as a source for JSON or any other representation format
 

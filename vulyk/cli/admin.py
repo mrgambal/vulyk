@@ -6,7 +6,7 @@ from click import echo
 from vulyk.models.user import User
 
 
-def list_admin():
+def list_admin() -> None:
     """
     Outputs a list of emails of administrators.
     """
@@ -25,7 +25,7 @@ def list_admin():
             echo('- %s' % email)
 
 
-def toggle_admin(email, state):
+def toggle_admin(email, state) -> None:
     """
     Toggles admin state of given user.
 

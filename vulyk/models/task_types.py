@@ -3,12 +3,12 @@
 
 import logging
 import random
-from bson import ObjectId
-from collections import Iterator
 from datetime import datetime
 from hashlib import sha1
+from typing import Dict, Any, AnyStr, Union, List, Optional, Generator, Tuple
 
 import ujson as json
+from bson import ObjectId
 from mongoengine import Q
 from mongoengine.errors import (
     InvalidQueryError,
@@ -70,13 +70,13 @@ class AbstractTaskType:
     _work_session_manager = None  # type: WorkSessionManager
     _leaderboard_manager = None  # type: LeaderBoardManager
 
-    def __init__(self, settings: dict) -> None:
+    def __init__(self, settings: Dict[str, Any]) -> None:
         """
         Constructor.
 
         :param settings: We pass global settings dictionary into the
         constructor when instantiating plugins. Could be useful for plugins.
-        :type settings: dict
+        :type settings: Dict[str, Any]
         """
         self._logger = logging.getLogger('vulyk.app')
 
@@ -113,12 +113,12 @@ class AbstractTaskType:
         return self._name if len(self._name) > 0 else self.type_name
 
     @property
-    def task_type_meta(self) -> dict:
+    def task_type_meta(self) -> Dict[str, Any]:
         """
         Dict with task type metadata (freeform dict)
 
         :return: project specific metadata
-        :rtype: dict
+        :rtype: Dict[str, Any]
         """
         return self._task_type_meta
 
@@ -142,14 +142,18 @@ class AbstractTaskType:
         """
         return self._work_session_manager
 
-    def import_tasks(self, tasks: list, batch: str) -> None:
+    def import_tasks(
+        self,
+        tasks: List[Dict],
+        batch: Optional[AnyStr]
+    ) -> None:
         """Imports tasks from an iterable over dicts
         io is left out of scope here.
 
         :param tasks: An iterable over dicts
-        :type tasks: list[dict]
+        :type tasks: List[Dict]
         :param batch: Batch ID (optional)
-        :type batch: str
+        :type batch: Optional[AnyStr]
 
         :raise: TaskImportError
         """
@@ -174,7 +178,12 @@ class AbstractTaskType:
         except errors as e:
             raise TaskImportError('Can\'t load task: {}'.format(e))
 
-    def export_reports(self, batch: str, closed: bool = True, qs=None) -> Iterator:
+    def export_reports(
+        self,
+        batch: str,
+        closed: bool = True,
+        qs=None
+    ) -> Generator[Dict[str, Any], None, None]:
         """Exports results. IO is left out of scope here as well
 
         :param batch: Certain batch to extract
@@ -186,7 +195,7 @@ class AbstractTaskType:
         :type qs: QuerySet
 
         :returns: Generator of lists of dicts with results
-        :rtype: __generator[dict]
+        :rtype: Generator[Dict[str, Any], None, None]
         """
         if qs is None:
             query = Q()
@@ -201,28 +210,28 @@ class AbstractTaskType:
 
         for task in qs:
             yield list(map(lambda a: a.as_dict(),
-                       self.answer_model.objects(task=task)))
+                           self.answer_model.objects(task=task)))
 
-    def get_leaders(self) -> list:
+    def get_leaders(self) -> List[Tuple[ObjectId, int]]:
         """Return sorted list of tuples (user_id, tasks_done)
 
         :returns: list of tuples (user_id, tasks_done)
-        :rtype: list[tuple[ObjectId, int]]
+        :rtype: List[Tuple[ObjectId, int]]
         """
         return self._leaderboard_manager.get_leaders()
 
-    def get_leaderboard(self, limit: int = 10) -> list:
+    def get_leaderboard(self, limit: int = 10) -> List[Dict]:
         """Find users who contributed the most
 
         :param limit: number of top users to return
-        :type limit: integer
+        :type limit: int
 
         :returns: List of dicts {user: user_obj, freq: count}
-        :rtype: list[dict]
+        :rtype: List[Dict]
         """
         return self._leaderboard_manager.get_leaderboard(limit)
 
-    def get_next(self, user: User) -> dict:
+    def get_next(self, user: User) -> Dict:
         """
         Finds given user a new task and starts new WorkSession
 
@@ -230,7 +239,7 @@ class AbstractTaskType:
         :type user: User
 
         :returns: Prepared dictionary of model, or empty dictionary
-        :rtype: dict
+        :rtype: Dict
         """
         task = self._get_next_task(user)
 
@@ -246,7 +255,7 @@ class AbstractTaskType:
 
             return {}
 
-    def _get_next_task(self, user: User) -> AbstractTask:
+    def _get_next_task(self, user: User) -> Optional[AbstractTask]:
         """
         Finds given user a new task
 
@@ -254,7 +263,7 @@ class AbstractTaskType:
         :type user: User
 
         :returns: Model instance or None
-        :rtype: AbstractTask
+        :rtype: Optional[AbstractTask]
         """
         rs = None
         base_q = Q(task_type=self.type_name) \
@@ -298,14 +307,19 @@ class AbstractTaskType:
         else:
             return None
 
-    def record_activity(self, user_id: ObjectId, task_id: str, seconds: int) -> None:
+    def record_activity(
+        self,
+        user_id: Union[AnyStr, ObjectId],
+        task_id: AnyStr,
+        seconds: int
+    ) -> None:
         """
         Increases the counter of activity for current user in given task.
 
         :param user_id: ID of user, who gets new task
-        :type user_id: bytes | str | ObjectId
+        :type user_id: Union[AnyStr, ObjectId]
         :param task_id: Current task
-        :type task_id: str
+        :type task_id: AnyStr
         :param seconds: User was active for
         :type seconds: int
 
@@ -322,15 +336,15 @@ class AbstractTaskType:
         except self.task_model.DoesNotExist:
             raise TaskNotFoundError()
 
-    def skip_task(self, task_id, user):
+    def skip_task(self, task_id: AnyStr, user: User):
         """
         Marks given task as a skipped by a given user
         Assumes that user is eligible for this kind of tasks
 
         :param task_id: Given task ID
-        :type task_id: basestring
+        :type task_id: AnyStr
         :param user: an instance of User model who provided an answer
-        :type user: models.User
+        :type user: User
 
         :raises: TaskSkipError, TaskNotFoundError
         """
@@ -351,19 +365,19 @@ class AbstractTaskType:
     def on_task_done(
         self,
         user: User,
-        task_id: str,
-        result: dict
+        task_id: AnyStr,
+        result: Dict[str, Any]
     ) -> None:
         """
         Saves user's answers for a given task.
         Assumes that user is eligible for this kind of tasks.
 
         :param task_id: Given task ID
-        :type task_id: str
+        :type task_id: AnyStr
         :param user: an instance of User model who provided an answer
         :type user: User
         :param result: Task solving result
-        :type result: dict
+        :type result: Dict[str, Any]
 
         :raises: TaskSaveError - in case of general problems
         :raises: TaskValidationError - in case of validation problems
@@ -407,9 +421,11 @@ class AbstractTaskType:
         except (OperationError, LookUpError, InvalidQueryError) as err:
             raise TaskSaveError(err, get_tb())
 
-    def _is_ready_for_autoclose(self,
-                                task: AbstractTask,
-                                answer: AbstractAnswer) -> bool:
+    def _is_ready_for_autoclose(
+        self,
+        task: AbstractTask,
+        answer: AbstractAnswer
+    ) -> bool:
         """
         Checks if task could be closed before it
         Should be overridden if you need more complex logic.
@@ -465,12 +481,12 @@ class AbstractTaskType:
 
         return closed
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Prepare simplified dict that contains basic info about the task type.
 
         :return: distilled dict with basic info
-        :rtype: dict
+        :rtype: Dict[str, Any]
         """
 
         closed_tasks = self.task_model.objects(closed=True).count()  # type: int

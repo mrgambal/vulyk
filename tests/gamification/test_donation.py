@@ -44,8 +44,8 @@ class TestDonation(BaseTest):
 
         EventModel.objects.delete()
         FundModel.objects.delete()
-        FundModel._get_db()['images.files'].remove()
-        FundModel._get_db()['images.chunks'].remove()
+        FundModel._get_db()['images.files'].drop()
+        FundModel._get_db()['images.chunks'].drop()
         UserStateModel.objects.delete()
 
     def test_donation_service_success(self):

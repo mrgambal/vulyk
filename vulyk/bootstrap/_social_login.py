@@ -2,12 +2,13 @@
 """Module contains stuff related to interoperability with PSA."""
 
 import datetime
+from typing import Optional, Dict
 
-from flask import g
 import flask_login as login
-from social_flask_mongoengine.models import init_social
+from flask import g
 from social_flask.routes import social_auth
 from social_flask.template_filters import backends
+from social_flask_mongoengine.models import init_social
 
 from vulyk.models.user import User
 
@@ -16,7 +17,7 @@ __all__ = [
 ]
 
 
-def init_social_login(app, db):
+def init_social_login(app, db) -> None:
     """
     Login manager initialisation.
 
@@ -34,7 +35,7 @@ def init_social_login(app, db):
     login_manager.init_app(app)
 
     @login_manager.user_loader
-    def load_user(userid):
+    def load_user(userid) -> Optional[User]:
         try:
             user = User.objects.get(id=userid)
             if user:
@@ -45,11 +46,11 @@ def init_social_login(app, db):
             return None
 
     @app.before_request
-    def global_user():
+    def global_user() -> None:
         g.user = login.current_user._get_current_object()
 
     @app.context_processor
-    def inject_user():
+    def inject_user() -> Dict[str, Optional[User]]:
         try:
             return {'user': g.user}
         except AttributeError:

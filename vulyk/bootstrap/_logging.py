@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 
-def init_logger(app):
+def init_logger(app) -> None:
     """
     :param app: Current Flask application
     :type app: flask.Flask 

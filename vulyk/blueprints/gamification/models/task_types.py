@@ -1,4 +1,6 @@
 # coding=utf-8
+from typing import Dict, Optional, Union
+
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import Batch
 
@@ -14,15 +16,15 @@ class AbstractGamifiedTaskType(AbstractTaskType):
         IMPORTANT_KEY: False
     }
 
-    def _get_next_open_batch(self) -> Batch:
+    def _get_next_open_batch(self) -> Optional[Batch]:
         """
         :return: Next open batch for this task type
-        :rtype: Batch or None
+        :rtype: Optional[Batch]
         """
 
         for batch in Batch.objects.filter(
-                task_type=self.type_name,
-                closed__ne=True).order_by('id'):
+            task_type=self.type_name,
+            closed__ne=True).order_by('id'):
 
             if batch.tasks_count == batch.tasks_processed:
                 continue
@@ -31,13 +33,13 @@ class AbstractGamifiedTaskType(AbstractTaskType):
 
         return None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Union[str, Optional[Dict]]]:
         """
         Prepare simplified dict that contains basic info about the task type +
         information on next open batch
 
         :return: distilled dict with basic info
-        :rtype: dict
+        :rtype: Dict[str, Union[str, Optional[Dict]]]
         """
 
         resp = super(AbstractGamifiedTaskType, self).to_dict()

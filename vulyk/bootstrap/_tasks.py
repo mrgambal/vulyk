@@ -2,18 +2,20 @@
 """Module contains code that performs plugins initialisation."""
 
 import os.path
+from typing import List, Dict
 
 import jinja2
 from flask_assets import Bundle
 from werkzeug.utils import import_string
 
+from vulyk.models.task_types import AbstractTaskType
 
 __all__ = [
     'init_plugins'
 ]
 
 
-def _init_plugin_assets(app, task_type, static_path):
+def _init_plugin_assets(app, task_type, static_path) -> List[str]:
     """
     Bundle plugin static files.
 
@@ -25,7 +27,7 @@ def _init_plugin_assets(app, task_type, static_path):
     :type static_path: str
 
     :return: List of paths to plugin's asset files.
-    :rtype: list[str]
+    :rtype: List[str]
     """
     app.logger.debug('Collecting <%s> assets.', task_type.type_name)
 
@@ -61,7 +63,7 @@ def _init_plugin_assets(app, task_type, static_path):
     return files_to_watch
 
 
-def init_plugins(app):
+def init_plugins(app) -> Dict[str, AbstractTaskType]:
     """
     Extracts modules (task types) from global configuration.
 
@@ -69,7 +71,7 @@ def init_plugins(app):
     :type app: flask.Flask
 
     :return: Dictionary with instantiated TaskType objects
-    :rtype: dict[str, vulyk.models.task_types.AbstractTaskType]
+    :rtype: dict[str, AbstractTaskType]
     """
     task_types = {}
     loaders = {}

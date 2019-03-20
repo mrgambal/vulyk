@@ -2,14 +2,19 @@
 """Package contains CLI tools related to managing batches of tasks."""
 
 from copy import deepcopy
+from typing import List, Optional, Dict
 
 import click
 
+from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import Batch
 
 
-def add_batch(batch_id, count, task_type, default_batch,
-              batch_meta=None):
+def add_batch(batch_id: str,
+              count: int,
+              task_type: AbstractTaskType,
+              default_batch: str,
+              batch_meta: Optional[Dict] = None) -> None:
     """
     Updates or creates new batch after loading new dataset.
     Only default batch may be extended.
@@ -19,11 +24,11 @@ def add_batch(batch_id, count, task_type, default_batch,
     :param count: Number of tasks to load
     :type count: int
     :param task_type: Type of tasks loaded into the batch
-    :type task_type: vulyk.models.task_types.AbstractTaskType
+    :type task_type: AbstractTaskType
     :param default_batch: Name of the default batch
     :type default_batch: str
     :param batch_meta: User params to override default batch meta
-    :type batch_meta: dict|None
+    :type batch_meta: Optional[Dict]
 
     :raise: click.BadParameter
     """
@@ -74,7 +79,10 @@ def add_batch(batch_id, count, task_type, default_batch,
         )
 
 
-def validate_batch(ctx, param, value, default_batch):
+def validate_batch(ctx,
+                   param: str,
+                   value: str,
+                   default_batch: str) -> str:
     """
     Refuses your attempts to add tasks to existing batch (except 'default')
 
@@ -87,7 +95,8 @@ def validate_batch(ctx, param, value, default_batch):
     :param default_batch: Name of the default batch
     :type default_batch: str
 
-    :return: true if value passes
+    :return: the value if is valid
+    :rtype: str
 
     :raise: click.BadParameter
     """
@@ -98,9 +107,9 @@ def validate_batch(ctx, param, value, default_batch):
         return value
 
 
-def batches_list():
+def batches_list() -> List[str]:
     """
     :return: List of batches IDs to validate CLI input
-    :rtype: list[str]
+    :rtype: List[str]
     """
     return list(Batch.objects.scalar('id'))

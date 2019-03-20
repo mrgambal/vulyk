@@ -38,3 +38,9 @@ History
 * Added keys SITE_LOGO and SITE_TITLE
 * Added key THANKS_TASK_MESSAGE
 * Fixed templates for navigate.
+
+0.5.0 (2019-03-20)
+------------------
+* dropped python 3.4 support
+* enabled python 3.7 support
+* dropped support for MongoDB prior to 3.4
