@@ -69,8 +69,8 @@ class TestEventModels(BaseTest):
 
         EventModel.objects.delete()
         FundModel.objects.delete()
-        FundModel._get_db()['images.files'].remove()
-        FundModel._get_db()['images.chunks'].remove()
+        FundModel._get_db()['images.files'].drop()
+        FundModel._get_db()['images.chunks'].drop()
         RuleModel.objects.delete()
 
         super().tearDown()

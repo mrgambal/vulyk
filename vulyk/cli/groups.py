@@ -1,11 +1,13 @@
 # -*- coding=utf-8 -*-
-import click
 import re
+from typing import List, Generator
+
+import click
 
 from vulyk.models.user import Group, User
 
 
-def get_groups_ids():
+def get_groups_ids() -> List[str]:
     """
     Returns list of groups codes
 
@@ -14,15 +16,20 @@ def get_groups_ids():
     return Group.objects().scalar('id')
 
 
-def validate_id(ctx, param, value):
+def validate_id(ctx,
+                param: str,
+                value: str) -> str:
     """
     Allows group code to consist only of letters/numbers/underscore
 
     :param ctx: Click context
     :param param: Name of parameter (`id`)
+    :type param: str
     :param value: Value of `id` parameter
+    :type value: str
 
     :return: true if value passes
+    :rtype: str
 
     :raise click.BadParameter:
     """
@@ -33,7 +40,7 @@ def validate_id(ctx, param, value):
                                  'are allowed. Underscore can\'t go first')
 
 
-def list_groups():
+def list_groups() -> Generator[str, None, None]:
     """
     Generates list of group representation strings
 
@@ -42,7 +49,7 @@ def list_groups():
     return (repr(g) for g in Group.objects.all())
 
 
-def new_group(gid, description):
+def new_group(gid: str, description: str) -> None:
     """
     Creates new group
 
@@ -59,7 +66,7 @@ def new_group(gid, description):
         raise click.BadParameter('No group was found with id ' + gid)
 
 
-def remove_group(gid):
+def remove_group(gid: str) -> None:
     """
     Delete existing group
 
@@ -74,7 +81,7 @@ def remove_group(gid):
         raise click.BadParameter('No group was found with id ' + gid)
 
 
-def add_task_type(gid, task_type):
+def add_task_type(gid: str, task_type: str) -> None:
     """
     Appends task type to the list of allowed ones of certain group
 
@@ -91,7 +98,7 @@ def add_task_type(gid, task_type):
         raise click.BadParameter('No group was found with id ' + gid)
 
 
-def remove_task_type(gid, task_type):
+def remove_task_type(gid: str, task_type: str) -> None:
     """
     Removes task type from the list of allowed types of specified group
 
@@ -108,7 +115,7 @@ def remove_task_type(gid, task_type):
         raise click.BadParameter('No group was found with id ' + gid)
 
 
-def assign_to(username, gid):
+def assign_to(username: str, gid: str) -> None:
     """
     Assigns a group to user
 
@@ -128,7 +135,7 @@ def assign_to(username, gid):
         raise click.BadParameter('No group was found with id ' + gid)
 
 
-def resign(username, gid):
+def resign(username: str, gid: str) -> None:
     """
     Excludes user from specified group
 

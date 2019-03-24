@@ -1,16 +1,16 @@
 # coding=utf-8
-from collections import Iterator
 from datetime import datetime
 from decimal import Decimal
+from typing import Iterator, Dict, List
 
 from bson import ObjectId
 
 from vulyk.models.stats import WorkSession
 from vulyk.models.tasks import AbstractAnswer, Batch
 from vulyk.signals import on_batch_done, on_task_done
-
 from .core.events import Event
 from .core.queries import MongoRuleExecutor
+from .core.rules import Rule
 from .core.state import UserState
 from .models.events import EventModel
 from .models.rules import RuleModel, ProjectAndFreeRules
@@ -59,26 +59,26 @@ def track_events(sender: object, answer: AbstractAnswer) -> None:
             get_actual_rules(
                 state=state,
                 task_type_name=batch.task_type,
-                now=dt)))  # type: list[Rule]
-        points = batch.batch_meta[POINTS_PER_TASK_KEY]
+                now=dt)))  # type: Iterator[Rule]
+        points = Decimal(batch.batch_meta[POINTS_PER_TASK_KEY])
 
         for b in badges:
             if b.bonus:
                 points += b.bonus
 
-        coins = batch.batch_meta[COINS_PER_TASK_KEY]
+        coins = Decimal(batch.batch_meta[COINS_PER_TASK_KEY])
 
         current_level = gamification.get_level(state.points)
-        updated_level = gamification.get_level(state.points + Decimal(points))
+        updated_level = gamification.get_level(state.points + points)
 
         # III. Alter the state and create event
         UserStateModel.update_state(
             diff=UserState(
                 user=user,
                 level=updated_level,
-                points=Decimal(points),
-                actual_coins=Decimal(),
-                potential_coins=Decimal(coins),
+                points=points,
+                actual_coins=Decimal(0),
+                potential_coins=coins,
                 achievements=badges,
                 last_changed=dt))
         EventModel.from_event(
@@ -91,8 +91,8 @@ def track_events(sender: object, answer: AbstractAnswer) -> None:
                 achievements=badges,
                 acceptor_fund=None,
                 level_given=None
-                    if current_level == updated_level
-                    else updated_level,
+                if current_level == updated_level
+                else updated_level,
                 viewed=False)
         ).save()
 
@@ -101,7 +101,7 @@ def get_actual_rules(
     state: UserState,
     task_type_name: str,
     now: datetime
-) -> Iterator:
+) -> Iterator[Rule]:
     """
     Returns a list of eligible rules.
 
@@ -113,7 +113,7 @@ def get_actual_rules(
     :type now: datetime
 
     :return: Iterator of Rule instances
-    :rtype: Iterator[vulyk.blueprints.gamification.core.rules.Rule]
+    :rtype: Iterator[Rule]
     """
     return RuleModel.get_actual_rules(
         skip_ids=list(state.achievements.keys()),
@@ -142,10 +142,10 @@ def materialize_coins(sender: Batch) -> None:
 
     coins = sender.batch_meta[COINS_PER_TASK_KEY]  # type: float
     # potentially expensive on memory
-    task_ids = task_type.task_model.ids_in_batch(sender)  # type: list[str]
+    task_ids = task_type.task_model.ids_in_batch(sender)  # type: List[str]
     # potentially expensive on memory/CPU (it isn't an generator or something)
     group_by_count = task_type.answer_model \
-        .answers_numbers_by_tasks(task_ids)  # type: dict[ObjectId, int]
+        .answers_numbers_by_tasks(task_ids)  # type: Dict[ObjectId, int]
 
     # forgive me, Father, I have sinned so bad...
     for (uid, freq) in group_by_count.items():

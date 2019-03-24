@@ -1,5 +1,5 @@
 # Config file for automatic testing at travis-ci.org
-dist: trusty
+dist: xenial
 sudo: false
 language: python
 
@@ -12,9 +12,9 @@ services:
 - mongodb
 
 python:
-  - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -r requirements.txt

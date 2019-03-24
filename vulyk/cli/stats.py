@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
+
 from mongoengine import Q
 
 from vulyk.app import TASKS_TYPES
 from vulyk.models.tasks import Batch, AbstractTask
 
 
-def batch_completeness(batch_name, task_type):
+def batch_completeness(batch_name: str, task_type: str) -> OrderedDict:
     """
     Gathers completeness stats on every batch using 2 metrics:
     - actually completed tasks
@@ -54,7 +55,7 @@ def batch_completeness(batch_name, task_type):
     return batches
 
 
-def _breakdown_by_processed(batch):
+def _breakdown_by_processed(batch: str) -> str:
     """
     Combines stats on responses count ratio for certain batch
 

@@ -5,6 +5,7 @@ as a source of truth.
 """
 from collections import namedtuple
 from datetime import date, datetime, timedelta
+from typing import Dict, List
 
 from bson import ObjectId
 from mongoengine.queryset.base import BaseQuerySet
@@ -25,12 +26,12 @@ class RuleQueryBuilder:
     """
 
     def __init__(self) -> None:
-        self._filter_first = {}  # type: dict
-        self._projection = {}  # type: dict
-        self._filter_second = {}  # type: dict
-        self._group = {}  # type: dict
+        self._filter_first = {}  # type: Dict
+        self._projection = {}  # type: Dict
+        self._filter_second = {}  # type: Dict
+        self._group = {}  # type: Dict
 
-    def build_for(self, user_id: ObjectId) -> list:
+    def build_for(self, user_id: ObjectId) -> List[Dict[str, Dict]]:
         """
         Prepares a pipeline of actions to be passed to data source.
 
@@ -38,7 +39,7 @@ class RuleQueryBuilder:
         :type user_id: bson.ObjectId
 
         :returns: List of actions to be done.
-        :rtype: list[dict]
+        :rtype: List[Dict[str, Dict]]
         """
         raise NotImplementedError()
 
@@ -110,7 +111,7 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
                         'year': '$year'}
                 }
 
-    def build_for(self, user_id: ObjectId) -> list:
+    def build_for(self, user_id: ObjectId) -> List[Dict[str, Dict]]:
         """
         Prepares a pipeline of actions to be passed to MongoDB Aggregation
         Framework.
@@ -119,20 +120,22 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
         :type user_id: bson.ObjectId
 
         :returns: List of actions to be done within the aggregation.
-        :rtype: list[dict]
+        :rtype: List[Dict[str, Dict]]
         """
         filter_first = self._filter_first.copy()
         filter_first['user'] = user_id
 
         result = [{'$match': filter_first}]
 
-        for statement in [
+        for statement in (
             self._Pair(key='$project', clause=self._projection),
             self._Pair(key='$match', clause=self._filter_second),
             self._Pair(key='$group', clause=self._group)
-        ]:
+        ):
             if bool(statement.clause):
                 result.append({statement.key: statement.clause})
+
+        result.append({"$count": "achieved"})  # MongoDB 3.4+
 
         return result
 
@@ -161,9 +164,11 @@ class MongoRuleExecutor:
         :return: True if user stats comply to the rule
         :rtype: bool
         """
-
-        # there is no way to get the size of aggregated batch using pymongo
-        # except explicit cursor dereferencing.
         query = MongoRuleQueryBuilder(rule).build_for(user_id)
+        cursor = collection.aggregate(*query)
 
-        return sum(1 for _ in collection.aggregate(*query)) >= rule.limit
+        try:
+            record = next(cursor)
+            return record["achieved"] >= rule.limit
+        except StopIteration:
+            return False

@@ -2,9 +2,10 @@
 """
 Contains all DB models related to aggregated user state within the game
 """
-from collections import Iterator
+from datetime import datetime
 from decimal import Decimal
 from enum import Enum
+from typing import Iterator, Type
 
 from bson import ObjectId
 from flask_mongoengine import Document
@@ -14,7 +15,6 @@ from mongoengine import (
 )
 
 from vulyk.models.user import User
-
 from .rules import RuleModel
 from ..core.state import UserState
 
@@ -37,13 +37,20 @@ class StateSortingKeys(Enum):
 class UserStateModel(Document):
     user = ReferenceField(document_type=User, required=True, unique=True)
     level = IntField(min_value=0, default=0)
-    points = DecimalField(min_value=0, default=0)
-    actual_coins = DecimalField(min_value=0, default=0, db_field='actualCoins')
-    potential_coins = DecimalField(
-        min_value=0, default=0, db_field='potentialCoins')
+    # As for mongoengine 0.17.0 the min_value parameter governs not the field
+    # value only, but every influx value as well.
+    # E.g. the field has value of Decimal(100) and one wants to decrease by 1.
+    # The change is transformed from points__dec: Decimal(1) to points__inc: Decimal(-1),
+    # and then the value Decimal(-1) is validated against self.min_value = 0.
+    # Even if the result is supposed to be 99, validation will fail as -1 < 0.
+    points = DecimalField(default=0)
+    actual_coins = DecimalField(default=0, db_field='actualCoins')
+    potential_coins = DecimalField(default=0, db_field='potentialCoins')
     achievements = ListField(
         field=ReferenceField(document_type=RuleModel, required=False))
-    last_changed = ComplexDateTimeField(db_field='lastChanged')
+    last_changed = ComplexDateTimeField(
+        db_field='lastChanged',
+        default=datetime.utcnow)
 
     meta = {
         'collection': 'gamification.userState',
@@ -75,7 +82,10 @@ class UserStateModel(Document):
         )
 
     @classmethod
-    def from_state(cls, state: UserState):
+    def from_state(
+        cls,
+        state: UserState
+    ):
         """
         UserState to DB-specific model converter.
 
@@ -97,7 +107,10 @@ class UserStateModel(Document):
         )
 
     @classmethod
-    def get_or_create_by_user(cls, user: User) -> UserState:
+    def get_or_create_by_user(
+        cls,
+        user: User
+    ) -> UserState:
         """
         Returns an existing UserStateModel instance bound to the user, or a new
         one if didn't exist before.
@@ -116,7 +129,10 @@ class UserStateModel(Document):
         return state_model.to_state()
 
     @classmethod
-    def update_state(cls, diff: UserState) -> None:
+    def update_state(
+        cls,
+        diff: UserState
+    ) -> None:
         """
         Prepares and conducts an atomic update query from passed diff.
 
@@ -145,7 +161,11 @@ class UserStateModel(Document):
         cls.objects.get(user=diff.user).update(**update_dict)
 
     @classmethod
-    def get_top_users(cls, limit: int, sort_by: StateSortingKeys) -> Iterator:
+    def get_top_users(
+        cls,
+        limit: int,
+        sort_by: StateSortingKeys
+    ) -> Iterator[UserState]:
         """
         Enumerates over top users basing on passed sorting criteria and
         limiting number. The yield sorting is descending.
@@ -170,7 +190,11 @@ class UserStateModel(Document):
         return str(self)
 
     @classmethod
-    def withdraw(cls, user: User, amount: Decimal) -> bool:
+    def withdraw(
+        cls,
+        user: User,
+        amount: Decimal
+    ) -> bool:
         """
         Reflects money withdrawal from current account.
 
@@ -185,18 +209,20 @@ class UserStateModel(Document):
         :return: True if needed amount was successfully withdrawn
         :rtype: bool
         """
-        amount = float(amount)
-
         if amount <= 0:
             raise RuntimeError('Donation amount should be positive')
 
         update_dict = {'dec__actual_coins': amount}
 
         return cls.objects(user=user, actual_coins__gte=amount) \
-            .update(**update_dict) == 1
+                   .update(**update_dict) == 1
 
     @classmethod
-    def transfer_coins_to_actual(cls, uid: ObjectId, amount: Decimal) -> bool:
+    def transfer_coins_to_actual(
+        cls,
+        uid: ObjectId,
+        amount: Decimal
+    ) -> bool:
         """
         :param uid: Current user ID
         :type uid: ObjectId
@@ -206,7 +232,6 @@ class UserStateModel(Document):
         :return: True if success
         :rtype: bool
         """
-        amount = float(amount)
         result = cls \
             .objects(user=uid, potential_coins__gte=amount) \
             .update_one(inc__actual_coins=amount, dec__potential_coins=amount)

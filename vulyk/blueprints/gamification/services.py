@@ -5,6 +5,7 @@ Services module
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
+from typing import Optional
 
 from vulyk.blueprints.gamification.core.events import DonateEvent
 from vulyk.blueprints.gamification.core.state import UserState
@@ -201,14 +202,14 @@ class StatsService:
         return EventModel.amount_of_money_earned(None)
 
     @classmethod
-    def state_of_user(cls, user: User) -> UserState:
+    def state_of_user(cls, user: User) -> Optional[UserState]:
         """
         Return current state of given user
 
         :return: Object which holds aggregated values
         on user current state for the registered user
         and None otherwise
-        :rtype: UserState or None
+        :rtype: Optional[UserState]
         """
 
         if user.is_anonymous:

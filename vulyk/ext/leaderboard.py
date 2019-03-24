@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
 from operator import itemgetter
+from typing import List, Tuple, Dict, Union
+
+from bson import ObjectId
 
 from vulyk.models.tasks import AbstractAnswer
 from vulyk.models.user import User
@@ -27,11 +30,11 @@ class LeaderBoardManager:
         self._answer_model = answer_model
         self._user_model = user_model
 
-    def get_leaders(self) -> list:
+    def get_leaders(self) -> List[Tuple[ObjectId, int]]:
         """Return sorted list of tuples (user_id, tasks_done)
 
         :returns: list of tuples (user_id, tasks_done)
-        :rtype: list[tuple[bson.ObjectId, int]]
+        :rtype: List[Tuple[ObjectId, int]]
         """
         scores = self._answer_model \
             .objects(task_type=self._task_type_name) \
@@ -39,14 +42,14 @@ class LeaderBoardManager:
 
         return sorted(scores.items(), key=itemgetter(1), reverse=True)
 
-    def get_leaderboard(self, limit: int) -> list:
+    def get_leaderboard(self, limit: int) -> List[Dict[str, Union[User, int]]]:
         """Find users who contributed the most
 
         :param limit: number of top users to return
         :type limit: int
 
         :returns: List of dicts {user: user_obj, freq: count}
-        :rtype: list[dict]
+        :rtype: List[Dict[str, Union[User, int]]]
         """
         result = []
         top = defaultdict(list)

@@ -2,6 +2,7 @@
 """Copy files from all static folders to root folder."""
 
 import os
+from typing import Dict
 
 from flask_collect.storage.file import Storage as FileStorage
 from werkzeug.utils import import_string
@@ -56,15 +57,15 @@ class Storage(FileStorage):
         self.old_blueprints = blueprints.copy()
         self.collect.app.blueprints = self._convert_plugins(blueprints)
 
-    def _convert_plugins(self, blueprints: dict) -> dict:
+    def _convert_plugins(self, blueprints: Dict) -> Dict[str, PluginWrapper]:
         """
         Here we create stubs for our plugins with blueprint-like interface.
 
         :param blueprints: blueprints dict
-        :type blueprints: dict
+        :type blueprints: Dict
 
         :return: Blueprints and our wrappers for plugins
-        :rtype: dict
+        :rtype: Dict[str, PluginWrapper]
         """
         enabled_tasks = self.collect.app.config.get('ENABLED_TASKS', {})
         prefix = self.collect.app.config.get('COLLECT_PLUGIN_DIR_PREFIX', '')

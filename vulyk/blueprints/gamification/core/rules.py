@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from typing import Dict, Union
+
 """
 Classes within the package are supposed to be intermittent containers between
 JSON sources and final queries. Everything that has anything to do with images,
@@ -89,7 +91,7 @@ class Rule:
 
         self._validate()
 
-    def _validate(self):
+    def _validate(self) -> None:
         """
         Verifies that the rule complies to internal invariants. Otherwise –
         the exception must be thrown.
@@ -153,12 +155,12 @@ class Rule:
             if (self._tasks_number or 0) > 0 \
             else (self._days_number or 0)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Union[str, int, bool]]:
         """
         Could be used as a source for JSON or any other representation format
 
         :return: Dict-ized object view
-        :rtype: dict
+        :rtype: Dict[str, Union[str, int, bool]]
         """
         return {
             'id': self.id,
@@ -280,12 +282,12 @@ class ProjectRule(Rule):
             is_weekend=rule.is_weekend,
             is_adjacent=rule.is_adjacent)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Union[str, int, bool]]:
         """
         Could be used as a source for JSON or any other representation format
 
         :return: Dict-ized object view
-        :rtype: dict
+        :rtype: Dict[str, Union[str, int, bool]]
         """
         result = super().to_dict()
         result['task_type_name'] = self.task_type_name

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from datetime import datetime
+from typing import TypeVar, Type
 
 from bson import ObjectId
 from mongoengine.errors import OperationError
@@ -27,13 +28,14 @@ class WorkSessionManager:
 
     Could be overridden in plugins.
     """
+    U = TypeVar('U', bound=WorkSession)
 
-    def __init__(self, work_session_model: type) -> None:
+    def __init__(self, work_session_model: Type[U]) -> None:
         """
         Constructor.
 
         :param work_session_model: Underlying mongoDB Document subclass.
-        :type work_session_model: type
+        :type work_session_model: Type
         """
         assert issubclass(work_session_model, WorkSession), \
             'You should define working session model properly'

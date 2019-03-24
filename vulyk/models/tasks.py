@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Module contains all models directly related to the main entity - tasks."""
 from collections import namedtuple
+from typing import Any, Dict, List
 
+from bson import ObjectId
 from flask_mongoengine import Document
 from mongoengine import (
     BooleanField,
@@ -121,11 +123,11 @@ class AbstractTask(Document):
         ]
     }
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> Dict[str, Any]:
         """
         Converts the model-instance into a safe and lightweight dictionary.
 
-        :rtype: dict
+        :rtype: Dict[str, Any]
         """
         return {
             'id': self.id,
@@ -134,7 +136,7 @@ class AbstractTask(Document):
         }
 
     @classmethod
-    def ids_in_batch(cls, batch: Batch) -> list:
+    def ids_in_batch(cls, batch: Batch) -> List[str]:
         """
         Collects IDs of all tasks that belong to certain batch.
 
@@ -142,7 +144,7 @@ class AbstractTask(Document):
         :type batch: Batch
 
         :return: List of IDs
-        :rtype: list[str]
+        :rtype: List[str]
         """
         return cls.objects(batch=batch).distinct('id')
 
@@ -201,25 +203,25 @@ class AbstractAnswer(Document):
         pass
 
     @classmethod
-    def answers_numbers_by_tasks(cls, task_ids: list) -> dict:
+    def answers_numbers_by_tasks(cls, task_ids: List[str]) -> Dict[ObjectId, int]:
         """
         Groups answers, filtered by tasks they belong to, by user and count
         number of answers for every user.
 
         :param task_ids: List of tasks IDs
-        :type task_ids: list[str]
+        :type task_ids: List[str]
 
         :return: Map having user IDs as keys and answers numbers as values
-        :rtype: dict[ObjectId, int]
+        :rtype: Dict[ObjectId, int]
         """
         return cls.objects(task__in=task_ids).item_frequencies('created_by')
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> Dict[str, Dict]:
         """
         Converts the model-instance into a safe that will include also task
         and user.
 
-        :rtype: dict
+        :rtype: Dict[str, Dict]
         """
         return {
             'task': self.task.as_dict(),

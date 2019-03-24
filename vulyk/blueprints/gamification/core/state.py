@@ -80,7 +80,7 @@ class UserState:
             assert isinstance(self.achievements, dict), \
                 'Achievements value must be a dict'
             assert isinstance(self.last_changed, datetime), \
-                'Achievements value must be a datetime'
+                'Last changed value must be a datetime'
         except AssertionError as e:
             raise InvalidUserStateException(e)
 

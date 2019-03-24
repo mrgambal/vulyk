@@ -2,15 +2,15 @@
 """
 Contains all DB models related to foundations we donate or we rely on
 """
-from collections import Iterator
 from enum import Enum
+from typing import Iterator, Optional
 
 from flask_mongoengine import Document
 from mongoengine import (
     StringField, EmailField, ImageField, BooleanField, Q
 )
 
-from ..core.events import Fund
+from ..core.foundations import Fund
 
 __all__ = [
     'FundFilterBy',
@@ -87,15 +87,15 @@ class FundModel(Document):
         return result
 
     @classmethod
-    def find_by_id(cls, fund_id: str) -> Fund:
+    def find_by_id(cls, fund_id: str) -> Optional[Fund]:
         """
         Convenience method that returns an optional fund by its ID.
 
         :param fund_id: Fund's ID
         :type fund_id: str
 
-        :return: Found
-        :rtype: Fund|None
+        :return: Found instance or none.
+        :rtype: Optional[Fund]
         """
         result = None
 
@@ -108,8 +108,9 @@ class FundModel(Document):
 
     @classmethod
     def get_funds(
-        cls, filter_by: FundFilterBy = FundFilterBy.NO_FILTER
-    ) -> Iterator:
+        cls,
+        filter_by: FundFilterBy = FundFilterBy.NO_FILTER
+    ) -> Iterator[Fund]:
         """
         Returns an enumeration of funds available using the filtering policy
         passed.

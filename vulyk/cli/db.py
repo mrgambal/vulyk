@@ -2,12 +2,11 @@
 import gzip
 import os
 
-from click import echo
 import bz2file as bz2
+from click import echo
 
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.utils import chunked
-
 
 try:
     import ujson as json

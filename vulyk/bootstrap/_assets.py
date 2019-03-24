@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os.path
+from typing import List
 
 from flask_assets import Environment, Bundle
 from flask_collect import Collect
@@ -9,7 +10,7 @@ __all__ = [
 ]
 
 
-def _get_files_for_settings(app, assets_key):
+def _get_files_for_settings(app, assets_key) -> List[str]:
     """
     Extract a list of full paths to given assets group.
 
@@ -19,7 +20,7 @@ def _get_files_for_settings(app, assets_key):
     :type assets_key: str
 
     :returns: list of paths to assets
-    :rtype: list[str]
+    :rtype: List[str]
     """
     result = []
 
@@ -32,7 +33,7 @@ def _get_files_for_settings(app, assets_key):
     return result
 
 
-def init(app):
+def init(app) -> None:
     """
     Bundle projects assets.
 

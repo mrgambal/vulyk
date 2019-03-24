@@ -27,7 +27,7 @@ class RequiredBooleanField(wtforms.fields.SelectField):
     # to boolean fields with required=True in the model
     # Ultimatelly false values wouldn't pass validation of the form
     # thus the workaround
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         choices = [
             (True, 'True'),
             (False, 'False'),
@@ -46,7 +46,7 @@ class AuthModelView(ModelView):
     """
     extra_js = ['//cdn.ckeditor.com/4.7.1/standard/ckeditor.js']
 
-    def is_accessible(self):
+    def is_accessible(self) -> bool:
         return (
             login.current_user.is_authenticated and
             login.current_user.is_admin()

@@ -7,7 +7,7 @@ project's CLI.
 from vulyk.models.user import Group, User
 
 
-def project_init(allowed_types):
+def project_init(allowed_types) -> None:
     """
     The method reassures that a default group is already available,
     otherwise it will be created and passed task types are to be made
@@ -31,7 +31,7 @@ def project_init(allowed_types):
     User.objects.update(add_to_set__groups=group)
 
 
-def is_initialized(default_key='default'):
+def is_initialized(default_key='default') -> bool:
     """
     The method checks whether the default group has been created already or
     has not.

@@ -2,19 +2,15 @@
 """Every project must have a package called `utils`."""
 import os
 import sys
-from collections import Iterator
+from http import HTTPStatus
 from itertools import islice
+from typing import Iterator, Optional, Dict, Generator, Tuple
 
 import flask
 import ujson as json
 from flask import abort, Response
 
 from vulyk.models.user import User
-
-if sys.version_info.minor <= 4:  # PY 3.4
-    import http.client as HTTPStatus
-else:
-    from http import HTTPStatus
 
 __all__ = [
     'chunked',
@@ -26,14 +22,14 @@ __all__ = [
 ]
 
 
-def resolve_task_type(type_id: str, tasks: dict, user: User):
+def resolve_task_type(type_id: str, tasks: Dict, user: User):
     """
     Looks for `type_id` in TASK_TYPES map.
 
     :param type_id: ID of the TaskType in the map.
     :type type_id: str
     :param tasks: map of `task type id -> task type instance`
-    :type tasks: dict
+    :type tasks: Dict[str, vulyk.models.task_types.AbstractTaskType]
     :param user: Current user.
     :type user: User
 
@@ -53,7 +49,7 @@ def resolve_task_type(type_id: str, tasks: dict, user: User):
 
 
 # Borrowed from elasticutils
-def chunked(iterable: Iterator, n: int) -> Iterator:
+def chunked(iterable: Iterator, n: int) -> Generator[Tuple, None, None]:
     """Returns chunks of n length of iterable
 
     If len(iterable) % n != 0, then the last chunk will have length
@@ -70,7 +66,7 @@ def chunked(iterable: Iterator, n: int) -> Iterator:
     :type n: int
 
     :returns: Sequence of tuples of given size.
-    :rtype: __generator[tuple]
+    :rtype: Generator[Tuple, None, None]
     """
     iterable = iter(iterable)
 
@@ -82,7 +78,7 @@ def chunked(iterable: Iterator, n: int) -> Iterator:
             return
 
 
-def get_tb():
+def get_tb() -> Dict:
     """
     Returns traceback of the latest exception caught in 'except' block
 
@@ -91,7 +87,7 @@ def get_tb():
     return sys.exc_info()[2]
 
 
-def get_template_path(app, name: str) -> str:
+def get_template_path(app: flask.Flask, name: str) -> str:
     """
     Finds the path to the template.
 
@@ -110,16 +106,16 @@ def get_template_path(app, name: str) -> str:
     return 'base/%s' % name
 
 
-def json_response(result: dict,
-                  errors: Iterator = None,
+def json_response(result: Dict,
+                  errors: Optional[Iterator] = None,
                   status: int = HTTPStatus.OK) -> Response:
     """
     Handy helper to prepare unified responses.
 
     :param result: Data to be sent
-    :type result: dict
-    :param errors: List of errors
-    :type errors: list | set | tuple | dict
+    :type result: Dict
+    :param errors: List (set, tuple, dict) of errors
+    :type errors: Optional[Iterator]
     :param status: Response http-status
     :type status: int
 

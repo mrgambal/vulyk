@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Die Hauptstadt of our little project. Just a usual Flask application."""
+from typing import Dict
 
 import flask
 import flask_login as login
@@ -11,7 +12,8 @@ from vulyk.models.exc import TaskNotFoundError
 from vulyk.utils import NO_TASKS
 
 __all__ = [
-    'app'
+    'app',
+    'TASKS_TYPES'
 ]
 
 app = bootstrap.init_app(__name__)
@@ -226,13 +228,13 @@ def app_template_filter(s: str) -> str:
 
 # region Context processors
 @app.context_processor
-def is_initialized() -> dict:
+def is_initialized() -> Dict[str, bool]:
     """
     Extends the context with the flag showing that the application DB was
     successfully initialized.
 
     :return: a dict with the `init` flag
-    :rtype: dict
+    :rtype: Dict[str, bool]
     """
     return {
         'init': cli.is_initialized()

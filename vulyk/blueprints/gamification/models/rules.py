@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from collections import Iterator
+from typing import Iterator, List
 
 from flask_mongoengine import Document
 from mongoengine import StringField, IntField, BooleanField, Q
@@ -18,6 +18,7 @@ class RuleFilter:
     """
     Abstract class shows the idea of rules query filtering invariants.
     """
+
     def to_query(self) -> Q:
         """
         Prepares a filtering query.
@@ -35,6 +36,7 @@ class AllRules(RuleFilter):
     """
     Should return all rules.
     """
+
     def to_query(self) -> Q:
         """
         Prepares a filtering query.
@@ -53,6 +55,7 @@ class ProjectAndFreeRules(RuleFilter):
     Should return all rules related to a certain project along with
     project-agnostic ones.
     """
+
     def __init__(self, task_type_name: str) -> None:
         self._task_type_name = task_type_name
 
@@ -78,6 +81,7 @@ class StrictProjectRules(RuleFilter):
     """
     Should return all rules related only to a certain project.
     """
+
     def __init__(self, task_type_name: str) -> None:
         self._task_type_name = task_type_name
 
@@ -179,16 +183,16 @@ class RuleModel(Document):
     @classmethod
     def get_actual_rules(
         cls,
-        skip_ids: list,
+        skip_ids: List[str],
         rule_filter: RuleFilter,
         is_weekend: bool
-    ) -> Iterator:
+    ) -> Iterator[Rule]:
         """
         Prepare the list of rules to apply.
         Cutting off is possible by using different tiny yet smart heuristics.
 
         :param skip_ids: A list of rules to be skipped for any reason
-        :type skip_ids: list[str]
+        :type skip_ids: List[str]
         :param rule_filter: Prepared query container.
         :type rule_filter: RuleFilter
         :param is_weekend: If today is a working day, there is no reason to

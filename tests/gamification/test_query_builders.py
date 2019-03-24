@@ -14,7 +14,6 @@ from vulyk.blueprints.gamification.core.rules import Rule, ProjectRule
 from vulyk.blueprints.gamification.models.rules import (
     RuleModel, AllRules, ProjectAndFreeRules, StrictProjectRules)
 from vulyk.models.stats import WorkSession
-
 from ..base import BaseTest
 
 
@@ -32,7 +31,10 @@ class TestMongoQueryBuilder(BaseTest):
             rule_id='100')
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
-        expected = [{'$match': {'user': user_id, 'answer': {'$exists': True}}}]
+        expected = [
+            {'$match': {'user': user_id, 'answer': {'$exists': True}}},
+            {"$count": "achieved"}
+        ]
 
         self.assertEqual(expected, builder.build_for(user_id))
 
@@ -52,7 +54,11 @@ class TestMongoQueryBuilder(BaseTest):
         user_id = ObjectId()
         builder = MongoRuleQueryBuilder(rule=rule)
         expected = [
-            {'$match': {'user': user_id, 'taskType': project, 'answer': {'$exists': True}}}
+            {'$match': {
+                'user': user_id,
+                'taskType': project,
+                'answer': {'$exists': True}}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -73,7 +79,11 @@ class TestMongoQueryBuilder(BaseTest):
         then = datetime.combine(date.today() - timedelta(days=7),
                                 datetime.min.time())
         expected = [
-            {'$match': {'user': user_id, 'answer': {'$exists': True}, 'end_time': {'$gt': then}}}
+            {'$match': {
+                'user': user_id,
+                'answer': {'$exists': True},
+                'end_time': {'$gt': then}}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -100,7 +110,8 @@ class TestMongoQueryBuilder(BaseTest):
                 'user': user_id,
                 'answer': {'$exists': True},
                 'end_time': {'$gt': then},
-                'taskType': project}}
+                'taskType': project}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -124,7 +135,8 @@ class TestMongoQueryBuilder(BaseTest):
                 'dayOfWeek': {'$dayOfWeek': '$end_time'},
                 'year': {'$year': '$end_time'},
                 'week': {'$week': '$end_time'}}},
-            {'$match': {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}}
+            {'$match': {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -151,6 +163,7 @@ class TestMongoQueryBuilder(BaseTest):
                 'year': {'$year': '$end_time'},
                 'week': {'$week': '$end_time'}}},
             {'$match': {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -175,7 +188,8 @@ class TestMongoQueryBuilder(BaseTest):
                 'year': {'$year': '$end_time'},
                 'week': {'$week': '$end_time'}}},
             {'$match': {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}},
-            {'$group': {'_id': {'week': '$week', 'year': '$year'}}}
+            {'$group': {'_id': {'week': '$week', 'year': '$year'}}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -202,7 +216,8 @@ class TestMongoQueryBuilder(BaseTest):
                 'year': {'$year': '$end_time'},
                 'week': {'$week': '$end_time'}}},
             {'$match': {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}},
-            {'$group': {'_id': {'week': '$week', 'year': '$year'}}}
+            {'$group': {'_id': {'week': '$week', 'year': '$year'}}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -231,7 +246,8 @@ class TestMongoQueryBuilder(BaseTest):
                 'week': {'$week': '$end_time'},
             }},
             {'$match': {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}},
-            {'$group': {'_id': {'week': '$week', 'year': '$year'}}}
+            {'$group': {'_id': {'week': '$week', 'year': '$year'}}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -265,7 +281,8 @@ class TestMongoQueryBuilder(BaseTest):
                 'year': {'$year': '$end_time'},
                 'week': {'$week': '$end_time'}}},
             {'$match': {'$or': [{'dayOfWeek': 7}, {'dayOfWeek': 1}]}},
-            {'$group': {'_id': {'week': '$week', 'year': '$year'}}}
+            {'$group': {'_id': {'week': '$week', 'year': '$year'}}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -293,7 +310,8 @@ class TestMongoQueryBuilder(BaseTest):
                 'month': {'$month': '$end_time'},
                 'year': {'$year': '$end_time'}}},
             {'$group': {
-                '_id': {'day': '$day', 'month': '$month', 'year': '$year'}}}
+                '_id': {'day': '$day', 'month': '$month', 'year': '$year'}}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))
@@ -327,7 +345,8 @@ class TestMongoQueryBuilder(BaseTest):
                 'month': {'$month': '$end_time'},
                 'year': {'$year': '$end_time'}}},
             {'$group': {
-                '_id': {'day': '$day', 'month': '$month', 'year': '$year'}}}
+                '_id': {'day': '$day', 'month': '$month', 'year': '$year'}}},
+            {"$count": "achieved"}
         ]
 
         self.assertEqual(expected, builder.build_for(user_id))

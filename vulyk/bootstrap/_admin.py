@@ -13,14 +13,14 @@ __all__ = [
 
 
 class AuthAdminIndexView(admin.AdminIndexView):
-    def is_accessible(self):
+    def is_accessible(self) -> bool:
         return (
             login.current_user.is_authenticated and
             login.current_user.is_admin()
         )
 
 
-def init_admin(app):
+def init_admin(app) -> admin.Admin:
     adm = admin.Admin(
         app,
         'Vulyk: Admin',
