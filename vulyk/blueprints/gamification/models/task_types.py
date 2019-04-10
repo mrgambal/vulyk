@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from typing import Dict, Optional, Union
 
 from vulyk.models.task_types import AbstractTaskType

@@ -11,15 +11,18 @@ readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 with open('requirements.txt', 'r') as fd:
-    requirements = list(filter(lambda r: not r.strip().startswith('#'), fd.readlines()))
+    requirements = list(
+        filter(lambda r: not r.strip().startswith('#'), fd.readlines())
+    )
 
 test_requirements = requirements
 
 setup(
     name='vulyk',
-    version='0.5.0',
+    version='0.5.1',
     description='Crowdsourcing platform for different kinds of tasks',
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/x-rst',
     author='Dmytro Hambal',
     author_email='mr_hambal@outlook.com',
     url='https://github.com/mrgambal/vulyk',
