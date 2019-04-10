@@ -12,6 +12,9 @@ project_root = os.path.dirname(cwd)
 # This lets us ensure that the source package is imported, and that its
 # version is used.
 sys.path.insert(0, project_root)
+# Build the documentation in an autochthonous manner.
+os.environ['LOGGING_LOCATION'] = '/tmp/vulyk.log'
+os.environ['mongodb_host'] = 'mongomock://localhost'
 
 import vulyk
 

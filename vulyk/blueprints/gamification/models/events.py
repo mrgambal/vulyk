@@ -137,14 +137,14 @@ class EventModel(Document):
     @classmethod
     def get_all_events(cls, user: User) -> Iterator:
         """
-        Returns aggregated and sorted generator of events (achievements & level-ups)
-        user'd been given
+        Returns aggregated and sorted generator of events
+        (achievements & level-ups) user'd been given.
 
         :param user: The user to extract events for
         :type user: User
 
         :return: A generator of events in ascending chronological order.
-        :rtype: generator[Event]
+        :rtype: Generator[Event, None, None]
         """
 
         for ev in cls.objects(user=user):
@@ -166,7 +166,8 @@ class EventModel(Document):
     @classmethod
     def amount_of_money_donated(cls, user: Optional[User]) -> float:
         """
-        Amount of money donated by current user or total donations if None passed.
+        Amount of money donated by current user
+        or total donations if None passed.
 
         :param user: User instance
         :type user: Optional[User]
@@ -185,7 +186,8 @@ class EventModel(Document):
     @classmethod
     def amount_of_money_earned(cls, user: Optional[User]) -> float:
         """
-        Amount of money earned by current user or total amount earned if None is passed.
+        Amount of money earned by current user
+        or total amount earned if None is passed.
 
         :param user: User instance
         :type user: Optional[User]
@@ -202,7 +204,10 @@ class EventModel(Document):
         return cls.objects(query).sum('coins')
 
     @classmethod
-    def batches_user_worked_on(cls, user: User) -> Generator[Batch, None, None]:
+    def batches_user_worked_on(
+        cls,
+        user: User
+    ) -> Generator[Batch, None, None]:
         """
         Returns an iterable of deduplicated batches user has worked on before.
 

@@ -44,3 +44,8 @@ History
 * dropped python 3.4 support
 * enabled python 3.7 support
 * dropped support for MongoDB prior to 3.4
+
+0.5.1 (2019-04-10)
+------------------
+* fixes for the documentation build process
+* updated metadata
