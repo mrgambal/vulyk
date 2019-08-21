@@ -24,5 +24,5 @@ Sphinx==2.0.1
 ujson>=1.35
 veryprettytable==0.8.1
 webassets==0.12.1
-Werkzeug==0.15.2
+Werkzeug==0.15.3
 wheel==0.33.1
