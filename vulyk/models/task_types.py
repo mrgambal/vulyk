@@ -7,7 +7,11 @@ from datetime import datetime
 from hashlib import sha1
 from typing import Dict, Any, AnyStr, Union, List, Optional, Generator, Tuple
 
-import ujson as json
+try:
+    import ujson as json
+except ImportError:
+    import json
+
 from bson import ObjectId
 from mongoengine import Q
 from mongoengine.errors import (

@@ -7,8 +7,12 @@ from itertools import islice
 from typing import Iterator, Optional, Dict, Generator, Tuple
 
 import flask
-import ujson as json
 from flask import abort, Response
+
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 from vulyk.models.user import User
 
