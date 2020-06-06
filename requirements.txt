@@ -26,3 +26,4 @@ veryprettytable==0.8.1
 webassets==0.12.1
 Werkzeug==0.14.1
 wheel==0.33.1
+email-validator==1.1.1
