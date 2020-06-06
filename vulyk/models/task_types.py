@@ -267,11 +267,12 @@ class AbstractTaskType:
         """
         rs = None
         base_q = Q(task_type=self.type_name) \
-                 & Q(users_processed__nin=[user]) \
-                 & Q(closed__ne=True)
+            & Q(users_processed__nin=[user]) \
+            & Q(closed__ne=True)
 
-        for batch in Batch.objects(
-            task_type=self.type_name, closed__ne=True).order_by('id'):
+        for batch in Batch \
+                .objects(task_type=self.type_name, closed__ne=True) \
+                .order_by('id'):
 
             if batch.tasks_count == batch.tasks_processed:
                 continue
@@ -464,7 +465,7 @@ class AbstractTaskType:
             'add_to_set__users_processed': user}
 
         closed = self._is_ready_for_autoclose(task, answer) \
-                 or (users_count >= self.redundancy)
+            or (users_count >= self.redundancy)
 
         if closed:
             update_q['set__closed'] = closed
@@ -489,7 +490,9 @@ class AbstractTaskType:
         :rtype: Dict[str, Any]
         """
 
-        closed_tasks = self.task_model.objects(closed=True).count()  # type: int
+        closed_tasks = self.task_model \
+            .objects(closed=True) \
+            .count()  # type: int
         tasks = self.task_model.objects().count()  # type: int
         open_tasks = tasks - closed_tasks  # type: int
 

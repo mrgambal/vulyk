@@ -108,8 +108,8 @@ class UserState:
                    and o.points == self.points \
                    and o.actual_coins == self.actual_coins \
                    and o.potential_coins == self.potential_coins \
-                   and set(o.achievements.keys()) \
-                       == set(self.achievements.keys()) \
+                   and (set(o.achievements.keys()) ==
+                        set(self.achievements.keys())) \
                    and o.last_changed == self.last_changed
         else:
             return False

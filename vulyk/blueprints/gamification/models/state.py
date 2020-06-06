@@ -40,8 +40,9 @@ class UserStateModel(Document):
     # As for mongoengine 0.17.0 the min_value parameter governs not the field
     # value only, but every influx value as well.
     # E.g. the field has value of Decimal(100) and one wants to decrease by 1.
-    # The change is transformed from points__dec: Decimal(1) to points__inc: Decimal(-1),
-    # and then the value Decimal(-1) is validated against self.min_value = 0.
+    # The change mutates from points__dec: Decimal(1)
+    # to points__inc: Decimal(-1), and then the value Decimal(-1)
+    # is validated against self.min_value = 0.
     # Even if the result is supposed to be 99, validation will fail as -1 < 0.
     points = DecimalField(default=0)
     actual_coins = DecimalField(default=0, db_field='actualCoins')
@@ -77,7 +78,9 @@ class UserStateModel(Document):
             points=self.points,
             actual_coins=self.actual_coins,
             potential_coins=self.potential_coins,
-            achievements=[r.to_rule() for r in self.achievements if hasattr(r, "to_rule")],
+            achievements=[r.to_rule()
+                          for r in self.achievements
+                          if hasattr(r, "to_rule")],
             last_changed=self.last_changed
         )
 
@@ -215,7 +218,7 @@ class UserStateModel(Document):
         update_dict = {'dec__actual_coins': amount}
 
         return cls.objects(user=user, actual_coins__gte=amount) \
-                   .update(**update_dict) == 1
+            .update(**update_dict) == 1
 
     @classmethod
     def transfer_coins_to_actual(
