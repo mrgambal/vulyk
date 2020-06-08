@@ -1,8 +1,8 @@
 Crowdsourcing platform for various tasks
 ========================================
 
-.. image:: https://github.com/mrhambal/vulyk/MatrixTests/Greet%20Everyone/badge.svg
-        :target: https://travis-ci.org/mrgambal/vulyk
+.. image:: https://github.com/mrgambal/vulyk/workflows/MatrixTest/badge.svg
+        :target: https://github.com/mrgambal/vulyk/actions
 
 .. image:: https://readthedocs.org/projects/vulyk/badge/?version=latest
         :target: https://vulyk.readthedocs.org/en/latest/

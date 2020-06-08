@@ -14,7 +14,7 @@ with open('requirements.txt', 'r') as fd:
 
 setup(
     name='vulyk',
-    version='0.5.1',
+    version='0.5.2',
     description='Crowdsourcing platform for different kinds of tasks',
     long_description=readme + '\n\n' + history,
     long_description_content_type='text/x-rst',
