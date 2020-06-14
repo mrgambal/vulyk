@@ -4,7 +4,10 @@ test_rule_parsing
 """
 import unittest
 
-import ujson as json
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 from vulyk.blueprints.gamification.core.parsing import (
     JsonRuleParser,

@@ -1,0 +1,50 @@
+name: MatrixTest
+
+on: [push]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                python-version: ["3.5", "3.6", "3.7", "3.8"]
+
+        services:
+            mongodb:
+                image: mongo:latest
+                ports:
+                    - 27017:27017
+
+        steps:
+            -   uses: actions/checkout@v2.2.0
+                with:
+                    fetch-depth: 1
+
+            -   uses: actions/cache@v2.0.0
+                with:
+                    path: ~/.cache/pip
+                    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+                    restore-keys: |
+                        ${{ runner.os }}-pip-
+
+            -   name: Set up Python ${{ matrix.python-version }}
+                uses: actions/setup-python@v2.0.1
+                with:
+                    python-version: ${{ matrix.python-version }}
+
+            -   name: Install dependencies
+                run: python -m pip install -e ".[dev]";
+
+            -   name: Run tests and coverage
+                env:
+                    LOGGING_LOCATION: /tmp/vulyk.log
+                run: coverage run --source vulyk setup.py test;
+
+            -   name: Test & publish code coverage
+                uses: paambaati/codeclimate-action@v2.6.0
+                env:
+                    CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+                with:
+                    coverageCommand: coverage xml
+                    coverageLocations: ${{github.workspace}}/coverage.xml:cobertura

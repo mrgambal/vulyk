@@ -49,3 +49,8 @@ History
 ------------------
 * fixes for the documentation build process
 * updated metadata
+
+0.5.2 (2020-06-08)
+------------------
+* update dependencies
+* move the build process to GitHub Actions

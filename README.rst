@@ -1,8 +1,8 @@
 Crowdsourcing platform for various tasks
 ========================================
 
-.. image:: https://travis-ci.org/mrgambal/vulyk.png?branch=master
-        :target: https://travis-ci.org/mrgambal/vulyk
+.. image:: https://github.com/mrgambal/vulyk/workflows/MatrixTest/badge.svg
+        :target: https://github.com/mrgambal/vulyk/actions
 
 .. image:: https://readthedocs.org/projects/vulyk/badge/?version=latest
         :target: https://vulyk.readthedocs.org/en/latest/
@@ -70,7 +70,7 @@ create a list of issues so the process will be simplified. But not now...
 
 Running it locally
 ------------------
-You'll need MongoDB, Python 3.4+ and virtualenv and with little bit of instructions you'll be able to run the Beast (with two real plugins)!
+You'll need MongoDB, Python 3.5+ and virtualenv and with little bit of instructions you'll be able to run the Beast (with two real plugins)!
 
 First of all, check out all required components:
 
@@ -81,7 +81,7 @@ First of all, check out all required components:
     git clone https://github.com/hotsyk/vulyk-declaration.git
     git clone https://github.com/hotsyk/vulyk-tagging.git
 
-Then create virtual environment and install all three of them there in editable mode (unfortunatelly we don't have any of them released on pypi yet)
+Then create virtual environment and install all three of them there in editable mode (unfortunately we don't have any of them released on PyPI yet)
 
 .. code:: bash
 

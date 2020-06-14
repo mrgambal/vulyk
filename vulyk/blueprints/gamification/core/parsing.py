@@ -3,7 +3,10 @@
 All available parsers, that convert raw representation could be received from
 any external source, are and should be kept here.
 """
-import ujson as json
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 from .rules import Rule, ProjectRule
 
