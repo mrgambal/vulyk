@@ -13,7 +13,7 @@ Flask==1.1.2
 gunicorn==20.0.4
 honcho>=0.5.0
 itsdangerous==1.1.0
-Jinja2==2.11.2
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 Pillow>=5.4.0
 rjsmin==1.1.0
