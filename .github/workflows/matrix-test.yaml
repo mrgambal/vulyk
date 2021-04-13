@@ -17,11 +17,11 @@ jobs:
                     - 27017:27017
 
         steps:
-            -   uses: actions/checkout@v2.2.0
+            -   uses: actions/checkout@v2.3.4
                 with:
                     fetch-depth: 1
 
-            -   uses: actions/cache@v2.0.0
+            -   uses: actions/cache@v2.1.5
                 with:
                     path: ~/.cache/pip
                     key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -29,7 +29,7 @@ jobs:
                         ${{ runner.os }}-pip-
 
             -   name: Set up Python ${{ matrix.python-version }}
-                uses: actions/setup-python@v2.0.1
+                uses: actions/setup-python@v2.2.2
                 with:
                     python-version: ${{ matrix.python-version }}
 
@@ -42,7 +42,7 @@ jobs:
                 run: coverage run --source vulyk setup.py test;
 
             -   name: Test & publish code coverage
-                uses: paambaati/codeclimate-action@v2.6.0
+                uses: paambaati/codeclimate-action@v2.7.5
                 env:
                     CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
                 with:
