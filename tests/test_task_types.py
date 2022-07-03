@@ -4,22 +4,19 @@
 """
 test_task_types
 """
+import unittest
 from datetime import datetime
+from unittest.mock import Mock, patch
 
 from bson import ObjectId
-import unittest
-from unittest.mock import patch, Mock
 
 from vulyk.ext.leaderboard import LeaderBoardManager
-from vulyk.models.exc import (
-    TaskImportError,
-    TaskNotFoundError,
-    TaskValidationError,
-    WorkSessionLookUpError)
+from vulyk.models.exc import (TaskImportError, TaskNotFoundError,
+                              TaskValidationError, WorkSessionLookUpError)
 from vulyk.models.stats import WorkSession
 from vulyk.models.task_types import AbstractTaskType
-from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
-from vulyk.models.user import User, Group
+from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
+from vulyk.models.user import Group, User
 
 from .base import BaseTest
 from .fixtures import FakeType

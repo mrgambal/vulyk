@@ -7,7 +7,7 @@ Contains code not to be used directly after the initialization.
 import flask
 from flask_mongoengine import MongoEngine
 
-from . import _assets, _logging, _social_login, _blueprints
+from . import _assets, _blueprints, _logging, _social_login
 from ._tasks import init_plugins
 
 __all__ = [

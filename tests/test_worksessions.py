@@ -4,16 +4,14 @@
 """
 test_worksessions
 """
-from datetime import datetime, timedelta
 import unittest
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
-from vulyk.models.exc import (
-    TaskNotFoundError,
-    WorkSessionUpdateError)
+from vulyk.models.exc import TaskNotFoundError, WorkSessionUpdateError
 from vulyk.models.stats import WorkSession
-from vulyk.models.tasks import AbstractTask, AbstractAnswer
-from vulyk.models.user import User, Group
+from vulyk.models.tasks import AbstractAnswer, AbstractTask
+from vulyk.models.user import Group, User
 
 from .base import BaseTest
 from .fixtures import FakeType

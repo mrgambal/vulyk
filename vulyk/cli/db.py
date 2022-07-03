@@ -3,15 +3,11 @@ import gzip
 import os
 
 import bz2file as bz2
+import orjson as json
 from click import echo
 
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.utils import chunked
-
-try:
-    import ujson as json
-except ImportError:
-    import json
 
 
 def open_anything(filename: str):

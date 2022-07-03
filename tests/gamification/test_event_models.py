@@ -2,23 +2,25 @@
 """
 test_event_models
 """
+import unittest
 from datetime import datetime, timedelta
 from decimal import Decimal
-import unittest
 
-from vulyk.blueprints.gamification.core.events import (
-    Event, NoAchievementsEvent, LevelEvent, AchievementsEvent,
-    AchievementsLevelEvent, DonateEvent)
+from vulyk.blueprints.gamification.core.events import (AchievementsEvent,
+                                                       AchievementsLevelEvent,
+                                                       DonateEvent, Event,
+                                                       LevelEvent,
+                                                       NoAchievementsEvent)
 from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.foundations import FundModel
 from vulyk.blueprints.gamification.models.rules import RuleModel
-from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
+from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
 from vulyk.models.user import Group, User
 
-from .fixtures import FixtureFund
 from ..base import BaseTest
 from ..fixtures import FakeType
+from .fixtures import FixtureFund
 
 
 class TestEventModels(BaseTest):

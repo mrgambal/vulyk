@@ -6,7 +6,7 @@ test_user_model
 """
 import unittest
 
-from vulyk.models.user import User, Group
+from vulyk.models.user import Group, User
 
 from .base import BaseTest
 from .fixtures import FakeType

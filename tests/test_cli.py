@@ -12,7 +12,7 @@ import click
 
 from vulyk.cli import admin, batches, db
 from vulyk.models.task_types import AbstractTaskType
-from vulyk.models.tasks import Batch, AbstractAnswer, AbstractTask
+from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
 from vulyk.models.user import Group, User
 
 from .base import BaseTest

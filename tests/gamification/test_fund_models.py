@@ -8,11 +8,11 @@ import flask
 
 from vulyk import utils
 from vulyk.blueprints.gamification import gamification
-from vulyk.blueprints.gamification.models.foundations import (
-    FundModel, FundFilterBy)
+from vulyk.blueprints.gamification.models.foundations import (FundFilterBy,
+                                                              FundModel)
 
-from .fixtures import FixtureFund
 from ..base import BaseTest
+from .fixtures import FixtureFund
 
 
 class TestFundModels(BaseTest):
@@ -20,8 +20,8 @@ class TestFundModels(BaseTest):
         super().tearDown()
 
         FundModel.objects.delete()
-        FundModel._get_db()['images.files'].remove()
-        FundModel._get_db()['images.chunks'].remove()
+        FundModel._get_db()['images.files'].drop()
+        FundModel._get_db()['images.chunks'].drop()
 
     def test_fund_ok(self):
         fund = FixtureFund.get_fund()

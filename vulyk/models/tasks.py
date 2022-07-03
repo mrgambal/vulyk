@@ -5,16 +5,8 @@ from typing import Any, Dict, List
 
 from bson import ObjectId
 from flask_mongoengine import Document
-from mongoengine import (
-    BooleanField,
-    CASCADE,
-    DateTimeField,
-    DictField,
-    IntField,
-    ListField,
-    ReferenceField,
-    StringField
-)
+from mongoengine import (CASCADE, BooleanField, DateTimeField, DictField,
+                         IntField, ListField, ReferenceField, StringField)
 
 from vulyk.models.user import User
 from vulyk.signals import on_batch_done

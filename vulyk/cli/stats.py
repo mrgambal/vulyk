@@ -4,7 +4,7 @@ from collections import OrderedDict
 from mongoengine import Q
 
 from vulyk.app import TASKS_TYPES
-from vulyk.models.tasks import Batch, AbstractTask
+from vulyk.models.tasks import AbstractTask, Batch
 
 
 def batch_completeness(batch_name: str, task_type: str) -> OrderedDict:

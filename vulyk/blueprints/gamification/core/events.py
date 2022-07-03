@@ -15,6 +15,7 @@ from typing import Dict, List, Optional, Union
 
 from vulyk.models.tasks import AbstractAnswer
 from vulyk.models.user import User
+
 from ..core.foundations import Fund
 
 __all__ = [

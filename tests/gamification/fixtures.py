@@ -7,7 +7,7 @@ from vulyk.blueprints.gamification.models.foundations import FundModel
 from vulyk.blueprints.gamification.models.task_types import \
     AbstractGamifiedTaskType
 
-from ..fixtures import FakeModel, FakeAnswer
+from ..fixtures import FakeAnswer, FakeModel
 
 __all__ = [
     'FakeType',

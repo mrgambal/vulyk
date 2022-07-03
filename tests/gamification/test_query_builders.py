@@ -7,13 +7,15 @@ from datetime import date, datetime, timedelta
 
 from bson import ObjectId
 
-from vulyk.blueprints.gamification.core.queries import (
-    MongoRuleExecutor,
-    MongoRuleQueryBuilder)
-from vulyk.blueprints.gamification.core.rules import Rule, ProjectRule
-from vulyk.blueprints.gamification.models.rules import (
-    RuleModel, AllRules, ProjectAndFreeRules, StrictProjectRules)
+from vulyk.blueprints.gamification.core.queries import (MongoRuleExecutor,
+                                                        MongoRuleQueryBuilder)
+from vulyk.blueprints.gamification.core.rules import ProjectRule, Rule
+from vulyk.blueprints.gamification.models.rules import (AllRules,
+                                                        ProjectAndFreeRules,
+                                                        RuleModel,
+                                                        StrictProjectRules)
 from vulyk.models.stats import WorkSession
+
 from ..base import BaseTest
 
 

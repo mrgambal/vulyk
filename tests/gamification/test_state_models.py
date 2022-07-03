@@ -2,16 +2,16 @@
 """
 test_state_models
 """
+import unittest
 from datetime import datetime, timedelta
 from decimal import Decimal
 from operator import attrgetter
-import unittest
 
 from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.core.state import UserState
 from vulyk.blueprints.gamification.models.rules import RuleModel
-from vulyk.blueprints.gamification.models.state import (
-    UserStateModel, StateSortingKeys)
+from vulyk.blueprints.gamification.models.state import (StateSortingKeys,
+                                                        UserStateModel)
 from vulyk.models.user import Group, User
 
 from ..base import BaseTest

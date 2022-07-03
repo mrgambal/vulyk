@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+import unittest
 from datetime import datetime
 from decimal import Decimal
-import unittest
 from unittest.mock import patch
 
 from mongoengine import OperationError
@@ -10,13 +10,13 @@ from vulyk.blueprints.gamification.core.state import UserState
 from vulyk.blueprints.gamification.models.events import EventModel
 from vulyk.blueprints.gamification.models.foundations import FundModel
 from vulyk.blueprints.gamification.models.state import UserStateModel
-from vulyk.blueprints.gamification.services import (
-    DonationResult, DonationsService)
+from vulyk.blueprints.gamification.services import (DonationResult,
+                                                    DonationsService)
 from vulyk.models.user import Group, User
 
-from .fixtures import FakeType, FixtureFund
 from ..base import BaseTest
 from ..fixtures import FakeType as BaseFakeType
+from .fixtures import FakeType, FixtureFund
 
 
 class TestDonation(BaseTest):

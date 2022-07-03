@@ -2,7 +2,7 @@
 import os.path
 from typing import List
 
-from flask_assets import Environment, Bundle
+from flask_assets import Bundle, Environment
 from flask_collect import Collect
 
 __all__ = [

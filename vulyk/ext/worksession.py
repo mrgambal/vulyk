@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 from datetime import datetime
-from typing import TypeVar, Type
+from typing import Type, TypeVar
 
 from bson import ObjectId
 from mongoengine.errors import OperationError
 
 from vulyk.models.exc import WorkSessionLookUpError, WorkSessionUpdateError
 from vulyk.models.stats import WorkSession
-from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.models.tasks import AbstractAnswer, AbstractTask
 from vulyk.signals import on_task_done
 
 __all__ = [

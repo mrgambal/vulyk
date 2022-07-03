@@ -2,7 +2,7 @@
 """Module contains code that performs plugins initialisation."""
 
 import os.path
-from typing import List, Dict
+from typing import Dict, List
 
 import jinja2
 from flask_assets import Bundle

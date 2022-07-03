@@ -3,16 +3,15 @@
 from typing import AnyStr, List, Tuple
 
 import click
-from veryprettytable import VeryPrettyTable, ALL
+from veryprettytable import ALL, VeryPrettyTable
 
 from vulyk.app import TASKS_TYPES, app
-from vulyk.cli import (
-    admin as _admin,
-    batches as _batches,
-    db as _db,
-    groups as _groups,
-    project_init as _project_init,
-    stats as _stats)
+from vulyk.cli import admin as _admin
+from vulyk.cli import batches as _batches
+from vulyk.cli import db as _db
+from vulyk.cli import groups as _groups
+from vulyk.cli import project_init as _project_init
+from vulyk.cli import stats as _stats
 
 
 def abort_if_false(ctx, param, value) -> None:

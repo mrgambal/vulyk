@@ -2,7 +2,7 @@
 """Package contains CLI tools related to managing batches of tasks."""
 
 from copy import deepcopy
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 
 import click
 

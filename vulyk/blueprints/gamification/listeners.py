@@ -1,22 +1,23 @@
 # coding=utf-8
 from datetime import datetime
 from decimal import Decimal
-from typing import Iterator, Dict, List
+from typing import Dict, Iterator, List
 
 from bson import ObjectId
 
 from vulyk.models.stats import WorkSession
 from vulyk.models.tasks import AbstractAnswer, Batch
 from vulyk.signals import on_batch_done, on_task_done
+
 from .core.events import Event
 from .core.queries import MongoRuleExecutor
 from .core.rules import Rule
 from .core.state import UserState
 from .models.events import EventModel
-from .models.rules import RuleModel, ProjectAndFreeRules
+from .models.rules import ProjectAndFreeRules, RuleModel
 from .models.state import UserStateModel
-from .models.task_types import (
-    AbstractGamifiedTaskType, COINS_PER_TASK_KEY, POINTS_PER_TASK_KEY)
+from .models.task_types import (COINS_PER_TASK_KEY, POINTS_PER_TASK_KEY,
+                                AbstractGamifiedTaskType)
 
 __all__ = [
     'track_events',

@@ -4,10 +4,11 @@ test_utils
 """
 import unittest
 from unittest.mock import Mock
+
 from werkzeug.exceptions import HTTPException
 
 from vulyk import utils
-from vulyk.models.user import User, Group
+from vulyk.models.user import Group, User
 
 from .base import BaseTest
 from .fixtures import FakeType

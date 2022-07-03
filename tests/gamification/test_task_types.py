@@ -8,17 +8,14 @@ test_task_types
 import unittest
 from unittest.mock import patch
 
-from vulyk.models.stats import WorkSession
-from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
-from vulyk.models.user import User, Group
-
 from vulyk.blueprints.gamification.models.task_types import (
-    POINTS_PER_TASK_KEY, COINS_PER_TASK_KEY, IMPORTANT_KEY
-)
+    COINS_PER_TASK_KEY, IMPORTANT_KEY, POINTS_PER_TASK_KEY)
+from vulyk.models.stats import WorkSession
+from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
+from vulyk.models.user import Group, User
 
 from ..base import BaseTest
 from .fixtures import FakeType
-
 
 
 class TestTaskTypes(BaseTest):

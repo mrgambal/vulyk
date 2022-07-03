@@ -2,7 +2,7 @@
 """Module contains stuff related to interoperability with PSA."""
 
 import datetime
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 import flask_login as login
 from flask import g
