@@ -1,6 +1,6 @@
 # -*- coding=utf-8 -*-
 import re
-from typing import List, Generator
+from typing import Generator, List
 
 import click
 

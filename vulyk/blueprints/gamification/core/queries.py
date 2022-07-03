@@ -10,7 +10,7 @@ from typing import Dict, List
 from bson import ObjectId
 from mongoengine.queryset.base import BaseQuerySet
 
-from .rules import Rule, ProjectRule
+from .rules import ProjectRule, Rule
 
 __all__ = [
     'MongoRuleExecutor',

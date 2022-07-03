@@ -5,34 +5,21 @@ import logging
 import random
 from datetime import datetime
 from hashlib import sha1
-from typing import Dict, Any, AnyStr, Union, List, Optional, Generator, Tuple
+from typing import Any, AnyStr, Dict, Generator, List, Optional, Tuple, Union
 
-try:
-    import ujson as json
-except ImportError:
-    import json
-
+import orjson as json
 from bson import ObjectId
 from mongoengine import Q
-from mongoengine.errors import (
-    InvalidQueryError,
-    LookUpError,
-    NotUniqueError,
-    OperationError,
-    ValidationError
-)
+from mongoengine.errors import (InvalidQueryError, LookUpError, NotUniqueError,
+                                OperationError, ValidationError)
 
 from vulyk.ext.leaderboard import LeaderBoardManager
 from vulyk.ext.worksession import WorkSessionManager
-from vulyk.models.exc import (
-    TaskImportError,
-    TaskSaveError,
-    TaskSkipError,
-    TaskValidationError,
-    TaskNotFoundError
-)
+from vulyk.models.exc import (TaskImportError, TaskNotFoundError,
+                              TaskSaveError, TaskSkipError,
+                              TaskValidationError)
 from vulyk.models.stats import WorkSession
-from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
+from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
 from vulyk.models.user import User
 from vulyk.utils import get_tb
 
@@ -170,7 +157,7 @@ class AbstractTaskType:
                 assert isinstance(task, dict)
 
                 bulk.append(self.task_model(
-                    id=sha1(json.dumps(task).encode('utf8')).hexdigest()[:20],
+                    id=sha1(json.dumps(task)).hexdigest()[:20],
                     batch=batch,
                     task_type=self.type_name,
                     task_data=task))

@@ -6,9 +6,7 @@ from enum import Enum
 from typing import Iterator, Optional
 
 from flask_mongoengine import Document
-from mongoengine import (
-    StringField, EmailField, ImageField, BooleanField, Q
-)
+from mongoengine import BooleanField, EmailField, ImageField, Q, StringField
 
 from ..core.foundations import Fund
 

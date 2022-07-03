@@ -5,15 +5,10 @@ any kind of analysis.
 """
 from bson import ObjectId
 from flask_mongoengine import Document
-from mongoengine import (
-    CASCADE,
-    DateTimeField,
-    LongField,
-    ReferenceField,
-    StringField
-)
+from mongoengine import (CASCADE, DateTimeField, LongField, ReferenceField,
+                         StringField)
 
-from vulyk.models.tasks import AbstractTask, AbstractAnswer
+from vulyk.models.tasks import AbstractAnswer, AbstractTask
 from vulyk.models.user import User
 
 __all__ = [

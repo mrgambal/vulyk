@@ -2,7 +2,7 @@
 """
 test_rule_models
 """
-from vulyk.blueprints.gamification.core.rules import Rule, ProjectRule
+from vulyk.blueprints.gamification.core.rules import ProjectRule, Rule
 
 from ..base import BaseTest
 

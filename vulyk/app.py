@@ -4,14 +4,10 @@ from typing import Dict
 
 import flask
 import flask_login as login
+import orjson as json
 from flask import Response
 
-try:
-    import ujson as json
-except ImportError:
-    import json
-
-from vulyk import cli, bootstrap, utils
+from vulyk import bootstrap, cli, utils
 from vulyk.models.exc import TaskNotFoundError
 from vulyk.utils import NO_TASKS
 

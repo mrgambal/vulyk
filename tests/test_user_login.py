@@ -11,6 +11,7 @@ from werkzeug.local import LocalProxy
 
 from vulyk.bootstrap import _social_login as social_login
 from vulyk.models.user import Group, User
+
 from .base import BaseTest
 
 

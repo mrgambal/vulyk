@@ -3,13 +3,13 @@
 
 import datetime
 from itertools import chain
-from typing import Optional, Dict, Type
+from typing import Dict, Optional, Type
 
-from flask_login import UserMixin, AnonymousUserMixin
+from flask_login import AnonymousUserMixin, UserMixin
 from flask_mongoengine import Document
-from mongoengine import (
-    StringField, BooleanField, DateTimeField, IntField, ReferenceField, PULL,
-    ListField, signals, ValidationError)
+from mongoengine import (PULL, BooleanField, DateTimeField, IntField,
+                         ListField, ReferenceField, StringField,
+                         ValidationError, signals)
 
 
 class Group(Document):

@@ -5,16 +5,15 @@ Contains all DB models related to game events.
 from typing import Generator, Iterator, Optional
 
 from flask_mongoengine import Document
-from mongoengine import (
-    DecimalField, ComplexDateTimeField, ReferenceField, BooleanField,
-    ListField, IntField, Q
-)
+from mongoengine import (BooleanField, ComplexDateTimeField, DecimalField,
+                         IntField, ListField, Q, ReferenceField)
 
 from vulyk.models.tasks import AbstractAnswer, Batch
 from vulyk.models.user import User
+
+from ..core.events import Event
 from .foundations import FundModel
 from .rules import RuleModel
-from ..core.events import Event
 
 __all__ = [
     'EventModel'

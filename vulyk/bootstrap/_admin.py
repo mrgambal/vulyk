@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import flask_login as login
 import flask_admin as admin
+import flask_login as login
 
-from vulyk.models.user import User
 from vulyk.admin.models import AuthModelView
-
+from vulyk.models.user import User
 
 __all__ = [
     'AuthAdminIndexView', 'init_admin'

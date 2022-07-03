@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
 from operator import itemgetter
-from typing import List, Tuple, Dict, Union
+from typing import Dict, List, Tuple, Union
 
 from bson import ObjectId
 
@@ -54,7 +54,7 @@ class LeaderBoardManager:
         result = []
         top = defaultdict(list)
 
-        [top[e[1]].append(e) for e in self.get_leaders() if len(top) < limit]
+        _ = [top[e[1]].append(e) for e in self.get_leaders() if len(top) < limit]
 
         sorted_top = sorted(top.values(), key=lambda r: r[0][1], reverse=True)
 

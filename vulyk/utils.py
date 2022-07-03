@@ -4,15 +4,11 @@ import os
 import sys
 from http import HTTPStatus
 from itertools import islice
-from typing import Iterator, Optional, Dict, Generator, Tuple
+from typing import Dict, Generator, Iterator, Optional, Tuple
 
 import flask
-from flask import abort, Response
-
-try:
-    import ujson as json
-except ImportError:
-    import json
+import orjson as json
+from flask import Response, abort
 
 from vulyk.models.user import User
 

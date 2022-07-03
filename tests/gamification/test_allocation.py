@@ -10,20 +10,20 @@ from vulyk.app import TASKS_TYPES
 from vulyk.blueprints.gamification import listeners
 from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.core.state import (
-    UserState, InvalidUserStateException)
+    InvalidUserStateException, UserState)
 from vulyk.blueprints.gamification.models.events import EventModel
-from vulyk.blueprints.gamification.models.rules import (
-    RuleModel, ProjectAndFreeRules)
+from vulyk.blueprints.gamification.models.rules import (ProjectAndFreeRules,
+                                                        RuleModel)
 from vulyk.blueprints.gamification.models.state import UserStateModel
-from vulyk.blueprints.gamification.models.task_types import \
-    POINTS_PER_TASK_KEY, COINS_PER_TASK_KEY
+from vulyk.blueprints.gamification.models.task_types import (
+    COINS_PER_TASK_KEY, POINTS_PER_TASK_KEY)
 from vulyk.models.stats import WorkSession
-from vulyk.models.tasks import AbstractTask, AbstractAnswer, Batch
-from vulyk.models.user import User, Group
+from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
+from vulyk.models.user import Group, User
 
-from .fixtures import FakeType
 from ..base import BaseTest
 from ..fixtures import FakeType as BaseFakeType
+from .fixtures import FakeType
 
 
 class TestAllocationOfMoneyAndPoints(BaseTest):

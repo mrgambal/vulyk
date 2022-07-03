@@ -9,14 +9,13 @@ from typing import Iterator, Type
 
 from bson import ObjectId
 from flask_mongoengine import Document
-from mongoengine import (
-    IntField, ComplexDateTimeField, ReferenceField, ListField,
-    DecimalField
-)
+from mongoengine import (ComplexDateTimeField, DecimalField, IntField,
+                         ListField, ReferenceField)
 
 from vulyk.models.user import User
-from .rules import RuleModel
+
 from ..core.state import UserState
+from .rules import RuleModel
 
 __all__ = [
     'StateSortingKeys',

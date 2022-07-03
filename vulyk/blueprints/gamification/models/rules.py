@@ -2,9 +2,9 @@
 from typing import Iterator, List
 
 from flask_mongoengine import Document
-from mongoengine import StringField, IntField, BooleanField, Q
+from mongoengine import BooleanField, IntField, Q, StringField
 
-from ..core.rules import Rule, ProjectRule
+from ..core.rules import ProjectRule, Rule
 
 __all__ = [
     'RuleModel',

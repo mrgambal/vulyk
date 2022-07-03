@@ -4,13 +4,12 @@
 """
 test_leaderboard
 """
-from datetime import datetime
 import unittest
-
+from datetime import datetime
 
 from vulyk.ext.leaderboard import LeaderBoardManager
-from vulyk.models.tasks import Batch, AbstractAnswer, AbstractTask
-from vulyk.models.user import User, Group
+from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
+from vulyk.models.user import Group, User
 
 from .base import BaseTest
 from .fixtures import FakeType

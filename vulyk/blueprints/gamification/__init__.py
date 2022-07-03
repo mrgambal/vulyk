@@ -9,17 +9,21 @@ import wtforms
 from flask_login import AnonymousUserMixin
 
 from vulyk import utils
-from vulyk.admin.models import AuthModelView, CKTextAreaField, RequiredBooleanField
+from vulyk.admin.models import (AuthModelView, CKTextAreaField,
+                                RequiredBooleanField)
 from vulyk.blueprints.gamification import listeners
 from vulyk.blueprints.gamification.core.foundations import Fund
 from vulyk.blueprints.gamification.models.events import EventModel
-from vulyk.blueprints.gamification.models.foundations import (
-    FundModel, FundFilterBy)
-from vulyk.blueprints.gamification.models.rules import (
-    AllRules, ProjectAndFreeRules, RuleModel, StrictProjectRules)
+from vulyk.blueprints.gamification.models.foundations import (FundFilterBy,
+                                                              FundModel)
+from vulyk.blueprints.gamification.models.rules import (AllRules,
+                                                        ProjectAndFreeRules,
+                                                        RuleModel,
+                                                        StrictProjectRules)
 from vulyk.blueprints.gamification.models.state import UserStateModel
-from vulyk.blueprints.gamification.services import (
-    DonationResult, DonationsService, StatsService)
+from vulyk.blueprints.gamification.services import (DonationResult,
+                                                    DonationsService,
+                                                    StatsService)
 from vulyk.models.user import User
 
 from .. import VulykModule
