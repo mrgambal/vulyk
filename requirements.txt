@@ -25,4 +25,4 @@ social-auth-core==4.3.0
 Sphinx==3.5.4
 veryprettytable==0.8.1
 webassets==2.0
-Werkzeug==1.0.1
+Werkzeug==2.2.3
