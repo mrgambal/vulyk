@@ -92,9 +92,9 @@ def export_reports(task_id: AbstractTaskType, path: str, batch: str, closed: boo
     i = 0
 
     try:
-        with open(path, 'w+') as f:
+        with open(path, 'wb+') as f:
             for report in task_id.export_reports(batch, closed):
-                f.write(json.dumps(report) + os.linesep)
+                f.write(json.dumps(report) + b"\n")
                 i += 1
 
                 if i + 1 % 100 == 0:
