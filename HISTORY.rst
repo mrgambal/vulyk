@@ -54,3 +54,9 @@ History
 ------------------
 * update dependencies
 * move the build process to GitHub Actions
+
+0.5.3 (2023-06-08)
+------------------
+* Fixing orjson jsonlines export
+* update dependencies
+* add build config for Python 3.10

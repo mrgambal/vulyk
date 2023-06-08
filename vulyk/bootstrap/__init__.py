@@ -17,7 +17,7 @@ __all__ = [
 
 
 # region Init
-def init_app(name):
+def init_app(name) -> flask.Flask:
     """
     :param name: application alias
     :type name: str

@@ -14,7 +14,7 @@ project_root = os.path.dirname(cwd)
 sys.path.insert(0, project_root)
 # Build the documentation in an autochthonous manner.
 os.environ['LOGGING_LOCATION'] = '/tmp/vulyk.log'
-os.environ['mongodb_host'] = 'mongomock://localhost'
+os.environ['mongodb_host'] = 'mongodb://localhost'
 
 import vulyk
 
@@ -106,27 +106,3 @@ texinfo_documents = [
      'web-interface for tasks distribution.',
      'Miscellaneous'),
 ]
-
-
-def unwrap_decorators():
-    import sphinx.util.inspect as inspect
-    import functools
-
-    old_getargspec = inspect.getargspec
-
-    def getargspec(x):
-        return old_getargspec(getattr(x, '_original_function', x))
-
-    inspect.getargspec = getargspec
-
-    old_update_wrapper = functools.update_wrapper
-
-    def update_wrapper(wrapper, wrapped, *a, **kw):
-        rv = old_update_wrapper(wrapper, wrapped, *a, **kw)
-        rv._original_function = wrapped
-        return rv
-
-    functools.update_wrapper = update_wrapper
-
-unwrap_decorators()
-del unwrap_decorators
