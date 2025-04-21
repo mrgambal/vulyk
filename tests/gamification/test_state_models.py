@@ -2,16 +2,16 @@
 """
 test_state_models
 """
+
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from operator import attrgetter
 
 from vulyk.blueprints.gamification.core.rules import Rule
 from vulyk.blueprints.gamification.core.state import UserState
 from vulyk.blueprints.gamification.models.rules import RuleModel
-from vulyk.blueprints.gamification.models.state import (StateSortingKeys,
-                                                        UserStateModel)
+from vulyk.blueprints.gamification.models.state import StateSortingKeys, UserStateModel
 from vulyk.models.user import Group, User
 
 from ..base import BaseTest
@@ -20,32 +20,31 @@ from ..fixtures import FakeType
 
 class TestStateModels(BaseTest):
     TASK_TYPE = FakeType.type_name
-    TIMESTAMP = datetime.now()
+    TIMESTAMP = datetime.now(timezone.utc)
     TIMESTAMP_NEXT = TIMESTAMP + timedelta(seconds=1)
-    USER = None  # type: User
+    USER: User
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         super().setUpClass()
 
-        Group.objects.create(
-            description='test', id='default', allowed_types=[cls.TASK_TYPE])
-        cls.USER = User(username='user0', email='user0@email.com').save()
+        Group.objects.create(description="test", id="default", allowed_types=[cls.TASK_TYPE])
+        cls.USER = User(username="user0", email="user0@email.com").save()
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         User.objects.delete()
         Group.objects.delete()
 
         super().tearDownClass()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         RuleModel.objects.delete()
         UserStateModel.objects.delete()
 
         super().tearDown()
 
-    def test_rookie_ok(self):
+    def test_rookie_ok(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -53,15 +52,14 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         UserStateModel.from_state(state).save()
-        state2 = UserStateModel.objects.get(
-            user=self.USER, last_changed=self.TIMESTAMP).to_state()
+        state2 = UserStateModel.objects.get(user=self.USER, last_changed=self.TIMESTAMP).to_state()
 
-        self.assertEqual(state, state2,
-                         'State was not saved and restored just fine')
+        self.assertEqual(state, state2, "State was not saved and restored just fine")
 
-    def test_level_ok(self):
+    def test_level_ok(self) -> None:
         state = UserState(
             user=self.USER,
             level=20,
@@ -69,15 +67,14 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         UserStateModel.from_state(state).save()
-        state2 = UserStateModel.objects.get(
-            user=self.USER, last_changed=self.TIMESTAMP).to_state()
+        state2 = UserStateModel.objects.get(user=self.USER, last_changed=self.TIMESTAMP).to_state()
 
-        self.assertEqual(state, state2,
-                         'State was not saved and restored just fine')
+        self.assertEqual(state, state2, "State was not saved and restored just fine")
 
-    def test_points_ok(self):
+    def test_points_ok(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -85,16 +82,14 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP
+            last_changed=self.TIMESTAMP,
         )
         UserStateModel.from_state(state).save()
-        state2 = UserStateModel.objects.get(
-            user=self.USER, last_changed=self.TIMESTAMP).to_state()
+        state2 = UserStateModel.objects.get(user=self.USER, last_changed=self.TIMESTAMP).to_state()
 
-        self.assertEqual(state, state2,
-                         'State was not saved and restored just fine')
+        self.assertEqual(state, state2, "State was not saved and restored just fine")
 
-    def test_coins_ok(self):
+    def test_coins_ok(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -102,26 +97,25 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(50),
             potential_coins=Decimal(60),
             achievements=[],
-            last_changed=self.TIMESTAMP
+            last_changed=self.TIMESTAMP,
         )
         UserStateModel.from_state(state).save()
-        state2 = UserStateModel.objects.get(
-            user=self.USER, last_changed=self.TIMESTAMP).to_state()
+        state2 = UserStateModel.objects.get(user=self.USER, last_changed=self.TIMESTAMP).to_state()
 
-        self.assertEqual(state, state2,
-                         'State was not saved and restored just fine')
+        self.assertEqual(state, state2, "State was not saved and restored just fine")
 
-    def test_badges_ok(self):
+    def test_badges_ok(self) -> None:
         rule = Rule(
-            badge='',
-            name='',
-            description='',
+            badge="",
+            name="",
+            description="",
             bonus=0,
             tasks_number=0,
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id="100")
+            rule_id="100",
+        )
         rule_model = RuleModel.from_rule(rule).save()
         state = UserState(
             user=self.USER,
@@ -130,16 +124,14 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(3240),
             potential_coins=Decimal(4000),
             achievements=[rule_model],
-            last_changed=self.TIMESTAMP
+            last_changed=self.TIMESTAMP,
         )
         UserStateModel.from_state(state).save()
-        state2 = UserStateModel.objects.get(
-            user=self.USER, last_changed=self.TIMESTAMP).to_state()
+        state2 = UserStateModel.objects.get(user=self.USER, last_changed=self.TIMESTAMP).to_state()
 
-        self.assertEqual(state, state2,
-                         'State was not saved and restored just fine')
+        self.assertEqual(state, state2, "State was not saved and restored just fine")
 
-    def test_usm_update_state_points(self):
+    def test_usm_update_state_points(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -147,7 +139,8 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
         diff = UserState(
             user=self.USER,
@@ -156,7 +149,8 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP_NEXT)
+            last_changed=self.TIMESTAMP_NEXT,
+        )
 
         UserStateModel.update_state(diff=diff)
         new_state = state_model.reload().to_state()
@@ -164,7 +158,7 @@ class TestStateModels(BaseTest):
         self.assertEqual(diff, new_state)
         self.assertEqual(diff.last_changed, new_state.last_changed)
 
-    def test_usm_update_state_level(self):
+    def test_usm_update_state_level(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -172,7 +166,8 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
         diff = UserState(
             user=self.USER,
@@ -181,14 +176,15 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP_NEXT)
+            last_changed=self.TIMESTAMP_NEXT,
+        )
 
         UserStateModel.update_state(diff=diff)
         new_state = state_model.reload().to_state()
 
         self.assertEqual(diff, new_state)
 
-    def test_usm_update_state_actual_coins(self):
+    def test_usm_update_state_actual_coins(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -196,7 +192,8 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
         diff = UserState(
             user=self.USER,
@@ -205,14 +202,15 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(200),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP_NEXT)
+            last_changed=self.TIMESTAMP_NEXT,
+        )
 
         UserStateModel.update_state(diff=diff)
         new_state = state_model.reload().to_state()
 
         self.assertEqual(diff, new_state)
 
-    def test_usm_update_state_potential_coins(self):
+    def test_usm_update_state_potential_coins(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -220,7 +218,8 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
         diff = UserState(
             user=self.USER,
@@ -229,14 +228,15 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(300),
             achievements=[],
-            last_changed=self.TIMESTAMP_NEXT)
+            last_changed=self.TIMESTAMP_NEXT,
+        )
 
         UserStateModel.update_state(diff=diff)
         new_state = state_model.reload().to_state()
 
         self.assertEqual(diff, new_state)
 
-    def test_usm_update_state_achievements(self):
+    def test_usm_update_state_achievements(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -244,18 +244,20 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
         rule = Rule(
-            badge='',
-            name='',
-            description='',
+            badge="",
+            name="",
+            description="",
             bonus=0,
             tasks_number=0,
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id='100')
+            rule_id="100",
+        )
         RuleModel.from_rule(rule).save()
         diff = UserState(
             user=self.USER,
@@ -264,14 +266,15 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[rule],
-            last_changed=self.TIMESTAMP_NEXT)
+            last_changed=self.TIMESTAMP_NEXT,
+        )
 
         UserStateModel.update_state(diff=diff)
         new_state = state_model.reload().to_state()
 
         self.assertEqual(diff, new_state)
 
-    def test_usm_update_state_all_together(self):
+    def test_usm_update_state_all_together(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -279,18 +282,20 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
         rule = Rule(
-            badge='',
-            name='',
-            description='',
+            badge="",
+            name="",
+            description="",
             bonus=0,
             tasks_number=0,
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id='100')
+            rule_id="100",
+        )
         RuleModel.from_rule(rule).save()
         diff = UserState(
             user=self.USER,
@@ -299,14 +304,15 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(20),
             potential_coins=Decimal(100),
             achievements=[rule],
-            last_changed=self.TIMESTAMP_NEXT)
+            last_changed=self.TIMESTAMP_NEXT,
+        )
 
         UserStateModel.update_state(diff=diff)
         new_state = state_model.reload().to_state()
 
         self.assertEqual(diff, new_state)
 
-    def test_usm_update_state_twice(self):
+    def test_usm_update_state_twice(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -314,29 +320,32 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
         rule = Rule(
-            badge='',
-            name='Rule 1',
-            description='',
+            badge="",
+            name="Rule 1",
+            description="",
             bonus=0,
             tasks_number=0,
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id='100')
+            rule_id="100",
+        )
         RuleModel.from_rule(rule).save()
         rule_two = Rule(
-            badge='',
-            name='Rule 2',
-            description='',
+            badge="",
+            name="Rule 2",
+            description="",
             bonus=0,
             tasks_number=0,
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id='200')
+            rule_id="200",
+        )
         RuleModel.from_rule(rule_two).save()
         diff = UserState(
             user=self.USER,
@@ -345,7 +354,8 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(20),
             potential_coins=Decimal(100),
             achievements=[rule],
-            last_changed=self.TIMESTAMP_NEXT)
+            last_changed=self.TIMESTAMP_NEXT,
+        )
         diff_two = UserState(
             user=self.USER,
             level=81,
@@ -354,7 +364,8 @@ class TestStateModels(BaseTest):
             potential_coins=Decimal(100),
             # just by some mistake we passed `rule` twice
             achievements=[rule, rule_two],
-            last_changed=self.TIMESTAMP_NEXT)
+            last_changed=self.TIMESTAMP_NEXT,
+        )
 
         UserStateModel.update_state(diff=diff)
         UserStateModel.update_state(diff=diff_two)
@@ -362,14 +373,12 @@ class TestStateModels(BaseTest):
 
         self.assertEqual(new_state.points, diff.points + diff_two.points)
         self.assertEqual(new_state.level, diff_two.level)
-        self.assertEqual(new_state.actual_coins,
-                         diff.actual_coins + diff_two.actual_coins)
-        self.assertEqual(new_state.potential_coins,
-                         diff.potential_coins + diff_two.potential_coins)
-        self.assertSetEqual(set(new_state.achievements.keys()), {'200', '100'})
+        self.assertEqual(new_state.actual_coins, diff.actual_coins + diff_two.actual_coins)
+        self.assertEqual(new_state.potential_coins, diff.potential_coins + diff_two.potential_coins)
+        self.assertSetEqual(set(new_state.achievements.keys()), {"200", "100"})
         self.assertEqual(new_state.last_changed, diff_two.last_changed)
 
-    def test_rookie_to_dict(self):
+    def test_rookie_to_dict(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -377,31 +386,32 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(),
             potential_coins=Decimal(),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         expected = {
-            'user': self.USER.username,
-            'level': 0,
-            'points': 0,
-            'actual_coins': 0,
-            'potential_coins': 0,
-            'achievements': [],
-            'last_changed': self.TIMESTAMP.strftime('%d.%m.%Y %H:%M:%S')
+            "user": self.USER.username,
+            "level": 0,
+            "points": 0,
+            "actual_coins": 0,
+            "potential_coins": 0,
+            "achievements": [],
+            "last_changed": self.TIMESTAMP.strftime("%d.%m.%Y %H:%M:%S"),
         }
 
-        self.assertDictEqual(expected, state.to_dict(),
-                             'Wrong state to dict conversion')
+        self.assertDictEqual(expected, state.to_dict(), "Wrong state to dict conversion")
 
-    def test_everything_to_dict(self):
+    def test_everything_to_dict(self) -> None:
         rule = Rule(
-            badge='',
-            name='',
-            description='',
+            badge="",
+            name="",
+            description="",
             bonus=0,
             tasks_number=0,
             days_number=5,
             is_weekend=False,
             is_adjacent=True,
-            rule_id='100')
+            rule_id="100",
+        )
         state = UserState(
             user=self.USER,
             level=80,
@@ -409,74 +419,68 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(20),
             potential_coins=Decimal(100),
             achievements=[rule],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         expected = {
-            'user': self.USER.username,
-            'level': 80,
-            'points': 200,
-            'actual_coins': 20,
-            'potential_coins': 100,
-            'achievements': [rule.to_dict()],
-            'last_changed': self.TIMESTAMP.strftime('%d.%m.%Y %H:%M:%S')
+            "user": self.USER.username,
+            "level": 80,
+            "points": 200,
+            "actual_coins": 20,
+            "potential_coins": 100,
+            "achievements": [rule.to_dict()],
+            "last_changed": self.TIMESTAMP.strftime("%d.%m.%Y %H:%M:%S"),
         }
 
-        self.assertDictEqual(expected, state.to_dict(),
-                             'Wrong state to dict conversion')
+        self.assertDictEqual(expected, state.to_dict(), "Wrong state to dict conversion")
 
-    def test_create_if_not_exists(self):
+    def test_create_if_not_exists(self) -> None:
         state = UserStateModel.get_or_create_by_user(self.USER)
 
-        self.assertEqual(state.user.username, self.USER.username,
-                         'Wrong username for newly created state')
-        self.assertEqual(state.level, 0,
-                         'Wrong level for newly created state')
-        self.assertEqual(state.points, Decimal(),
-                         'Wrong points for newly created state')
-        self.assertEqual(state.actual_coins, Decimal(),
-                         'Wrong actual coins for newly created state')
-        self.assertEqual(state.potential_coins, Decimal(),
-                         'Wrong potential coins for newly created state')
-        self.assertEqual(state.achievements, {},
-                         'Wrong achievements set for newly created state')
+        self.assertEqual(state.user.username, self.USER.username, "Wrong username for newly created state")
+        self.assertEqual(state.level, 0, "Wrong level for newly created state")
+        self.assertEqual(state.points, Decimal(), "Wrong points for newly created state")
+        self.assertEqual(state.actual_coins, Decimal(), "Wrong actual coins for newly created state")
+        self.assertEqual(state.potential_coins, Decimal(), "Wrong potential coins for newly created state")
+        self.assertEqual(state.achievements, {}, "Wrong achievements set for newly created state")
 
-    def test_top_correct_limit(self):
+    def test_top_correct_limit(self) -> None:
         [
             UserStateModel.from_state(
                 UserState(
-                    user=User(
-                        username='user%s' % i,
-                        email='user%s@email.com' % i).save(),
+                    user=User(username="user%s" % i, email="user%s@email.com" % i).save(),
                     level=i,
                     points=Decimal(200),
                     actual_coins=Decimal(20),
                     potential_coins=Decimal(100),
                     achievements=[],
-                    last_changed=self.TIMESTAMP
+                    last_changed=self.TIMESTAMP,
                 )
-            ).save() for i in range(5)
+            ).save()
+            for i in range(5)
         ]
         sorting = StateSortingKeys.LEVEL
 
         for i in range(1, 5):
             self.assertEqual(
-                len(list((UserStateModel.get_top_users(i, sorting)))), i,
-                'Limiting was not applied correctly: %s items' % i)
+                len(list((UserStateModel.get_top_users(i, sorting)))),
+                i,
+                "Limiting was not applied correctly: %s items" % i,
+            )
 
-    def test_top_correct_sorting(self):
+    def test_top_correct_sorting(self) -> None:
         [
             UserStateModel.from_state(
                 UserState(
-                    user=User(
-                        username='user%s' % i,
-                        email='user%s@email.com' % i).save(),
+                    user=User(username="user%s" % i, email="user%s@email.com" % i).save(),
                     level=i,
                     points=Decimal(i * 20),
                     actual_coins=Decimal(100 - i * 20),
                     potential_coins=Decimal(100 - i if i % 2 else 100 + i),
                     achievements=[],
-                    last_changed=self.TIMESTAMP
+                    last_changed=self.TIMESTAMP,
                 )
-            ).save() for i in range(5)
+            ).save()
+            for i in range(5)
         ]
 
         for item in StateSortingKeys:
@@ -485,10 +489,10 @@ class TestStateModels(BaseTest):
             properties = list(map(attrgetter(key), result))
 
             self.assertSequenceEqual(
-                properties, sorted(properties, reverse=True),
-                'Sorting was not applied correctly: %s' % key)
+                properties, sorted(properties, reverse=True), "Sorting was not applied correctly: %s" % key
+            )
 
-    def test_withdraw_positive(self):
+    def test_withdraw_positive(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -496,7 +500,8 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(100),
             potential_coins=Decimal(500),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
         result = UserStateModel.withdraw(self.USER, Decimal(99))
         state_model.reload()
@@ -505,7 +510,7 @@ class TestStateModels(BaseTest):
         self.assertEqual(state_model.actual_coins, Decimal(1))
         self.assertEqual(state_model.potential_coins, Decimal(500))
 
-    def test_withdraw_positive_point(self):
+    def test_withdraw_positive_point(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -513,16 +518,17 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(100),
             potential_coins=Decimal(500),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
-        result = UserStateModel.withdraw(self.USER, Decimal('99.5'))
+        result = UserStateModel.withdraw(self.USER, Decimal("99.5"))
         state_model.reload()
 
         self.assertTrue(result)
-        self.assertEqual(state_model.actual_coins, Decimal('0.5'))
+        self.assertEqual(state_model.actual_coins, Decimal("0.5"))
         self.assertEqual(state_model.potential_coins, Decimal(500))
 
-    def test_withdraw_negative(self):
+    def test_withdraw_negative(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -530,19 +536,18 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(100),
             potential_coins=Decimal(500),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
 
-        self.assertRaises(
-            RuntimeError,
-            lambda: UserStateModel.withdraw(self.USER, Decimal(-99)))
+        self.assertRaises(RuntimeError, lambda: UserStateModel.withdraw(self.USER, Decimal(-99)))
 
         state_model.reload()
 
         self.assertEqual(state_model.actual_coins, Decimal(100))
         self.assertEqual(state_model.potential_coins, Decimal(500))
 
-    def test_withdraw_no_money_positive(self):
+    def test_withdraw_no_money_positive(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -550,7 +555,8 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(80),
             potential_coins=Decimal(500),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
         result = UserStateModel.withdraw(self.USER, Decimal(99))
         state_model.reload()
@@ -559,7 +565,7 @@ class TestStateModels(BaseTest):
         self.assertEqual(state_model.actual_coins, Decimal(80))
         self.assertEqual(state_model.potential_coins, Decimal(500))
 
-    def test_withdraw_no_money_positive_point(self):
+    def test_withdraw_no_money_positive_point(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -567,16 +573,17 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(80),
             potential_coins=Decimal(500),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
-        result = UserStateModel.withdraw(self.USER, Decimal('99.5'))
+        result = UserStateModel.withdraw(self.USER, Decimal("99.5"))
         state_model.reload()
 
         self.assertFalse(result)
         self.assertEqual(state_model.actual_coins, Decimal(80))
         self.assertEqual(state_model.potential_coins, Decimal(500))
 
-    def test_withdraw_no_money_negative(self):
+    def test_withdraw_no_money_negative(self) -> None:
         state = UserState(
             user=self.USER,
             level=0,
@@ -584,12 +591,11 @@ class TestStateModels(BaseTest):
             actual_coins=Decimal(80),
             potential_coins=Decimal(500),
             achievements=[],
-            last_changed=self.TIMESTAMP)
+            last_changed=self.TIMESTAMP,
+        )
         state_model = UserStateModel.from_state(state).save()
 
-        self.assertRaises(
-            RuntimeError,
-            lambda: UserStateModel.withdraw(self.USER, Decimal(-99)))
+        self.assertRaises(RuntimeError, lambda: UserStateModel.withdraw(self.USER, Decimal(-99)))
 
         state_model.reload()
 
@@ -597,5 +603,5 @@ class TestStateModels(BaseTest):
         self.assertEqual(state_model.potential_coins, Decimal(500))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

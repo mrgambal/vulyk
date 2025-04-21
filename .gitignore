@@ -48,3 +48,5 @@ static/out
 var
 var/
 venv
+.venv
+.vscode

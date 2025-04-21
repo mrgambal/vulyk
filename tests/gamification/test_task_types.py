@@ -8,8 +8,7 @@ test_task_types
 import unittest
 from unittest.mock import patch
 
-from vulyk.blueprints.gamification.models.task_types import (
-    COINS_PER_TASK_KEY, IMPORTANT_KEY, POINTS_PER_TASK_KEY)
+from vulyk.blueprints.gamification.models.task_types import COINS_PER_TASK_KEY, IMPORTANT_KEY, POINTS_PER_TASK_KEY
 from vulyk.models.stats import WorkSession
 from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
 from vulyk.models.user import Group, User
@@ -25,8 +24,7 @@ class TestTaskTypes(BaseTest):
     def setUpClass(cls):
         super().setUpClass()
 
-        Group.objects.create(
-            description='test', id='default', allowed_types=[cls.TASK_TYPE])
+        Group.objects.create(description="test", id="default", allowed_types=[cls.TASK_TYPE])
 
     @classmethod
     def tearDownClass(cls):
@@ -44,41 +42,41 @@ class TestTaskTypes(BaseTest):
         super().tearDown()
 
     # region Task type
-    @patch('mongoengine.queryset.base.BaseQuerySet.count', lambda *a: 22)
+    @patch("mongoengine.queryset.base.BaseQuerySet.count", lambda *a: 22)
     def test_to_dict_no_batch(self):
         got = {
-            'name': 'Fake name',
-            'description': 'Fake description',
-            'type': 'FakeGamifiedTaskType',
-            'tasks': 22,
-            'open_tasks': 0,
-            'closed_tasks': 22,
-            'batch_info': None,
-            'has_tasks': False
+            "name": "Fake name",
+            "description": "Fake description",
+            "type": "FakeGamifiedTaskType",
+            "tasks": 22,
+            "open_tasks": 0,
+            "closed_tasks": 22,
+            "batch_info": None,
+            "has_tasks": False,
         }
 
         self.assertDictEqual(FakeType({}).to_dict(), got)
 
-    @patch('mongoengine.queryset.base.BaseQuerySet.count', lambda *a: 33)
+    @patch("mongoengine.queryset.base.BaseQuerySet.count", lambda *a: 33)
     def test_to_dict_one_batch(self):
         got = {
-            'name': 'Fake name',
-            'description': 'Fake description',
-            'type': 'FakeGamifiedTaskType',
-            'tasks': 33,
-            'closed_tasks': 33,
-            'open_tasks': 0,
-            'batch_info': {
+            "name": "Fake name",
+            "description": "Fake description",
+            "type": "FakeGamifiedTaskType",
+            "tasks": 33,
+            "closed_tasks": 33,
+            "open_tasks": 0,
+            "batch_info": {
                 POINTS_PER_TASK_KEY: 5.0,
                 COINS_PER_TASK_KEY: 3.0,
                 IMPORTANT_KEY: True,
             },
-            'has_tasks': False
+            "has_tasks": False,
         }
 
         task_type = FakeType({})
         Batch(
-            id='default',
+            id="default",
             task_type=task_type.type_name,
             tasks_count=2,
             tasks_processed=0,
@@ -86,27 +84,27 @@ class TestTaskTypes(BaseTest):
                 POINTS_PER_TASK_KEY: 5.0,
                 COINS_PER_TASK_KEY: 3.0,
                 IMPORTANT_KEY: True,
-            }
+            },
         ).save()
 
         self.assertDictEqual(task_type.to_dict(), got)
 
-    @patch('mongoengine.queryset.base.BaseQuerySet.count', lambda *a: 33)
+    @patch("mongoengine.queryset.base.BaseQuerySet.count", lambda *a: 33)
     def test_to_dict_one_batch_but_closed(self):
         got = {
-            'name': 'Fake name',
-            'description': 'Fake description',
-            'type': 'FakeGamifiedTaskType',
-            'tasks': 33,
-            'closed_tasks': 33,
-            'open_tasks': 0,
-            'batch_info': None,
-            'has_tasks': False
+            "name": "Fake name",
+            "description": "Fake description",
+            "type": "FakeGamifiedTaskType",
+            "tasks": 33,
+            "closed_tasks": 33,
+            "open_tasks": 0,
+            "batch_info": None,
+            "has_tasks": False,
         }
 
         task_type = FakeType({})
         Batch(
-            id='default',
+            id="default",
             task_type=task_type.type_name,
             tasks_count=2,
             tasks_processed=2,
@@ -115,31 +113,31 @@ class TestTaskTypes(BaseTest):
                 POINTS_PER_TASK_KEY: 5.0,
                 COINS_PER_TASK_KEY: 3.0,
                 IMPORTANT_KEY: True,
-            }
+            },
         ).save()
 
         self.assertDictEqual(task_type.to_dict(), got)
 
-    @patch('mongoengine.queryset.base.BaseQuerySet.count', lambda *a: 44)
+    @patch("mongoengine.queryset.base.BaseQuerySet.count", lambda *a: 44)
     def test_to_dict_two_batch(self):
         got = {
-            'name': 'Fake name',
-            'description': 'Fake description',
-            'type': 'FakeGamifiedTaskType',
-            'tasks': 44,
-            'open_tasks': 0,
-            'closed_tasks': 44,
-            'batch_info': {
+            "name": "Fake name",
+            "description": "Fake description",
+            "type": "FakeGamifiedTaskType",
+            "tasks": 44,
+            "open_tasks": 0,
+            "closed_tasks": 44,
+            "batch_info": {
                 POINTS_PER_TASK_KEY: 15.0,
                 COINS_PER_TASK_KEY: 13.0,
                 IMPORTANT_KEY: True,
             },
-            'has_tasks': False
+            "has_tasks": False,
         }
 
         task_type = FakeType({})
         Batch(
-            id='default',
+            id="default",
             task_type=task_type.type_name,
             tasks_count=2,
             tasks_processed=2,
@@ -148,11 +146,11 @@ class TestTaskTypes(BaseTest):
                 POINTS_PER_TASK_KEY: 5.0,
                 COINS_PER_TASK_KEY: 3.0,
                 IMPORTANT_KEY: False,
-            }
+            },
         ).save()
 
         Batch(
-            id='zzzzz',
+            id="zzzzz",
             task_type=task_type.type_name,
             tasks_count=10,
             tasks_processed=2,
@@ -161,12 +159,13 @@ class TestTaskTypes(BaseTest):
                 POINTS_PER_TASK_KEY: 15.0,
                 COINS_PER_TASK_KEY: 13.0,
                 IMPORTANT_KEY: True,
-            }
+            },
         ).save()
 
         self.assertDictEqual(task_type.to_dict(), got)
+
     # endregion Task type
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,7 @@
 """
 test_batch_model
 """
+
 import unittest
 
 from vulyk.models.tasks import Batch, BatchUpdateResult
@@ -19,19 +20,14 @@ class TestBatchModel(BaseTest):
 
     def test_task_done_not_closing(self):
         batch = Batch(
-            id='default',
-            task_type=self.TASK_TYPE,
-            tasks_count=5,
-            tasks_processed=3,
-            closed=False,
-            batch_meta={}
+            id="default", task_type=self.TASK_TYPE, tasks_count=5, tasks_processed=3, closed=False, batch_meta={}
         ).save()
         called_times = 0
 
         @on_batch_done.connect
         def listen(sender: Batch) -> None:
             nonlocal called_times, batch
-            assert (sender.id == batch.id), 'Wrong sender {!r}'.format(sender)
+            assert sender.id == batch.id, "Wrong sender {!r}".format(sender)
             called_times += 1
 
         result = Batch.task_done_in(batch.id)
@@ -44,19 +40,14 @@ class TestBatchModel(BaseTest):
 
     def test_task_done_closing(self):
         batch = Batch(
-            id='default',
-            task_type=self.TASK_TYPE,
-            tasks_count=5,
-            tasks_processed=4,
-            closed=False,
-            batch_meta={}
+            id="default", task_type=self.TASK_TYPE, tasks_count=5, tasks_processed=4, closed=False, batch_meta={}
         ).save()
         called_times = 0
 
         @on_batch_done.connect
         def listen(sender: Batch) -> None:
             nonlocal called_times, batch
-            assert(sender.id == batch.id), 'Wrong sender {!r}'.format(sender)
+            assert sender.id == batch.id, "Wrong sender {!r}".format(sender)
             called_times += 1
 
         result = Batch.task_done_in(batch.id)
@@ -69,19 +60,14 @@ class TestBatchModel(BaseTest):
 
     def test_task_done_closing_closed(self):
         batch = Batch(
-            id='default',
-            task_type=self.TASK_TYPE,
-            tasks_count=5,
-            tasks_processed=5,
-            closed=True,
-            batch_meta={}
+            id="default", task_type=self.TASK_TYPE, tasks_count=5, tasks_processed=5, closed=True, batch_meta={}
         ).save()
         called_times = 0
 
         @on_batch_done.connect
         def listen(sender: Batch) -> None:
             nonlocal called_times, batch
-            assert(sender.id == batch.id), 'Wrong sender {!r}'.format(sender)
+            assert sender.id == batch.id, "Wrong sender {!r}".format(sender)
             called_times += 1
 
         result_second = Batch.task_done_in(batch.id)
@@ -93,5 +79,5 @@ class TestBatchModel(BaseTest):
         self.assertEqual(called_times, 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

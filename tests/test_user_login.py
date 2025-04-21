@@ -2,6 +2,7 @@
 """
 test_user_login
 """
+
 import unittest
 from unittest.mock import patch
 
@@ -16,20 +17,20 @@ from .base import BaseTest
 
 
 class TestUserLogin(BaseTest):
-    USER = User(username='SuperUsername', email='1@email.com', admin=True)
+    USER = User(username="SuperUsername", email="1@email.com", admin=True)
     USER_PROXY = LocalProxy(lambda: TestUserLogin.USER)
 
     def tearDown(self):
         User.objects.delete()
         Group.objects.delete()
-        Group._get_db().drop_collection('user_social_auth')
+        Group._get_db().drop_collection("user_social_auth")
 
         super().tearDown()
 
-    @patch('flask_login.current_user', USER_PROXY)
+    @patch("flask_login.current_user", USER_PROXY)
     def test_injected_in_request(self):
-        app = flask.Flask('test')
-        app.config.from_object('vulyk.settings')
+        app = flask.Flask("test")
+        app.config.from_object("vulyk.settings")
         db = Group._get_db()
         db.Document = Document
 
@@ -39,26 +40,26 @@ class TestUserLogin(BaseTest):
             self.assertEqual(flask.g.user, self.USER)
             return flask.Response()
 
-        app.route('/test', methods=['GET'])(fake_route)
-        app.test_client().get('/test')
+        app.route("/test", methods=["GET"])(fake_route)
+        app.test_client().get("/test")
 
-    @patch('flask_login.current_user', USER_PROXY)
+    @patch("flask_login.current_user", USER_PROXY)
     def test_injected_in_template(self):
-        app = flask.Flask('test')
-        app.config.from_object('vulyk.settings')
+        app = flask.Flask("test")
+        app.config.from_object("vulyk.settings")
         db = Group._get_db()
         db.Document = Document
 
         social_login.init_social_login(app, db)
 
         def fake_route():
-            return flask.render_template_string('{{user}}')
+            return flask.render_template_string("{{user}}")
 
-        app.route('/test', methods=['GET'])(fake_route)
-        resp = app.test_client().get('/test')
+        app.route("/test", methods=["GET"])(fake_route)
+        resp = app.test_client().get("/test")
 
-        self.assertEqual(resp.data.decode('utf8'), self.USER_PROXY.username)
+        self.assertEqual(resp.data.decode("utf8"), self.USER_PROXY.username)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

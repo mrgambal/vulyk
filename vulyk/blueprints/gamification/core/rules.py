@@ -1,23 +1,17 @@
 # -*- coding: utf-8 -*-
-from typing import Dict, Union
-
 """
 Classes within the package are supposed to be intermittent containers between
 JSON sources and final queries. Everything that has anything to do with images,
 representation and other specifications also goes here.
 """
-__all__ = [
-    'ProjectRule',
-    'Rule',
-    'RuleValidationException'
-]
+
+__all__ = ["ProjectRule", "Rule", "RuleValidationException"]
 
 
 class RuleValidationException(Exception):
     """
-    Basic exception class for all types of rule validation violations
+    Basic exception class for all types of rule validation violations.
     """
-    pass
 
 
 class Rule:
@@ -35,47 +29,42 @@ class Rule:
     Also additional bonuses to be given after user gets the achievement are
     included as well as achievement and its badge is.
     """
+
     __slots__ = [
-        'badge',
-        'name',
-        'description',
-        'bonus',
-        '_tasks_number',
-        '_days_number',
-        '_is_weekend',
-        '_is_adjacent',
-        '_hash'
+        "_days_number",
+        "_hash",
+        "_is_adjacent",
+        "_is_weekend",
+        "_tasks_number",
+        "badge",
+        "bonus",
+        "description",
+        "name",
     ]
 
-    def __init__(self,
-                 rule_id: str,
-                 badge: str,
-                 name: str,
-                 description: str,
-                 bonus: int,
-                 tasks_number: int,
-                 days_number: int,
-                 is_weekend: bool,
-                 is_adjacent: bool) -> None:
+    def __init__(
+        self,
+        rule_id: str,
+        badge: str,
+        name: str,
+        description: str,
+        bonus: int,
+        tasks_number: int,
+        days_number: int,
+        *,
+        is_weekend: bool,
+        is_adjacent: bool,
+    ) -> None:
         """
         :param rule_id: Unique rule identifier.
-        :type rule_id: str
-        :param badge: Badge image (either base64 or URL)
-        :type badge: str
-        :param name: Achievement name
-        :type name: str
-        :param description: Achievement textual description
-        :type description: str
-        :param bonus: How much additional points we give for the achievement
-        :type bonus: int
-        :param tasks_number: Number of tasks needed to achieve
-        :type tasks_number: int
-        :param days_number: Number of days needed to achieve
-        :type days_number: int
+        :param badge: Badge image (either base64 or URL).
+        :param name: Achievement name.
+        :param description: Achievement textual description.
+        :param bonus: How much additional points we give for the achievement.
+        :param tasks_number: Number of tasks needed to achieve.
+        :param days_number: Number of days needed to achieve.
         :param is_weekend: Should this achievement be tied up with weekends?
-        :type is_weekend: bool
         :param is_adjacent: Must it be given for work in adjacent days?
-        :type is_adjacent: bool
         """
         self.badge = badge
         self.name = name
@@ -93,7 +82,7 @@ class Rule:
 
     def _validate(self) -> None:
         """
-        Verifies that the rule complies to internal invariants. Otherwise –
+        Verifies that the rule complies to internal invariants. Otherwise -
         the exception must be thrown.
 
         :raises: RuleValidationException
@@ -103,15 +92,13 @@ class Rule:
         if self._is_adjacent:
             if self._tasks_number > 0:
                 raise RuleValidationException(
-                    'Counting number of tasks closed in adjacent days/weekends'
-                    ' is not supported.')
-            elif self._days_number == 0:
-                raise RuleValidationException(
-                    'Can not set "adjacent" flag with zero days')
+                    "Counting number of tasks closed in adjacent days/weekends is not supported."
+                )
+            if self._days_number == 0:
+                raise RuleValidationException('Can not set "adjacent" flag with zero days')
 
         if self._tasks_number == 0 and self._days_number == 0:
-            raise RuleValidationException('There must be at least one '
-                                          'numeric bound')
+            raise RuleValidationException("There must be at least one numeric bound")
 
     @property
     def id(self) -> str:
@@ -142,61 +129,57 @@ class Rule:
         user and days he spent working on these tasks. The priority is
         following: if tasks number is specified, it always supersedes days.
 
-        E.g.: if rule has `tasks_number=20` and `days_number=7` – limit is 20.
+        E.g.: if rule has `tasks_number=20` and `days_number=7` - limit is 20.
         We take the number of tasks done in 7 days, and compare it to 20.
         Otherwise, if only `days_number=7` is specified, limit is 7. We group
         all tasks were done not earlier than 7 days ago, group them by day and
         check if 7 items is returned from aggregation pipeline.
 
         :return: The value to be compared to aggregation results.
-        :rtype: int
         """
-        return self._tasks_number \
-            if (self._tasks_number or 0) > 0 \
-            else (self._days_number or 0)
+        return self._tasks_number if (self._tasks_number or 0) > 0 else (self._days_number or 0)
 
-    def to_dict(self) -> Dict[str, Union[str, int, bool]]:
+    def to_dict(self) -> dict[str, str | int | bool]:
         """
         Could be used as a source for JSON or any other representation format
 
-        :return: Dict-ized object view
-        :rtype: Dict[str, Union[str, int, bool]]
+        :return: Dict-ized object view.
         """
         return {
-            'id': self.id,
-            'badge': self.badge,
-            'name': self.name,
-            'description': self.description,
-            'bonus': self.bonus,
-            'tasks_number': self.tasks_number,
-            'days_number': self.days_number,
-            'is_weekend': self.is_weekend,
-            'is_adjacent': self.is_adjacent
+            "id": self.id,
+            "badge": self.badge,
+            "name": self.name,
+            "description": self.description,
+            "bonus": self.bonus,
+            "tasks_number": self.tasks_number,
+            "days_number": self.days_number,
+            "is_weekend": self.is_weekend,
+            "is_adjacent": self.is_adjacent,
         }
 
     def __eq__(self, o: object) -> bool:
         if isinstance(o, Rule):
             return self._hash == o.id
-        else:
-            return False
+
+        return False
 
     def __ne__(self, o: object) -> bool:
         return not self == o
 
     def __str__(self) -> str:
-        return 'Rule({name}, {bonus}, {tasks}, {days}, {week}, {adj})'.format(
+        return "Rule({name}, {bonus}, {tasks}, {days}, {week}, {adj})".format(
             name=self.name,
             bonus=self.bonus,
             tasks=self._tasks_number,
             days=self._days_number,
             week=self._is_weekend,
-            adj=self._is_adjacent
+            adj=self._is_adjacent,
         )
 
     def __repr__(self) -> str:
-        return 'Rule({name}, {descr})'.format(
+        return "Rule({name}, {descr})".format(
             name=self.name,
-            descr=self.description[:50] + '...',
+            descr=self.description[:50] + "...",
         )
 
 
@@ -204,52 +187,46 @@ class ProjectRule(Rule):
     """
     Container for project specific rules.
     """
-    __slots__ = Rule.__slots__ + [
-        '_task_type_name'
-    ]
 
-    def __init__(self,
-                 rule_id: str,
-                 task_type_name: str,
-                 badge: str,
-                 name: str,
-                 description: str,
-                 bonus: int,
-                 tasks_number: int,
-                 days_number: int,
-                 is_weekend: bool,
-                 is_adjacent: bool) -> None:
+    __slots__ = [*Rule.__slots__, "_task_type_name"]
+
+    def __init__(
+        self,
+        rule_id: str,
+        task_type_name: str,
+        badge: str,
+        name: str,
+        description: str,
+        bonus: int,
+        tasks_number: int,
+        days_number: int,
+        *,
+        is_weekend: bool,
+        is_adjacent: bool,
+    ) -> None:
         """
         :param rule_id: Unique rule identifier.
-        :type rule_id: str
         :param task_type_name: Task type name.
-        :type task_type_name: str
-        :param badge: Badge image (either base64 or URL)
-        :type badge: str
-        :param name: Achievement name
-        :type name: str
-        :param description: Achievement textual description
-        :type description: str
-        :param bonus: How much additional points we give for the achievement
-        :type bonus: int
-        :param tasks_number: Number of tasks needed to achieve
-        :type tasks_number: int
-        :param days_number: Number of days needed to achieve
-        :type days_number: int
+        :param badge: Badge image (either base64 or URL).
+        :param name: Achievement name.
+        :param description: Achievement textual description.
+        :param bonus: How much additional points we give for the achievement.
+        :param tasks_number: Number of tasks needed to achieve.
+        :param days_number: Number of days needed to achieve.
         :param is_weekend: Should this achievement be tied up with weekends?
-        :type is_weekend: bool
         :param is_adjacent: Must it be given for work in adjacent days?
-        :type is_adjacent: bool
         """
-        super().__init__(rule_id=rule_id,
-                         badge=badge,
-                         name=name,
-                         description=description,
-                         bonus=bonus,
-                         tasks_number=tasks_number,
-                         days_number=days_number,
-                         is_weekend=is_weekend,
-                         is_adjacent=is_adjacent)
+        super().__init__(
+            rule_id=rule_id,
+            badge=badge,
+            name=name,
+            description=description,
+            bonus=bonus,
+            tasks_number=tasks_number,
+            days_number=days_number,
+            is_weekend=is_weekend,
+            is_adjacent=is_adjacent,
+        )
 
         self._task_type_name = task_type_name
 
@@ -262,13 +239,10 @@ class ProjectRule(Rule):
         """
         Factory method to extend regular Rule and promote it to ProjectRule
 
-        :param rule: Basic Rule instance to copy info from
-        :type rule: Rule
+        :param rule: Basic Rule instance to copy info from.
         :param task_type_name: ID of the project/task type.
-        :type task_type_name: str
 
-        :return: Fully formed ProjectRule
-        :rtype: ProjectRule
+        :return: Fully formed ProjectRule.
         """
         return cls(
             rule_id=rule.id,
@@ -280,43 +254,41 @@ class ProjectRule(Rule):
             tasks_number=rule.tasks_number,
             days_number=rule.days_number,
             is_weekend=rule.is_weekend,
-            is_adjacent=rule.is_adjacent)
+            is_adjacent=rule.is_adjacent,
+        )
 
-    def to_dict(self) -> Dict[str, Union[str, int, bool]]:
+    def to_dict(self) -> dict[str, str | int | bool]:
         """
-        Could be used as a source for JSON or any other representation format
+        Could be used as a source for JSON or any other representation format.
 
-        :return: Dict-ized object view
-        :rtype: Dict[str, Union[str, int, bool]]
+        :return: Dict-ized object view.
         """
         result = super().to_dict()
-        result['task_type_name'] = self.task_type_name
+        result["task_type_name"] = self.task_type_name
 
         return result
 
     def __str__(self) -> str:
-        return 'ProjectRule({name}, {task_type}, {bonus}, {tasks}, {days},' \
-               ' {week}, {adj})' \
-            .format(name=self.name,
-                    task_type=self._task_type_name,
-                    bonus=self.bonus,
-                    tasks=self._tasks_number,
-                    days=self._days_number,
-                    week=self._is_weekend,
-                    adj=self._is_adjacent)
-
-    def __repr__(self) -> str:
-        return 'ProjectRule({name}, {task_type}, {descr})'.format(
+        return "ProjectRule({name}, {task_type}, {bonus}, {tasks}, {days}, {week}, {adj})".format(
             name=self.name,
             task_type=self._task_type_name,
-            descr=self.description[:50] + '...'
+            bonus=self.bonus,
+            tasks=self._tasks_number,
+            days=self._days_number,
+            week=self._is_weekend,
+            adj=self._is_adjacent,
+        )
+
+    def __repr__(self) -> str:
+        return "ProjectRule({name}, {task_type}, {descr})".format(
+            name=self.name, task_type=self._task_type_name, descr=self.description[:50] + "..."
         )
 
     def __eq__(self, o: object) -> bool:
         if isinstance(o, ProjectRule):
             return self._hash == o.id
-        else:
-            return False
+
+        return False
 
     def __ne__(self, o: object) -> bool:
         return not self == o

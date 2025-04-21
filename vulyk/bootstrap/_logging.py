@@ -2,30 +2,31 @@
 """
 Project-wide logger configuration.
 """
+
 import logging
 from logging.handlers import RotatingFileHandler
 
-__all__ = [
-    'init_logger'
-]
+from flask import Flask
+
+__all__ = ["init_logger"]
 
 
-def init_logger(app) -> None:
+def init_logger(app: Flask) -> None:
     """
-    :param app: Current Flask application
-    :type app: flask.Flask 
+    Initialize the logging system.
+
+    :param app: Current Flask application.
     """
 
-    if app.config['LOG_TO_STDERR']:
+    if app.config["LOG_TO_STDERR"]:
         handler = logging.StreamHandler()
     else:
         handler = RotatingFileHandler(
-            filename=app.config['LOGGING_LOCATION'],
-            maxBytes=app.config['LOGGING_MAX_FILE_BYTES']
+            filename=app.config["LOGGING_LOCATION"], maxBytes=app.config["LOGGING_MAX_FILE_BYTES"]
         )
 
-    handler.setLevel(app.config['LOGGING_LEVEL'])
-    handler.setFormatter(logging.Formatter(app.config['LOGGING_FORMAT']))
+    handler.setLevel(app.config["LOGGING_LEVEL"])
+    handler.setFormatter(logging.Formatter(app.config["LOGGING_FORMAT"]))
 
     app.logger.addHandler(handler)
-    app.logger.debug('Logging system has been initialized successfully.')
+    app.logger.debug("Logging system has been initialized successfully.")

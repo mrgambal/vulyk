@@ -1,7 +1,7 @@
 # coding=utf-8
-from datetime import datetime
+from collections.abc import Iterator
+from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Dict, Iterator, List
 
 from bson import ObjectId
 
@@ -16,13 +16,9 @@ from .core.state import UserState
 from .models.events import EventModel
 from .models.rules import ProjectAndFreeRules, RuleModel
 from .models.state import UserStateModel
-from .models.task_types import (COINS_PER_TASK_KEY, POINTS_PER_TASK_KEY,
-                                AbstractGamifiedTaskType)
+from .models.task_types import COINS_PER_TASK_KEY, POINTS_PER_TASK_KEY, AbstractGamifiedTaskType
 
-__all__ = [
-    'track_events',
-    'get_actual_rules'
-]
+__all__ = ["get_actual_rules", "track_events"]
 
 
 @on_task_done.connect
@@ -30,12 +26,9 @@ def track_events(sender: object, answer: AbstractAnswer) -> None:
     """
     The most important gear of the gamification module.
 
-    :param sender: Sender
-    :type sender: object
-    :param answer: Current finished task's answer instance
-    :type answer: AbstractAnswer
+    :param sender: Sender.
+    :param answer: Current finished task's answer instance.
 
-    :rtype: None
     """
     from vulyk.app import TASKS_TYPES
     from vulyk.blueprints.gamification import gamification
@@ -47,20 +40,17 @@ def track_events(sender: object, answer: AbstractAnswer) -> None:
         return
 
     if isinstance(TASKS_TYPES[batch.task_type], AbstractGamifiedTaskType):
-        dt = datetime.utcnow()  # TODO: TZ Aware?
+        dt = datetime.now(timezone.utc)
         # I. Get current/new state
         state = UserStateModel.get_or_create_by_user(user)
 
         # II. gather earned goods
-        badges = list(filter(
-            lambda rule: MongoRuleExecutor.achieved(
-                user_id=user.id,
-                rule=rule,
-                collection=WorkSession.objects),
-            get_actual_rules(
-                state=state,
-                task_type_name=batch.task_type,
-                now=dt)))  # type: Iterator[Rule]
+        badges = list(
+            filter(
+                lambda rule: MongoRuleExecutor.achieved(user_id=user.id, rule=rule, collection=WorkSession.objects),
+                get_actual_rules(state=state, task_type_name=batch.task_type, now=dt),
+            )
+        )
         points = Decimal(batch.batch_meta[POINTS_PER_TASK_KEY])
 
         for b in badges:
@@ -81,7 +71,9 @@ def track_events(sender: object, answer: AbstractAnswer) -> None:
                 actual_coins=Decimal(0),
                 potential_coins=coins,
                 achievements=badges,
-                last_changed=dt))
+                last_changed=dt,
+            )
+        )
         EventModel.from_event(
             Event.build(
                 timestamp=dt,
@@ -91,35 +83,27 @@ def track_events(sender: object, answer: AbstractAnswer) -> None:
                 coins=coins,
                 achievements=badges,
                 acceptor_fund=None,
-                level_given=None
-                if current_level == updated_level
-                else updated_level,
-                viewed=False)
+                level_given=None if current_level == updated_level else updated_level,
+                viewed=False,
+            )
         ).save()
 
 
-def get_actual_rules(
-    state: UserState,
-    task_type_name: str,
-    now: datetime
-) -> Iterator[Rule]:
+def get_actual_rules(state: UserState, task_type_name: str, now: datetime) -> Iterator[Rule]:
     """
     Returns a list of eligible rules.
 
-    :param state: Current state
-    :type state: UserState
-    :param task_type_name: The task's project
-    :type task_type_name: str
-    :param now: Timestamp to check for weekends
-    :type now: datetime
+    :param state: Current state.
+    :param task_type_name: The task's project.
+    :param now: Timestamp to check for weekends.
 
-    :return: Iterator of Rule instances
-    :rtype: Iterator[Rule]
+    :return: Iterator of Rule instances.
     """
     return RuleModel.get_actual_rules(
         skip_ids=list(state.achievements.keys()),
         rule_filter=ProjectAndFreeRules(task_type_name),
-        is_weekend=now.weekday() in [5, 6])
+        is_weekend=now.weekday() in [5, 6],
+    )
 
 
 @on_batch_done.connect
@@ -128,8 +112,7 @@ def materialize_coins(sender: Batch) -> None:
     Convert potential coins to active ones for every member participated upon
     the batch in some gamified task type has been closed.
 
-    :param sender: Batch that was closed
-    :type sender: Batch
+    :param sender: Batch that was closed.
     """
     from vulyk.app import TASKS_TYPES
 
@@ -145,11 +128,8 @@ def materialize_coins(sender: Batch) -> None:
     # potentially expensive on memory
     task_ids = task_type.task_model.ids_in_batch(sender)  # type: List[str]
     # potentially expensive on memory/CPU (it isn't an generator or something)
-    group_by_count = task_type.answer_model \
-        .answers_numbers_by_tasks(task_ids)  # type: Dict[ObjectId, int]
+    group_by_count = task_type.answer_model.answers_numbers_by_tasks(task_ids)  # type: Dict[ObjectId, int]
 
     # forgive me, Father, I have sinned so bad...
-    for (uid, freq) in group_by_count.items():
-        UserStateModel.transfer_coins_to_actual(
-            uid=uid,
-            amount=Decimal(freq * coins))
+    for uid, freq in group_by_count.items():
+        UserStateModel.transfer_coins_to_actual(uid=uid, amount=Decimal(freq * coins))

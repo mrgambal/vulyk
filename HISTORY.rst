@@ -60,3 +60,16 @@ History
 * Fixing orjson jsonlines export
 * update dependencies
 * add build config for Python 3.10
+
+0.6.0 (2025-04-21)
+------------------
+2025 Resurrection
+
+With the help of different AI tools I managed to:
+* migrate the project to UV
+* switch to Ruff as main linter/formatter
+* update a bunch of dependencies
+* support Python 3.10 to 3.13
+* modernized type hints and improved some comments
+* addressed some of Ruff's complaints
+* all timestamps are now TZ-aware

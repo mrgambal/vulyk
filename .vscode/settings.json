@@ -1,15 +1,8 @@
 {
-    "python.envFile":"${workspaceFolder}/test.env",
+    "python.envFile":"${workspaceFolder}/.env",
     "python.analysis.extraPaths": [
         "vulyk"
     ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "python.formatting.provider": "black",
-    "python.formatting.blackArgs": [
-        "vulyk",
-        "tests"
-    ],
-    "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true
+    "python.testing.unittestEnabled": true,
+    "python.analysis.typeCheckingMode": "standard"
 }

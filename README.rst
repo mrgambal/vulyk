@@ -87,10 +87,10 @@ Then create virtual environment and install all three of them there in editable 
 
     mkdir sandbox
     cd sandbox
-    virtualenv venv && source venv/bin/activate
-    pip install -e ../vulyk
-    pip install -e ../vulyk-declaration
-    pip install -e ../vulyk-tagging
+    uv sync --dev
+    uv pip install -e ../vulyk
+    uv pip install -e ../vulyk-declaration
+    uv pip install -e ../vulyk-tagging
 
 
 Then let's set things up. Edit local_settings.py and add some stuff into it:
@@ -130,7 +130,7 @@ Then you should be able to init the app using CLI, load some tasks and run it lo
 .. code:: bash
 
     cp `which manage.py` .  # FUgly, I know!
-    python ./manage.py  init declaration_task tagging_task
+    uv run ./manage.py  init declaration_task tagging_task
 
 That'll create default user group and give users of this group an access to two task types that we've installed before.
 
@@ -138,8 +138,8 @@ Then:
 
 .. code:: bash
 
-    python ./manage.py db load declaration_task --batch 01_declaration decl_tasks.json
-    python ./manage.py db load tagging_task --batch 01_tagging tagging_tasks.json
+    uv run ./manage.py db load declaration_task --batch 01_declaration decl_tasks.json
+    uv run ./manage.py db load tagging_task --batch 01_tagging tagging_tasks.json
 
 And finally you should create run.py and put some stuff into it:
 
@@ -153,7 +153,7 @@ And finally you should create run.py and put some stuff into it:
 
 .. code:: bash
 
-    python run.py
+    uv run run.py
 
 Then open http://localhost:5000 and you are set!
 

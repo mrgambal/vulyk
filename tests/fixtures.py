@@ -14,8 +14,8 @@ class FakeAnswer(AbstractAnswer):
 class FakeType(AbstractTaskType):
     task_model = FakeModel
     answer_model = FakeAnswer
-    type_name = 'FakeTaskType'
-    template = 'tmpl.html'
+    type_name = "FakeTaskType"
+    template = "tmpl.html"
 
-    _name = 'Fake name'
-    _description = 'Fake description'
+    _name = "Fake name"
+    _description = "Fake description"
