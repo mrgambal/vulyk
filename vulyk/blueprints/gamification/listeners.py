@@ -116,19 +116,17 @@ def materialize_coins(sender: Batch) -> None:
     """
     from vulyk.app import TASKS_TYPES
 
-    if sender.task_type not in TASKS_TYPES:
+    if not (task_type := TASKS_TYPES.get(sender.task_type)):
         return
-
-    task_type = TASKS_TYPES[sender.task_type]
 
     if not isinstance(task_type, AbstractGamifiedTaskType):
         return
 
-    coins = sender.batch_meta[COINS_PER_TASK_KEY]  # type: float
+    coins: float = sender.batch_meta[COINS_PER_TASK_KEY]
     # potentially expensive on memory
-    task_ids = task_type.task_model.ids_in_batch(sender)  # type: List[str]
+    task_ids: list[str] = task_type.task_model.ids_in_batch(sender)
     # potentially expensive on memory/CPU (it isn't an generator or something)
-    group_by_count = task_type.answer_model.answers_numbers_by_tasks(task_ids)  # type: Dict[ObjectId, int]
+    group_by_count: dict[ObjectId, int] = task_type.answer_model.answers_numbers_by_tasks(task_ids)
 
     # forgive me, Father, I have sinned so bad...
     for uid, freq in group_by_count.items():

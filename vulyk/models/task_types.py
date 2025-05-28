@@ -114,7 +114,7 @@ class AbstractTaskType(Generic[TAbstractTask, TAbstractAnswer]):
 
         :return: The name of the task type.
         """
-        return self._name if len(self._name) > 0 else self.type_name
+        return self._name or self.type_name
 
     @property
     def task_type_meta(self) -> dict[str, Any]:
@@ -134,7 +134,7 @@ class AbstractTaskType(Generic[TAbstractTask, TAbstractAnswer]):
 
         :return: The task type description string.
         """
-        return self._description if len(self._description) > 0 else ""
+        return self._description or ""
 
     @property
     def work_session_manager(self) -> WorkSessionManager:

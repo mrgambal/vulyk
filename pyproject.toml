@@ -17,7 +17,7 @@ authors = [
 ]
 keywords = ["collaboration", "flask", "crowdsourcing", "python", "vulyk"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: BSD License",
     "Natural Language :: English",
@@ -67,8 +67,8 @@ dev = [
 #    "vulyk-declaration",
 ]
 
-#[tool.uv.sources]
-#vulyk-declaration = { path = "../vulyk-declaration" }
+# [tool.uv.sources]
+# vulyk-declaration = { path = "../vulyk-declaration" }
 
 [project.urls]
 Homepage = "https://github.com/mrgambal/vulyk"
@@ -80,7 +80,7 @@ manage = "manage:main"
 
 [tool.mypy]
 exclude = ['./tests']
-python_version = "3.13"
+python_version = "3.10"
 show_error_codes = true
 warn_return_any = true
 warn_unused_configs = true

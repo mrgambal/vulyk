@@ -1,8 +1,0 @@
-{
-    "python.envFile":"${workspaceFolder}/.env",
-    "python.analysis.extraPaths": [
-        "vulyk"
-    ],
-    "python.testing.unittestEnabled": true,
-    "python.analysis.typeCheckingMode": "standard"
-}

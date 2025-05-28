@@ -31,6 +31,10 @@ class UTCComplexDateTimeField(ComplexDateTimeField):
 
     def __init__(self, separator: str = ",", **kwargs: dict[str, Any]) -> None:
         super().__init__(separator, **kwargs)
+
+        if self.separator.isalnum():
+            raise ValueError("Separator must not be alphanumeric.")
+
         self.format = self.separator.join(["%Y", "%m", "%d", "%H", "%M", "%S", "%f", "%Z"])
 
     def _convert_from_string(self, data: str) -> datetime:

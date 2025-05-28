@@ -17,23 +17,23 @@ from .fixtures import FakeType
 
 class TestUtils(BaseTest):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         super().setUpClass()
 
         Group.objects.create(id="default", description="test", allowed_types=[FakeType.type_name])
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         Group.objects.delete()
 
         super().tearDownClass()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         User.objects.delete()
 
         super().tearDown()
 
-    def test_resolve_task_type_ok(self):
+    def test_resolve_task_type_ok(self) -> None:
         task_type = FakeType({})
         tasks = {task_type.type_name: task_type}
         user = User(username="1", email="1@email.com").save()
@@ -44,7 +44,7 @@ class TestUtils(BaseTest):
             "Task type should have been resolved, but hasn't",
         )
 
-    def test_resolve_task_type_not_found(self):
+    def test_resolve_task_type_not_found(self) -> None:
         tasks = {}
         user = User(username="1", email="1@email.com").save()
 
@@ -53,7 +53,7 @@ class TestUtils(BaseTest):
 
         self.assertEqual(he.exception.code, utils.HTTPStatus.NOT_FOUND, "Http 404 exception didn't fire")
 
-    def test_resolve_task_type_forbidden(self):
+    def test_resolve_task_type_forbidden(self) -> None:
         task_type = FakeType({})
         user = User(username="1", email="1@email.com").save()
         tasks = {"secret_type": task_type}
@@ -63,12 +63,10 @@ class TestUtils(BaseTest):
 
         self.assertEqual(he.exception.code, utils.HTTPStatus.FORBIDDEN, "Http 403 exception didn't fire")
 
-    def test_chunked(self):
-        self.assertEqual(
-            [x for x in utils.chunked([1, 2, 3, 4, 5], 2)], [(1, 2), (3, 4), (5,)], "Wrong chunks were made."
-        )
+    def test_chunked(self) -> None:
+        self.assertEqual(list(utils.chunked([1, 2, 3, 4, 5], 2)), [(1, 2), (3, 4), (5,)], "Wrong chunks were made.")
 
-    def test_get_template_path_in_templates(self):
+    def test_get_template_path_in_templates(self) -> None:
         app = Mock()
         app.jinja_loader = Mock()
         app.jinja_loader.list_templates = lambda: ["templates/shekels/base/shekel.html"]
@@ -80,10 +78,10 @@ class TestUtils(BaseTest):
 
         self.assertEqual(utils.get_template_path(app, "shekel.html"), "templates/shekels/base/shekel.html")
 
-    def test_get_template_path_in_stubs(self):
+    def test_get_template_path_in_stubs(self) -> None:
         app = Mock()
         app.jinja_loader = Mock()
-        app.jinja_loader.list_templates = lambda: []
+        app.jinja_loader.list_templates = list
         app.config = {"TEMPLATE_BASE_FOLDERS": ["/"]}
 
         self.assertEqual(utils.get_template_path(app, "shekel.html"), "base/shekel.html")

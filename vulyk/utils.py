@@ -39,12 +39,14 @@ def resolve_task_type(type_id: str, tasks: dict[str, AbstractTaskType], user: Us
     return task_type
 
 
-# Borrowed from elasticutils
+# Borrowed from elasticutils.
 def chunked(iterable: Iterable, n: int) -> Generator[tuple]:
     """Returns chunks of n length of iterable.
 
     If len(iterable) % n != 0, then the last chunk will have length
     less than n.
+
+    TODO: replace with batched once we ditch 3.11
 
     Example:
 
@@ -94,7 +96,7 @@ def json_response(result: dict[str, Any], errors: Iterable[Any] | None = None, s
     if not errors:
         errors = []
 
-    data = json.dumps({"result": result, "errors": errors})
+    data = json.dumps({"result": result, "errors": errors}, default=str)
 
     return flask.Response(
         data,

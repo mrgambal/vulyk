@@ -25,14 +25,12 @@ def list_admin() -> None:
             echo("- %s" % email)
 
 
-def toggle_admin(email, state) -> None:
+def toggle_admin(email: str, *, state: bool) -> None:
     """
     Toggles admin state of given user.
 
     :param email: email address.
-    :type email: str
     :param state: State we want to set.
-    :type state: bool
     """
     users = User.objects.filter(email=email)
 

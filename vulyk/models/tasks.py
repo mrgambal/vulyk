@@ -46,7 +46,7 @@ class Batch(Document):
     def task_done_in(cls, batch_id: str) -> BatchUpdateResult:
         """
         Increment needed values upon a task from the batch is done. In case if
-        all tasks are finished – close the batch.
+        all tasks are finished - close the batch.
 
         :param batch_id: Batch ID.
 

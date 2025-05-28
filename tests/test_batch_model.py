@@ -15,10 +15,10 @@ from .fixtures import FakeType
 class TestBatchModel(BaseTest):
     TASK_TYPE = FakeType.type_name
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         Batch.objects.delete()
 
-    def test_task_done_not_closing(self):
+    def test_task_done_not_closing(self) -> None:
         batch = Batch(
             id="default", task_type=self.TASK_TYPE, tasks_count=5, tasks_processed=3, closed=False, batch_meta={}
         ).save()
@@ -33,12 +33,12 @@ class TestBatchModel(BaseTest):
         result = Batch.task_done_in(batch.id)
         batch.reload()
 
-        self.assertEqual(result, BatchUpdateResult(True, False))
+        self.assertEqual(result, BatchUpdateResult(success=True, closed=False))
         self.assertFalse(batch.closed)
         self.assertEqual(batch.tasks_processed, 4)
         self.assertEqual(called_times, 0)
 
-    def test_task_done_closing(self):
+    def test_task_done_closing(self) -> None:
         batch = Batch(
             id="default", task_type=self.TASK_TYPE, tasks_count=5, tasks_processed=4, closed=False, batch_meta={}
         ).save()
@@ -53,12 +53,12 @@ class TestBatchModel(BaseTest):
         result = Batch.task_done_in(batch.id)
         batch.reload()
 
-        self.assertEqual(result, BatchUpdateResult(True, True))
+        self.assertEqual(result, BatchUpdateResult(success=True, closed=True))
         self.assertTrue(batch.closed)
         self.assertEqual(batch.tasks_processed, 5)
         self.assertEqual(called_times, 1)
 
-    def test_task_done_closing_closed(self):
+    def test_task_done_closing_closed(self) -> None:
         batch = Batch(
             id="default", task_type=self.TASK_TYPE, tasks_count=5, tasks_processed=5, closed=True, batch_meta={}
         ).save()
@@ -73,7 +73,7 @@ class TestBatchModel(BaseTest):
         result_second = Batch.task_done_in(batch.id)
         batch.reload()
 
-        self.assertEqual(result_second, BatchUpdateResult(False, False))
+        self.assertEqual(result_second, BatchUpdateResult(success=False, closed=False))
         self.assertTrue(batch.closed)
         self.assertEqual(batch.tasks_processed, 5)
         self.assertEqual(called_times, 0)

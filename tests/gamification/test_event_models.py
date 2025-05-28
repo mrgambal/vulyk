@@ -268,9 +268,9 @@ class TestEventModels(BaseTest):
         self.assertDictEqual(expected, ev.to_dict(ignore_answer=True), "Event was not translated to dict correctly")
 
     def test_unread_events_correct_user(self):
-        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(0, 3)]
+        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(3)]
 
-        for i in range(0, 9):
+        for i in range(9):
             user = users[i % 3]
             ev = Event.build(
                 timestamp=self.TIMESTAMP + timedelta(seconds=i),
@@ -303,13 +303,13 @@ class TestEventModels(BaseTest):
 
         self.assertEqual(len(events), 3, "Wrong number of unread events extracted")
         self.assertTrue(
-            all([e.user.id == users[index].id for e in events]), "Unread events list contains wrong user's events"
+            all(e.user.id == users[index].id for e in events), "Unread events list contains wrong user's events"
         )
 
     def test_unread_events_correct_sorting(self):
-        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(0, 3)]
+        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(3)]
 
-        for i in range(0, 9):
+        for i in range(9):
             user = users[i % 3]
             ev = Event.build(
                 timestamp=self.TIMESTAMP + timedelta(seconds=i),
@@ -387,9 +387,9 @@ class TestEventModels(BaseTest):
             self.assertEqual(len(new_events), 0, "Unexpected unread events for %s." % user.username)
 
     def test_all_events(self):
-        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(0, 3)]
+        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(3)]
 
-        for i in range(0, 9):
+        for i in range(9):
             user = users[i % 3]
             ev = Event.build(
                 timestamp=self.TIMESTAMP + timedelta(seconds=i),
@@ -435,7 +435,7 @@ class TestEventModels(BaseTest):
             self.assertEqual(len(list(new_events)), 3, "%s should have 3 events" % user.username)
 
     def test_done_by_user_returns_all(self):
-        for i in range(0, 3):
+        for i in range(3):
             ev = Event.build(
                 timestamp=self.TIMESTAMP + timedelta(seconds=i),
                 user=self.USER,
@@ -466,9 +466,9 @@ class TestEventModels(BaseTest):
         self.assertEqual(EventModel.count_of_tasks_done_by_user(self.USER), 3)
 
     def test_done_by_user_returns_only_related(self):
-        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(0, 3)]
+        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(3)]
 
-        for i in range(0, 9):
+        for i in range(9):
             user = users[i % 3]
             ev = Event.build(
                 timestamp=self.TIMESTAMP + timedelta(seconds=i),
@@ -529,7 +529,7 @@ class TestEventModels(BaseTest):
         self.assertEqual(EventModel.count_of_tasks_done_by_user(self.USER), 1)
 
     def test_batches_worked(self):
-        for i in range(0, 3):
+        for i in range(3):
             ev = Event.build(
                 timestamp=self.TIMESTAMP + timedelta(seconds=i),
                 user=self.USER,
@@ -562,9 +562,9 @@ class TestEventModels(BaseTest):
         self.assertSequenceEqual(["batch_0", "batch_1", "batch_2"], [batch.id for batch in result])
 
     def test_batches_worked_user_restricted(self):
-        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(0, 3)]
+        users = [User(username="user%s" % i, email="user%s@email.com" % i).save() for i in range(3)]
 
-        for i in range(0, 9):
+        for i in range(9):
             user = users[i % 3]
             ev = Event.build(
                 timestamp=self.TIMESTAMP + timedelta(seconds=i),
@@ -602,7 +602,7 @@ class TestEventModels(BaseTest):
         self.assertSequenceEqual(["batch_2", "batch_5", "batch_8"], [batch.id for batch in result_third])
 
     def test_batches_worked_dedup(self):
-        for i in range(0, 3):
+        for i in range(3):
             ev = Event.build(
                 timestamp=self.TIMESTAMP + timedelta(seconds=i),
                 user=self.USER,

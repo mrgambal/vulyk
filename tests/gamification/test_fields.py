@@ -5,7 +5,6 @@ Tests for custom fields.
 
 from datetime import datetime
 from typing import ClassVar
-from unittest.mock import Mock, patch
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from mongoengine import Document
@@ -217,7 +216,7 @@ class TestUTCComplexDateTimeField(BaseTest):
 
         # Retrieve the document from the database
         # Note: MongoEngine provides 'objects' attribute dynamically at runtime
-        loaded_doc = TestDocument.objects.get(id=doc.id)  # type: ignore
+        loaded_doc = TestDocument.objects.get(id=doc.id)
 
         # The field should preserve the original timezone
         self.assertEqual(loaded_doc.dt_field.utcoffset(), original_dt.utcoffset())

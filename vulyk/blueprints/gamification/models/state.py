@@ -7,7 +7,7 @@ from collections.abc import Iterator
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from bson import ObjectId
 from flask_mongoengine.documents import Document

@@ -109,12 +109,12 @@ WARM_WELCOME: str = """
 """
 
 SITE_LOGO: str = ENV("SITE_LOGO", "/static/images/logo.png")
-SITE_TITLE: str = ENV("SITE_TITLE", "Канцелярская сотня представляет!")
+SITE_TITLE: str = ENV("SITE_TITLE", "Канцелярська сотня представляет!")
 
 TEMPLATE_BASE_FOLDERS: list[str] = []
 TEMPLATES_FOLDER: str = "templates"
 
-THANKS_TASK_MESSAGE: str = "Спасибо за помощь, сознательный гражданин!"
+THANKS_TASK_MESSAGE: str = "Дякуємо за допомогу!"
 
 ENABLED_BLUEPRINTS: list[dict[str, str | dict | None]] = [
     {"path": "vulyk.blueprints.gamification.gamification", "config": {}, "url_prefix": "gamification"}

@@ -38,14 +38,14 @@ def add_batch(
             raise click.BadParameter("Only default batch could be extended")
 
         batch.update(inc__tasks_count=count)
-    except Batch.DoesNotExist:
+    except Batch.DoesNotExist as err:
         meta = {}
         task_type_meta = deepcopy(task_type.task_type_meta)
 
         if batch_meta:
             for m_key, m_val in batch_meta.items():
                 if m_key not in task_type.task_type_meta:
-                    raise click.BadParameter("Meta key {} doesn't exist in task type".format(m_key))
+                    raise click.BadParameter("Meta key {} doesn't exist in task type".format(m_key)) from err
 
                 try:
                     cast_to = type(task_type.task_type_meta[m_key])
@@ -56,14 +56,14 @@ def add_batch(
                 except ValueError:
                     raise click.BadParameter(
                         "Value for meta key {} cannot be converted to type {}".format(m_key, cast_to)
-                    )
+                    ) from err
 
             task_type_meta.update(meta)
 
         Batch.objects.create(id=batch_id, task_type=task_type_name, tasks_count=count, batch_meta=task_type_meta)
 
 
-def validate_batch(ctx, param: str, value: str, default_batch: str) -> str:
+def validate_batch(ctx: click.Context, param: str, value: str, default_batch: str) -> str:
     """
     Refuses your attempts to add tasks to existing batch (except 'default').
 

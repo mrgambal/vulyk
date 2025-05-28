@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding=utf-8 -*-
 
+from typing import Any
+
 import click
 from prettytable import ALL, PrettyTable
 
@@ -13,7 +15,7 @@ from vulyk.cli import project_init as _project_init
 from vulyk.cli import stats as _stats
 
 
-def abort_if_false(ctx, param, value) -> None:
+def abort_if_false(ctx: click.Context, param: click.Parameter, value: Any) -> None:
     if not value:
         ctx.abort()
 
@@ -95,14 +97,14 @@ def load(task_type: str, path: str, meta: tuple[str, str], batch: str) -> None:
 @click.option(
     "--batch",
     default=app.config["DEFAULT_BATCH"],
-    type=click.Choice(_batches.batches_list() + ["__all__"]),
+    type=click.Choice([*_batches.batches_list(), "__all__"]),
     help="Specify the batch id from which tasks should be exported. "
     "Passing __all__ will export all tasks of a given type",
 )
 @click.option("--export-all", "export_all", default=False, is_flag=True)
 def export(task_type: str, path: str, batch: str, *, export_all: bool) -> None:
-    """Exports answers to chosen tasks to json.."""
-    _db.export_reports(TASKS_TYPES[task_type], path, batch, not export_all)
+    """Exports answers to chosen tasks to json."""
+    _db.export_reports(TASKS_TYPES[task_type], path, batch, closed=not export_all)
 
 
 # endregion DB (export/import)
@@ -231,5 +233,6 @@ def batch(batch_name: str, task_type: str) -> None:
         ]
         pt.add_row(values)
     click.echo(pt.get_string())
+
 
 # endregion Stats

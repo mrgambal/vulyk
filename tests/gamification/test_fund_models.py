@@ -56,13 +56,13 @@ class TestFundModels(BaseTest):
         self.assertDictEqual(expected, fund.to_dict())
 
     def test_get_all_funds(self) -> None:
-        (FixtureFund.get_fund("fund1", "Fund 1"),)
+        FixtureFund.get_fund("fund1", "Fund 1")
         FixtureFund.get_fund("fund2", "Fund 2", donatable=False)
 
         self.assertEqual(len(list(FundModel.get_funds())), 2, "Not all funds were fetched")
 
     def test_get_donatable_funds(self) -> None:
-        (FixtureFund.get_fund("fund1", "Fund 1"),)
+        FixtureFund.get_fund("fund1", "Fund 1")
         FixtureFund.get_fund("fund2", "Fund 2", donatable=False)
         result = list(FundModel.get_funds(FundFilterBy.DONATABLE))
 
@@ -70,7 +70,7 @@ class TestFundModels(BaseTest):
         self.assertEqual(result[0].name, "Fund 1")
 
     def test_get_non_donatable_funds(self) -> None:
-        (FixtureFund.get_fund("fund1", "Fund 1"),)
+        FixtureFund.get_fund("fund1", "Fund 1")
         FixtureFund.get_fund("fund2", "Fund 2", donatable=False)
         result = list(FundModel.get_funds(FundFilterBy.NON_DONATABLE))
 

@@ -5,6 +5,8 @@ Project bootstrapper.
 Contains code not to be used directly after the initialization.
 """
 
+import contextlib
+
 import flask
 from flask_mongoengine import MongoEngine
 
@@ -15,13 +17,11 @@ __all__ = ["init_app", "init_plugins"]
 
 
 # region Init
-def init_app(name) -> flask.Flask:
+def init_app(name: str) -> flask.Flask:
     """
-    :param name: application alias
-    :type name: str
+    :param name: application alias.
 
-    :return: Bootstrapped cached application instance
-    :rtype: flask.Flask
+    :return: Bootstrapped cached application instance.
     """
     key = "app"
 
@@ -30,10 +30,8 @@ def init_app(name) -> flask.Flask:
 
         app.config.from_object("vulyk.settings")
 
-        try:
+        with contextlib.suppress(ImportError):
             app.config.from_object("local_settings")
-        except ImportError:
-            pass
 
         app.template_folder = app.config.get("TEMPLATES_FOLDER", "templates")
         app.static_folder = app.config.get("STATIC_FOLDER", "static")

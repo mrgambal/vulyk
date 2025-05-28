@@ -14,7 +14,7 @@ def get_groups_ids() -> list[str]:
     return Group.objects().scalar("id")
 
 
-def validate_id(ctx, param: str, value: str) -> str:
+def validate_id(ctx: click.Context, param: str, value: str) -> str:
     """
     Allows group code to consist only of letters/numbers/underscore.
 
