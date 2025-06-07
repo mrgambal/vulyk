@@ -109,7 +109,7 @@ WARM_WELCOME: str = """
 """
 
 SITE_LOGO: str = ENV("SITE_LOGO", "/static/images/logo.png")
-SITE_TITLE: str = ENV("SITE_TITLE", "Канцелярська сотня представляет!")
+SITE_TITLE: str = ENV("SITE_TITLE", "Канцелярська сотня представляє!")
 
 TEMPLATE_BASE_FOLDERS: list[str] = []
 TEMPLATES_FOLDER: str = "templates"
