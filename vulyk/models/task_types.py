@@ -183,7 +183,7 @@ class AbstractTaskType(Generic[TAbstractTask, TAbstractAnswer]):
             raise TaskImportError("Can't load task.") from e
 
     def export_reports(
-        self, batch: str, closed: bool = True, qs: QuerySet | None = None
+        self, batch: str, *, closed: bool = True, qs: QuerySet | None = None
     ) -> Generator[list[dict[str, Any]]]:
         """Exports task results (answers) for a given batch or query.
 

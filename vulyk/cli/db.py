@@ -98,7 +98,7 @@ def export_reports(task_id: AbstractTaskType, path: str, batch: str, *, closed: 
 
     try:
         with open(path, "wb+") as f:
-            for report in task_id.export_reports(batch, closed):
+            for report in task_id.export_reports(batch, closed=closed):
                 f.write(json.dumps(report) + b"\n")
                 i += 1
 

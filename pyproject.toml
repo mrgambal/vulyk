@@ -58,17 +58,14 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "coverage > 7",
+    "coverage>7",
     "gunicorn==23.0.0",
     "ruff >=0.11.0,<1.0.0",
     "mypy >=1.15.0,<2.0.0",
     "sphinx>7.0,<8",
-    "types-WTForms",
-#    "vulyk-declaration",
+    "types-wtforms",
 ]
 
-# [tool.uv.sources]
-# vulyk-declaration = { path = "../vulyk-declaration" }
 
 [project.urls]
 Homepage = "https://github.com/mrgambal/vulyk"

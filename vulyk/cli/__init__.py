@@ -8,6 +8,8 @@ from collections.abc import Iterable
 
 from vulyk.models.user import Group, User
 
+__all__ = ["is_initialized", "project_init"]
+
 
 def project_init(allowed_types: Iterable[str]) -> None:
     """
@@ -33,3 +35,13 @@ def project_init(allowed_types: Iterable[str]) -> None:
         group.save()
 
     User.objects.update(add_to_set__groups=group)
+
+
+def is_initialized(default_key: str = "default") -> bool:
+    """
+    The method checks whether the default group has been created already or
+    has not.
+    :param default_key: Default group ID
+    :returns: A boolean flag
+    """
+    return Group.objects(id=default_key).count() == 1
