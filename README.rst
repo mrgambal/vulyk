@@ -7,10 +7,8 @@ Crowdsourcing platform for various tasks
 .. image:: https://readthedocs.org/projects/vulyk/badge/?version=latest
         :target: https://vulyk.readthedocs.org/en/latest/
 
-.. image:: https://codeclimate.com/github/mrgambal/vulyk/badges/gpa.svg
-        :target: https://codeclimate.com/github/mrgambal/vulyk
-        :alt: Code Climate
-
+.. image:: https://codecov.io/github/mrgambal/vulyk/graph/badge.svg?token=hLG1y2FiEa 
+        :target: https://codecov.io/github/mrgambal/vulyk
 License
 -------
 

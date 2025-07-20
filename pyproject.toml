@@ -66,7 +66,6 @@ dev = [
     "types-wtforms",
 ]
 
-
 [project.urls]
 Homepage = "https://github.com/mrgambal/vulyk"
 Documentation = "https://vulyk.readthedocs.org"
@@ -74,6 +73,29 @@ Repository = "https://github.com/mrgambal/vulyk"
 
 [project.scripts]
 manage = "manage:main"
+
+[tool.coverage.run]
+source = ["./vulyk"]
+branch = true
+
+# change the fail under for coverage
+[tool.coverage.report]
+fail_under = 70
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self.debug",
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc\\.)?abstractmethod",
+]
 
 [tool.mypy]
 exclude = ['./tests']
