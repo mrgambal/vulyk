@@ -3,17 +3,17 @@
 Module contains all models used to keep some metadata we could use to perform
 any kind of analysis.
 """
+
+from typing import Any, ClassVar
+
 from bson import ObjectId
-from flask_mongoengine import Document
-from mongoengine import (CASCADE, DateTimeField, LongField, ReferenceField,
-                         StringField)
+from flask_mongoengine.documents import Document
+from mongoengine import CASCADE, DateTimeField, IntField, ReferenceField, StringField
 
 from vulyk.models.tasks import AbstractAnswer, AbstractTask
 from vulyk.models.user import User
 
-__all__ = [
-    'WorkSession'
-]
+__all__ = ["WorkSession"]
 
 
 class WorkSession(Document):
@@ -21,23 +21,20 @@ class WorkSession(Document):
     Class which represents a timespan during which user was working on the task
     Also it stores links to every entity involved.
     """
+
     user = ReferenceField(User, reverse_delete_rule=CASCADE, required=True)
-    task = ReferenceField(AbstractTask, reverse_delete_rule=CASCADE,
-                          required=True)
-    task_type = StringField(max_length=50, required=True, db_field='taskType')
+    task = ReferenceField(AbstractTask, reverse_delete_rule=CASCADE, required=True)
+    task_type = StringField(max_length=50, required=True, db_field="taskType")
     answer = ReferenceField(AbstractAnswer, reverse_delete_rule=CASCADE)
 
     start_time = DateTimeField(required=True)
     end_time = DateTimeField(required=False)
-    activity = LongField()
+    activity = IntField()
 
-    meta = {
-        'allow_inheritance': True,
-        'collection': 'work_sessions',
-        'indexes': [
-            ('user', 'task'),
-            'task'
-        ]
+    meta: ClassVar[dict[str, Any]] = {
+        "allow_inheritance": True,
+        "collection": "work_sessions",
+        "indexes": [("user", "task"), "task"],
     }
 
     @classmethod
@@ -46,15 +43,11 @@ class WorkSession(Document):
         Aggregated time spent doing tasks on all projects by certain user.
         As the source we use more precise value of activity field.
 
-        :param user_id: User ID
-        :type user_id: ObjectId
+        :param user_id: User ID.
 
-        :return: Total time (in seconds)
-        :rtype: int
+        :return: Total time (in seconds).
         """
-        return sum(
-            map(lambda session: session.activity,
-                cls.objects(user=user_id)))
+        return sum((session.activity for session in cls.objects(user=user_id)))
 
     @classmethod
     def get_total_user_time_approximate(cls, user_id: ObjectId) -> int:
@@ -63,12 +56,8 @@ class WorkSession(Document):
         As the source we use approximate values of start time and end time.
         Might be useful if no proper time accounting is done on frontend.
 
-        :param user_id: User ID
-        :type user_id: ObjectId
+        :param user_id: User ID.
 
-        :return: Total time (in seconds)
-        :rtype: int
+        :return: Total time (in seconds).
         """
-        return sum(map(
-            lambda session: (session.end_time - session.start_time).seconds,
-            cls.objects(user=user_id)))
+        return sum(((session.end_time - session.start_time).seconds for session in cls.objects(user=user_id)))

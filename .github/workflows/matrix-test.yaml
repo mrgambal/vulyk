@@ -3,48 +3,48 @@ name: MatrixTest
 on: [push]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        strategy:
-            matrix:
-                python-version: ["3.7", "3.8", "3.9", "3.10"]
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
 
-        services:
-            mongodb:
-                image: mongo:latest
-                ports:
-                    - 27017:27017
+    services:
+      mongodb:
+        image: mongo:6-jammy
+        ports:
+          - 27017:27017
 
-        steps:
-            -   uses: actions/checkout@v3.5.2
-                with:
-                    fetch-depth: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-            -   uses: actions/cache@v3.3.1
-                with:
-                    path: ~/.cache/pip
-                    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-                    restore-keys: |
-                        ${{ runner.os }}-pip-
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
 
-            -   name: Set up Python ${{ matrix.python-version }}
-                uses: actions/setup-python@v4.6.1
-                with:
-                    python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-suffix: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
 
-            -   name: Install dependencies
-                run: python -m pip install -e ".[dev]";
+      - name: Install dependencies and the package itself
+        run: uv sync --dev && uv pip install .
 
-            -   name: Run tests and coverage
-                env:
-                    LOGGING_LOCATION: /tmp/vulyk.log
-                run: coverage run --source vulyk setup.py test;
+      - name: Run tests and coverage
+        env:
+          LOGGING_LOCATION: /tmp/vulyk.log
+        run: uv run coverage run -m unittest && uv run coverage xml
 
-            -   name: Test & publish code coverage
-                uses: paambaati/codeclimate-action@v4.0.0
-                env:
-                    CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-                with:
-                    coverageCommand: coverage xml
-                    coverageLocations: ${{github.workspace}}/coverage.xml:cobertura
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          directory: ${{ github.workspace }}
+          disable_search: true
+          files: coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}

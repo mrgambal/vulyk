@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
-from typing import Iterator, List
+from typing import Any, ClassVar, Iterator, List
 
-from flask_mongoengine import Document
+from flask_mongoengine.documents import Document
 from mongoengine import BooleanField, IntField, Q, StringField
 
 from ..core.rules import ProjectRule, Rule
 
-__all__ = [
-    'RuleModel',
-    'AllRules',
-    'ProjectAndFreeRules',
-    'StrictProjectRules'
-]
+__all__ = ["AllRules", "ProjectAndFreeRules", "RuleModel", "StrictProjectRules"]
 
 
 class RuleFilter:
@@ -24,9 +19,8 @@ class RuleFilter:
         Prepares a filtering query.
 
         :return: Prepared query instance.
-        :rtype: Q
         """
-        raise NotImplementedError('You must override the method in successors')
+        raise NotImplementedError("You must override the method in successors")
 
     def __ne__(self, o: object) -> bool:
         return not self == o
@@ -42,7 +36,6 @@ class AllRules(RuleFilter):
         Prepares a filtering query.
 
         :return: Prepared query instance.
-        :rtype: Q
         """
         return Q()
 
@@ -64,17 +57,14 @@ class ProjectAndFreeRules(RuleFilter):
         Prepares a filtering query.
 
         :return: Prepared query instance.
-        :rtype: Q
         """
-        return (Q(task_type_name=self._task_type_name)
-                | Q(task_type_name='')
-                | Q(task_type_name__exists=False))
+        return Q(task_type_name=self._task_type_name) | Q(task_type_name="") | Q(task_type_name__exists=False)
 
     def __eq__(self, o: object) -> bool:
         if isinstance(o, ProjectAndFreeRules):
             return self._task_type_name == o._task_type_name
-        else:
-            return False
+
+        return False
 
 
 class StrictProjectRules(RuleFilter):
@@ -90,39 +80,36 @@ class StrictProjectRules(RuleFilter):
         Prepares a filtering query.
 
         :return: Prepared query instance.
-        :rtype: Q
         """
         return Q(task_type_name=self._task_type_name)
 
     def __eq__(self, o: object) -> bool:
         if isinstance(o, StrictProjectRules):
             return self._task_type_name == o._task_type_name
-        else:
-            return False
+
+        return False
 
 
 class RuleModel(Document):
     """
-    Database-specific rule representation
+    Database-specific rule representation.
     """
+
     id = StringField(required=True, primary_key=True)
     task_type_name = StringField()
     badge = StringField(required=True)
     name = StringField(required=True, max_length=255, unique=True)
     description = StringField(required=True)
     bonus = IntField(min_value=0)
-    tasks_number = IntField(min_value=0, db_field='tasksNumber')
-    days_number = IntField(min_value=0, db_field='daysNumber')
-    is_weekend = BooleanField(default=False, db_field='isWeekend')
-    is_adjacent = BooleanField(default=False, db_field='isAdjacent')
+    tasks_number = IntField(min_value=0, db_field="tasksNumber")
+    days_number = IntField(min_value=0, db_field="daysNumber")
+    is_weekend = BooleanField(default=False, db_field="isWeekend")
+    is_adjacent = BooleanField(default=False, db_field="isAdjacent")
 
-    meta = {
-        'collection': 'gamification.rules',
-        'allow_inheritance': True,
-        'indexes': [
-            'name',
-            'task_type_name'
-        ]
+    meta: ClassVar[dict[str, Any]] = {
+        "collection": "gamification.rules",
+        "allow_inheritance": True,
+        "indexes": ["name", "task_type_name"],
     }
 
     @classmethod
@@ -130,15 +117,11 @@ class RuleModel(Document):
         """
         Rule to DB-specific model converter.
 
-        :param rule: Current Rule instance
-        :type rule: Rule
+        :param rule: Current Rule instance.
 
-        :return: New RuleModel instance
-        :rtype: RuleModel
+        :return: New RuleModel instance.
         """
-        task_type_name = rule.task_type_name \
-            if isinstance(rule, ProjectRule) \
-            else ''  # type: str
+        task_type_name: str = rule.task_type_name if isinstance(rule, ProjectRule) else ""
 
         return cls(
             id=rule.id,
@@ -150,15 +133,14 @@ class RuleModel(Document):
             tasks_number=rule.tasks_number,
             days_number=rule.days_number,
             is_weekend=rule.is_weekend,
-            is_adjacent=rule.is_adjacent
+            is_adjacent=rule.is_adjacent,
         )
 
     def to_rule(self) -> Rule:
         """
         DB-specific model to Rule converter.
 
-        :return: New Rule instance
-        :rtype: Rule
+        :return: New Rule instance.
         """
         rule = Rule(
             rule_id=self.id,
@@ -169,38 +151,26 @@ class RuleModel(Document):
             tasks_number=self.tasks_number,
             days_number=self.days_number,
             is_weekend=self.is_weekend,
-            is_adjacent=self.is_adjacent
+            is_adjacent=self.is_adjacent,
         )
 
         if self.task_type_name:
-            return ProjectRule.from_rule(
-                rule=rule,
-                task_type_name=self.task_type_name
-            )
-        else:
-            return rule
+            return ProjectRule.from_rule(rule=rule, task_type_name=self.task_type_name)
+
+        return rule
 
     @classmethod
-    def get_actual_rules(
-        cls,
-        skip_ids: List[str],
-        rule_filter: RuleFilter,
-        is_weekend: bool
-    ) -> Iterator[Rule]:
+    def get_actual_rules(cls, skip_ids: List[str], rule_filter: RuleFilter, *, is_weekend: bool) -> Iterator[Rule]:
         """
         Prepare the list of rules to apply.
         Cutting off is possible by using different tiny yet smart heuristics.
 
-        :param skip_ids: A list of rules to be skipped for any reason
-        :type skip_ids: List[str]
+        :param skip_ids: A list of rules to be skipped for any reason.
         :param rule_filter: Prepared query container.
-        :type rule_filter: RuleFilter
         :param is_weekend: If today is a working day, there is no reason to
             check for rules that are weekend-backed.
-        :type is_weekend: bool
 
         :return: An array of rules to be checked and assigned.
-        :rtype: Iterator[Rule]
         """
         base_q = rule_filter.to_query()
 
@@ -213,7 +183,7 @@ class RuleModel(Document):
         yield from [rule_model.to_rule() for rule_model in cls.objects(base_q)]
 
     def __str__(self) -> str:
-        return 'RuleModel({model})'.format(model=str(self.to_rule()))
+        return "RuleModel({model})".format(model=str(self.to_rule()))
 
     def __repr__(self) -> str:
-        return 'RuleModel({model})'.format(model=repr(self.to_rule()))
+        return "RuleModel({model})".format(model=repr(self.to_rule()))

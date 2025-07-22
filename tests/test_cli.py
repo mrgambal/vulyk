@@ -4,8 +4,10 @@
 """
 test_cli
 """
+
 import gzip
 import unittest
+from typing import Any, ClassVar
 
 import bz2file
 import click
@@ -20,67 +22,56 @@ from .fixtures import FakeType
 
 
 class TestAdmin(BaseTest):
-
     @classmethod
-    def setUpClass(cls):
-        Group(id='default',
-              description='test',
-              allowed_types=[FakeType.type_name]).save()
+    def setUpClass(cls) -> None:
+        Group(id="default", description="test", allowed_types=[FakeType.type_name]).save()
 
         super().setUpClass()
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         Group.objects.delete()
 
         super().tearDownClass()
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         for i in range(1, 4):
-            User(username='1',
-                 email='%s@email.com' % i,
-                 admin=i % 3 == 0).save()
+            User(username="1", email="%s@email.com" % i, admin=i % 3 == 0).save()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         User.objects.delete()
 
         super().tearDown()
 
-    def test_toggle_admin(self):
-        admin.toggle_admin('1@email.com', False)
-        admin.toggle_admin('2@email.com', True)
-        admin.toggle_admin('3@email.com', True)
+    def test_toggle_admin(self) -> None:
+        admin.toggle_admin("1@email.com", state=False)
+        admin.toggle_admin("2@email.com", state=True)
+        admin.toggle_admin("3@email.com", state=True)
 
-        self.assertFalse(
-            User.objects.get(email='1@email.com').admin
-        )
-        self.assertTrue(
-            User.objects.get(email='2@email.com').admin
-        )
-        self.assertTrue(
-            User.objects.get(email='3@email.com').admin
-        )
+        self.assertFalse(User.objects.get(email="1@email.com").admin)
+        self.assertTrue(User.objects.get(email="2@email.com").admin)
+        self.assertTrue(User.objects.get(email="3@email.com").admin)
 
 
 class TestDB(BaseTest):
-    def test_open_anything(self):
-        filename = 'test.bz2'
+    def test_open_anything(self) -> None:
+        filename = "test.bz2"
         self.assertEqual(db.open_anything(filename), bz2file.BZ2File)
-        filename = 'test.gz'
+        filename = "test.gz"
         self.assertEqual(db.open_anything(filename), gzip.open)
 
 
 class TestBatches(BaseTest):
-    TASK_TYPE_NAME = 'declaration_task'
+    TASK_TYPE_NAME = "declaration_task"
 
     class TestTaskType(AbstractTaskType):
         answer_model = AbstractAnswer
         task_model = AbstractTask
-        type_name = 'declaration_task'
-        template = 'some_template'
-        _task_type_meta = {
+        type_name = "declaration_task"
+        template = "some_template"
+        _task_type_meta: ClassVar[dict[str, Any]] = {
             "foo": "bar",
             "int": 1,
             "float": 0.1,
@@ -89,20 +80,19 @@ class TestBatches(BaseTest):
         }
 
     class AnotherTaskType(TestTaskType):
-        type_name = 'wrong_task'
+        type_name = "wrong_task"
 
-    DEFAULT_BATCH = 'default'
+    DEFAULT_BATCH = "default"
     TASK_TYPE = TestTaskType({})
     WRONG_TASK_TYPE = AnotherTaskType({})
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         Batch.objects.delete()
 
         super().tearDown()
 
-    def test_add_default_batch(self):
-        batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
-                          self.DEFAULT_BATCH)
+    def test_add_default_batch(self) -> None:
+        batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
         batch = Batch.objects.get(id=self.DEFAULT_BATCH)
 
         self.assertEqual(batch.task_type, self.TASK_TYPE_NAME)
@@ -111,120 +101,94 @@ class TestBatches(BaseTest):
         self.assertEqual(
             batch.batch_meta,
             {
-                'foo': 'bar', 'int': 1, 'float': 0.1,
-                'bool1': False, 'bool2': True,
-            }
+                "foo": "bar",
+                "int": 1,
+                "float": 0.1,
+                "bool1": False,
+                "bool2": True,
+            },
         )
 
-    def test_override_meta_information(self):
+    def test_override_meta_information(self) -> None:
         batches.add_batch(
-            self.DEFAULT_BATCH, 10, self.TASK_TYPE,
             self.DEFAULT_BATCH,
-            batch_meta={
-                'foo': 'barbaz', 'bool1': 'true', 'bool2': 'false'
-            })
+            10,
+            self.TASK_TYPE,
+            self.DEFAULT_BATCH,
+            batch_meta={"foo": "barbaz", "bool1": "true", "bool2": "false"},
+        )
 
         batch = Batch.objects.get(id=self.DEFAULT_BATCH)
 
         self.assertEqual(batch.task_type, self.TASK_TYPE_NAME)
         self.assertEqual(batch.tasks_count, 10)
         self.assertEqual(batch.tasks_processed, 0)
-        self.assertEqual(
-            batch.batch_meta,
-            {
-                "foo": "barbaz", "int": 1, "float": 0.1,
-                "bool1": True, "bool2": False
-            }
-        )
+        self.assertEqual(batch.batch_meta, {"foo": "barbaz", "int": 1, "float": 0.1, "bool1": True, "bool2": False})
 
-    def test_broken_meta1(self):
+    def test_broken_meta1(self) -> None:
         self.assertRaises(
             click.exceptions.BadParameter,
             lambda: batches.add_batch(
-                self.DEFAULT_BATCH, 10, self.TASK_TYPE,
-                self.DEFAULT_BATCH,
-                batch_meta={"newshit": "justempty"}
-            )
+                self.DEFAULT_BATCH, 10, self.TASK_TYPE, self.DEFAULT_BATCH, batch_meta={"newshit": "justempty"}
+            ),
         )
 
-    def test_broken_meta2(self):
+    def test_broken_meta2(self) -> None:
         self.assertRaises(
             click.exceptions.BadParameter,
             lambda: batches.add_batch(
-                self.DEFAULT_BATCH, 10, self.TASK_TYPE,
-                self.DEFAULT_BATCH,
-                batch_meta={"int": "simplywrong"}
-            )
+                self.DEFAULT_BATCH, 10, self.TASK_TYPE, self.DEFAULT_BATCH, batch_meta={"int": "simplywrong"}
+            ),
         )
 
-    def test_add_new_tasks_to_default(self):
-        batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
-                          self.DEFAULT_BATCH)
-        batches.add_batch(self.DEFAULT_BATCH, 20, self.TASK_TYPE,
-                          self.DEFAULT_BATCH)
+    def test_add_new_tasks_to_default(self) -> None:
+        batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch(self.DEFAULT_BATCH, 20, self.TASK_TYPE, self.DEFAULT_BATCH)
         batch = Batch.objects.get(id=self.DEFAULT_BATCH)
 
         self.assertEqual(batch.task_type, self.TASK_TYPE_NAME)
         self.assertEqual(batch.tasks_count, 30)
 
-    def test_add_wrong_task_type(self):
-        batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE,
-                          self.DEFAULT_BATCH)
+    def test_add_wrong_task_type(self) -> None:
+        batches.add_batch(self.DEFAULT_BATCH, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
         self.assertRaises(
             click.exceptions.BadParameter,
-            lambda: batches.add_batch(self.DEFAULT_BATCH,
-                                      20,
-                                      self.WRONG_TASK_TYPE,
-                                      self.DEFAULT_BATCH))
+            lambda: batches.add_batch(self.DEFAULT_BATCH, 20, self.WRONG_TASK_TYPE, self.DEFAULT_BATCH),
+        )
 
-    def test_add_second_batch(self):
-        batch_name = 'new_batch'
-        batches.add_batch(batch_name, 10, self.TASK_TYPE,
-                          self.DEFAULT_BATCH)
+    def test_add_second_batch(self) -> None:
+        batch_name = "new_batch"
+        batches.add_batch(batch_name, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
         batch = Batch.objects.get(id=batch_name)
 
         self.assertEqual(batch.task_type, self.TASK_TYPE_NAME)
         self.assertEqual(batch.tasks_count, 10)
         self.assertEqual(batch.tasks_processed, 0)
-        self.assertEqual(
-            batch.batch_meta,
-            {
-                'foo': 'bar', 'int': 1, 'float': 0.1,
-                'bool1': False, 'bool2': True
-            }
+        self.assertEqual(batch.batch_meta, {"foo": "bar", "int": 1, "float": 0.1, "bool1": False, "bool2": True})
+
+    def test_extend_not_default_batch(self) -> None:
+        batch_name = "new_batch"
+        batches.add_batch(batch_name, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        self.assertRaises(
+            click.exceptions.BadParameter, lambda: batches.add_batch(batch_name, 20, self.TASK_TYPE, self.DEFAULT_BATCH)
         )
 
-    def test_extend_not_default_batch(self):
-        batch_name = 'new_batch'
-        batches.add_batch(batch_name, 10, self.TASK_TYPE,
-                          self.DEFAULT_BATCH)
-        self.assertRaises(
-            click.exceptions.BadParameter,
-            lambda: batches.add_batch(batch_name, 20, self.TASK_TYPE,
-                                      self.DEFAULT_BATCH))
+    def test_validate_batch(self) -> None:
+        not_exists = "4"
+        batches.add_batch("1", 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch("2", 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch("3", 10, self.TASK_TYPE, self.DEFAULT_BATCH)
 
-    def test_validate_batch(self):
-        not_exists = '4'
-        batches.add_batch('1', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
-        batches.add_batch('2', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
-        batches.add_batch('3', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        self.assertEqual(not_exists, batches.validate_batch(None, None, not_exists, self.DEFAULT_BATCH))
 
-        self.assertEqual(
-            not_exists,
-            batches.validate_batch(None, None, not_exists,
-                                   self.DEFAULT_BATCH))
-
-    def test_validate_batch_exists(self):
-        exists = '3'
-        batches.add_batch('1', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
-        batches.add_batch('2', 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+    def test_validate_batch_exists(self) -> None:
+        exists = "3"
+        batches.add_batch("1", 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch("2", 10, self.TASK_TYPE, self.DEFAULT_BATCH)
         batches.add_batch(exists, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
 
-        self.assertRaises(
-            click.BadParameter,
-            lambda: batches.validate_batch(None, None, exists,
-                                           self.DEFAULT_BATCH))
+        self.assertRaises(click.BadParameter, lambda: batches.validate_batch(None, None, exists, self.DEFAULT_BATCH))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -5,14 +5,14 @@ the DB.
 """
 
 __all__ = [
-    'TaskImportError',
-    'TaskNotFoundError',
-    'TaskSaveError',
-    'TaskPermissionError',
-    'TaskSkipError',
-    'TaskValidationError',
-    'WorkSessionLookUpError',
-    'WorkSessionUpdateError'
+    "TaskImportError",
+    "TaskNotFoundError",
+    "TaskPermissionError",
+    "TaskSaveError",
+    "TaskSkipError",
+    "TaskValidationError",
+    "WorkSessionLookUpError",
+    "WorkSessionUpdateError",
 ]
 
 

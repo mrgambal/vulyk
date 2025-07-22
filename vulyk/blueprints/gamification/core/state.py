@@ -3,14 +3,14 @@
 The package contains user state model and everything that will belong to
 this part of domain.
 """
+
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 
 from vulyk.models.user import User
 
-__all__ = [
-    'UserState'
-]
+__all__ = ["UserState"]
 
 
 class InvalidUserStateException(BaseException):
@@ -18,39 +18,33 @@ class InvalidUserStateException(BaseException):
     Generic container for all types of error may happen during
     user state construction.
     """
-    pass
 
 
 class UserState:
     """
     An aggregation of all the stuff user has gotten working on projects so far.
     """
-    __slots__ = [
-        'user',
-        'level',
-        'points',
-        'actual_coins',
-        'potential_coins',
-        'achievements',
-        'last_changed'
-    ]
 
-    def __init__(self,
-                 user: User,
-                 level: int,
-                 points: Decimal,
-                 actual_coins: Decimal,
-                 potential_coins: Decimal,
-                 achievements: list,
-                 last_changed: datetime) -> None:
+    __slots__ = ["achievements", "actual_coins", "last_changed", "level", "points", "potential_coins", "user"]
+
+    def __init__(
+        self,
+        user: User,
+        level: int,
+        points: Decimal,
+        actual_coins: Decimal,
+        potential_coins: Decimal,
+        achievements: list,
+        last_changed: datetime,
+    ) -> None:
         """
-        :type user: User
-        :type level: int
-        :type points: Decimal
-        :type actual_coins: Decimal
-        :type potential_coins: Decimal
-        :type achievements: list[vulyk.blueprints.gamification.core.rules.Rule]
-        :type last_changed: datetime
+        :param user: User instance.
+        :param level: User level.
+        :param points: Total points earned.
+        :param actual_coins: Current coins balance.
+        :param potential_coins: Potential coins to be earned.
+        :param achievements: List of user achievements.
+        :param last_changed: Last modification timestamp.
         """
         self.user = user
         self.level = level
@@ -62,71 +56,70 @@ class UserState:
 
         self._validate()
 
-    def _validate(self):
+    def _validate(self) -> None:
         """
         Keep the internal structure valid.
 
-        :raises: InvalidUserStateException
+        :raises InvalidUserStateException: if any validation fails.
         """
-        try:
-            assert self.user is not None, 'User must be present.'
-            assert self.level >= 0, 'Level value must be zero or greater.'
-            assert self.points >= Decimal(0), \
-                'Points value must be zero or greater.'
-            assert self.actual_coins >= Decimal(0), \
-                'Actual coins value must be zero or greater.'
-            assert self.potential_coins >= Decimal(0), \
-                'Potential coins value must be zero or greater.'
-            assert isinstance(self.achievements, dict), \
-                'Achievements value must be a dict'
-            assert isinstance(self.last_changed, datetime), \
-                'Last changed value must be a datetime'
-        except AssertionError as e:
-            raise InvalidUserStateException(e)
+        if self.user is None:
+            raise InvalidUserStateException("User must be present.")
+        if self.level < 0:
+            raise InvalidUserStateException("Level value must be zero or greater.")
+        if self.points < Decimal(0):
+            raise InvalidUserStateException("Points value must be zero or greater.")
+        if self.actual_coins < Decimal(0):
+            raise InvalidUserStateException("Actual coins value must be zero or greater.")
+        if self.potential_coins < Decimal(0):
+            raise InvalidUserStateException("Potential coins value must be zero or greater.")
+        if not isinstance(self.achievements, dict):
+            raise InvalidUserStateException("Achievements value must be a dict.")
+        if not isinstance(self.last_changed, datetime) or self.last_changed.tzinfo is None:
+            raise InvalidUserStateException("Last changed value must be a datetime.")
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """
-        Could be used as a source for JSON or any other representation format
+        Could be used as a source for JSON or any other representation format.
 
-        :return: Dict-ized object view
-        :rtype: dict
+        :return: Dict-ized object view.
         """
         return {
-            'user': self.user.username,
-            'level': self.level,
-            'points': self.points,
-            'actual_coins': self.actual_coins,
-            'potential_coins': self.potential_coins,
-            'achievements': [r.to_dict() for r in self.achievements.values()],
-            'last_changed': self.last_changed.strftime("%d.%m.%Y %H:%M:%S")
+            "user": str(self.user.username),
+            "level": self.level,
+            "points": self.points,
+            "actual_coins": self.actual_coins,
+            "potential_coins": self.potential_coins,
+            "achievements": [r.to_dict() for r in self.achievements.values()],
+            "last_changed": self.last_changed.strftime("%d.%m.%Y %H:%M:%S"),
         }
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, UserState):
-            return o.user.id == self.user.id \
-                   and o.level == self.level \
-                   and o.points == self.points \
-                   and o.actual_coins == self.actual_coins \
-                   and o.potential_coins == self.potential_coins \
-                   and (set(o.achievements.keys()) ==
-                        set(self.achievements.keys())) \
-                   and o.last_changed == self.last_changed
-        else:
+        if not isinstance(o, UserState):
             return False
+
+        return (
+            o.user.username == self.user.username
+            and o.level == self.level
+            and o.points == self.points
+            and o.actual_coins == self.actual_coins
+            and o.potential_coins == self.potential_coins
+            and (set(o.achievements.keys()) == set(self.achievements.keys()))
+            and o.last_changed == self.last_changed
+        )
 
     def __ne__(self, o: object) -> bool:
         return not self == o
 
     def __str__(self) -> str:
-        return 'UserState({user}, {level}, {points}, {act_coins}, ' \
-               '{pot_coins}, {badges}, {changed})' \
-            .format(user=self.user.id,
-                    level=self.level,
-                    points=self.points,
-                    act_coins=self.actual_coins,
-                    pot_coins=self.potential_coins,
-                    badges=self.achievements.keys(),
-                    changed=self.last_changed)
+        return "UserState({user}, {level}, {points}, {act_coins}, {pot_coins}, {badges}, {changed})".format(
+            user=self.user.username,
+            level=self.level,
+            points=self.points,
+            act_coins=self.actual_coins,
+            pot_coins=self.potential_coins,
+            badges=self.achievements.keys(),
+            changed=self.last_changed,
+        )
 
     def __repr__(self) -> str:
         return str(self)

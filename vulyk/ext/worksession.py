@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime
-from typing import Type, TypeVar
+from datetime import datetime, timezone
+from typing import TypeVar, cast
 
 from bson import ObjectId
 from mongoengine.errors import OperationError
@@ -11,190 +11,164 @@ from vulyk.models.stats import WorkSession
 from vulyk.models.tasks import AbstractAnswer, AbstractTask
 from vulyk.signals import on_task_done
 
-__all__ = [
-    'WorkSessionManager'
-]
+__all__ = ["WorkSessionManager"]
 
 
 class WorkSessionManager:
+    """Manages the lifecycle of user work sessions for tasks.
+
+    This class handles the creation, updating, and deletion of WorkSession
+    records associated with users performing tasks. It tracks the start time,
+    end time, and user activity duration for each session.
+
+    Key responsibilities:
+    - Starting a new session when a task is assigned to a user.
+    - Recording user activity time within a session.
+    - Ending a session when a task is completed successfully.
+    - Deleting a session if a task is skipped.
+
+    The recorded session data can be used for analytics, statistics, and
+    monitoring user engagement.
+
+    This class is designed to be potentially overridden or extended by plugins
+    to customize work session management behavior.
     """
-    This class is responsible for accounting of work-sessions.
-    Every time we give a task to user, a new session record is being created.
-    If user skips the task, we mark it as skipped and delete the session.
-    When user finishes the task, we close the session having added the
-    timestamp of the event.
-    Thus we're able to perform any kind of data mining and stats counting using
-    the data later.
 
-    Could be overridden in plugins.
-    """
-    U = TypeVar('U', bound=WorkSession)
+    TSession = TypeVar("TSession", bound=WorkSession)
+    work_session: type[WorkSession]  # Class level type hint for the model
 
-    def __init__(self, work_session_model: Type[U]) -> None:
+    def __init__(self, work_session_model: type[TSession]) -> None:
+        """Constructor.
+
+        :param work_session_model: The MongoEngine Document class for work sessions.
         """
-        Constructor.
+        assert issubclass(work_session_model, WorkSession), "You should define working session model properly"
 
-        :param work_session_model: Underlying mongoDB Document subclass.
-        :type work_session_model: Type
-        """
-        assert issubclass(work_session_model, WorkSession), \
-            'You should define working session model properly'
-
-        self._logger = logging.getLogger('vulyk.app')
+        self._logger = logging.getLogger("vulyk.app")
 
         self.work_session = work_session_model
 
-    def start_work_session(
-        self,
-        task: AbstractTask,
-        user_id: ObjectId
-    ) -> None:
-        """
-        Starts new WorkSession for given user.
-        By default we use `datetime.now` in the underlying model to save in
-        `start_time` field.
+    def start_work_session(self, task: AbstractTask, user_id: ObjectId) -> None:
+        """Starts or restarts a WorkSession for a given user and task.
 
-        A user should finish a certain task only once, that's why we perform
-        an upsert below.
+        Creates a new WorkSession record or updates an existing one (upsert)
+        to mark the beginning of work on a specific task by a user.
+        The `start_time` is recorded using the current UTC time.
 
-        :param task: Given task
-        :type task: AbstractTask
-        :param user_id: ID of user, who gets new task
-        :type user_id: ObjectId
+        If a session for the same user and task already exists (e.g., was
+        interrupted), it will be overwritten with a new start time and reset
+        activity counter.
+
+        :param task: The task being started.
+        :param user_id: The ID of the user starting the task.
 
         :raises:
-            WorkSessionUpdateError -- can not start a session
+            WorkSessionUpdateError: If the database operation fails.
         """
         try:
-            existing = self.work_session \
-                .objects(user=user_id,
-                         task=task,
-                         task_type=task.task_type) \
-                .modify(upsert=True,
-                        set__start_time=datetime.now(),
-                        set__activity=0)
+            existing = self.work_session.objects(user=user_id, task=task, task_type=task.task_type).modify(
+                upsert=True, set__start_time=datetime.now(timezone.utc), set__activity=0
+            )
 
             if existing is not None:
-                self._logger.debug(
-                    'Overwriting existing unfinished session for user %s and '
-                    'task %s.', user_id, task.id)
+                self._logger.debug("Overwriting existing unfinished session for user %s and task %s.", user_id, task.id)
         except OperationError as err:
-            msg = 'Can not create a session: {}.'.format(err)
-            raise WorkSessionUpdateError(msg)
+            msg = "Can not create a session: {}.".format(err)
+            raise WorkSessionUpdateError(msg) from err
 
-    def record_activity(
-        self,
-        task: AbstractTask,
-        user_id: ObjectId,
-        seconds: int
-    ) -> None:
-        """
-        Update an activity counter.
-        The intention is to find out how much time was actually spent
-        working on the task, excluding sexting, brewing coffee and jogging.
+    def record_activity(self, task: AbstractTask, user_id: ObjectId, seconds: int) -> None:
+        """Records user activity time within a work session.
 
-        :param task: The task the session belongs to.
-        :type task: AbstractTask
-        :param user_id: ID of current user
-        :type user_id: ObjectId
-        :param seconds: User was active for
-        :type seconds: int
+        Updates the `activity` counter for the ongoing session associated
+        with the given user and task. This helps track the actual time spent
+        actively working on the task.
+
+        The total recorded activity time cannot exceed the total duration
+        since the session started.
+
+        :param task: The task associated with the session.
+        :param user_id: The ID of the user whose activity is being recorded.
+        :param seconds: The duration of the recent activity in seconds.
 
         :raises:
-            WorkSessionLookUpError -- session is not found;
-            WorkSessionUpdateError -- can not update the session
+            WorkSessionLookUpError: If no matching session is found.
+            WorkSessionUpdateError: If the provided activity duration is invalid
+                                     or the database update fails.
         """
         try:
-            session = self.work_session \
-                .objects.get(user=user_id,
-                             task=task)
-            duration = datetime.now() - session.start_time
+            session: WorkSession = self.work_session.objects.get(user=user_id, task=task)
+            # Ensure comparison is between offset-aware datetimes if start_time is stored aware
+            # If start_time is naive, this comparison might be inaccurate across DST changes.
+            # Assuming start_time becomes aware after the start_work_session change.
+            now_utc = datetime.now(timezone.utc)
+            duration = now_utc - cast(datetime, session.start_time).replace(tzinfo=timezone.utc)
 
-            if duration.total_seconds() > seconds + session.activity > 0:
+            # Check if adding seconds is valid (non-negative and doesn't exceed total time).
+            if seconds >= 0 and duration.total_seconds() >= (seconds + session.activity):
                 session.activity += seconds
                 session.save()
 
-                self._logger.debug(
-                    'Added %s seconds of activities for user %s and task %s.',
-                    seconds, user_id, task.id)
+                self._logger.debug("Added %s seconds of activities for user %s and task %s.", seconds, user_id, task.id)
             else:
-                msg = 'Can not update the session {} for user {}. Value: {}.' \
-                    .format(session.id, user_id, seconds)
+                msg = "Can not update the session {} for user {}. Value: {}.".format(session.id, user_id, seconds)
                 raise WorkSessionUpdateError(msg)
-        except self.work_session.DoesNotExist:
-            msg = 'Did not found a session for user {} and task {}.'.format(
-                user_id, task.id)
-            raise WorkSessionLookUpError(msg)
+        except self.work_session.DoesNotExist as err:
+            msg = "Did not found a session for user {} and task {}.".format(user_id, task.id)
+            raise WorkSessionLookUpError(msg) from err
 
-    def end_work_session(
-        self,
-        task: AbstractTask,
-        user_id: ObjectId,
-        answer: AbstractAnswer
-    ) -> None:
-        """
-        Ends given WorkSession for given user.
-        This is the route for correctly finished tasks: given session to be
-        marked as closed and a timestamp of the event to be saved.
+    def end_work_session(self, task: AbstractTask, user_id: ObjectId, answer: AbstractAnswer) -> None:
+        """Ends the most recent WorkSession for a user and task upon completion.
 
-        :param task: Given task
-        :type task: AbstractTask
-        :param user_id: ID of user, who finishes a task
-        :type user_id: ObjectId
-        :param answer: Given answer
-        :type answer: AbstractAnswer
+        Finds the latest active session for the specified user and task,
+        records the `end_time` using the current UTC time, and associates
+        the provided answer with the session. It also triggers the
+        `on_task_done` signal.
+
+        :param task: The task that was completed.
+        :param user_id: The ID of the user who completed the task.
+        :param answer: The answer submitted by the user for the task.
 
         :raises:
-            WorkSessionLookUpError -- session is not found;
-            WorkSessionUpdateError -- can not close the session
+            WorkSessionLookUpError: If no active session is found for the user/task.
+            WorkSessionUpdateError: If the database update fails.
         """
         # TODO: store id of active session in cookies or elsewhere
         try:
-            rs = self.work_session \
-                .objects(user=user_id, task=task) \
-                .order_by('-start_time')
+            rs = self.work_session.objects(user=user_id, task=task).order_by("-start_time")
 
             if rs.count() > 0:
-                rs.first().update(
-                    set__end_time=datetime.now(),
-                    set__answer=answer)
+                rs.first().update(set__end_time=datetime.now(timezone.utc), set__answer=answer)
 
                 on_task_done.send(self, answer=answer)
             else:
-                msg = 'No session was found for {0}'.format(answer)
+                msg = "No session was found for {0}.".format(answer)
 
                 raise WorkSessionLookUpError(msg)
         except OperationError as e:
-            raise WorkSessionUpdateError(e)
+            raise WorkSessionUpdateError() from e
 
-    def delete_work_session(
-        self,
-        task: AbstractTask,
-        user_id: ObjectId
-    ) -> None:
-        """
-        Deletes current WorkSession if skipped.
+    def delete_work_session(self, task: AbstractTask, user_id: ObjectId) -> None:
+        """Deletes the most recent WorkSession for a user and task, e.g., when skipped.
 
-        :param task: Given task
-        :type task: AbstractTask
-        :param user_id: ID of user, who skips a task
-        :type user_id: ObjectId
+        Finds and removes the latest session record associated with the given
+        user and task. This is typically used when a user decides to skip a
+        task they had previously started.
+
+        :param task: The task being skipped or cancelled.
+        :param user_id: The ID of the user skipping the task.
 
         :raises:
-            WorkSessionLookUpError -- session is not found;
-            WorkSessionUpdateError -- can not delete the session
+            WorkSessionLookUpError: If no active session is found for the user/task.
+            WorkSessionUpdateError: If the database deletion fails.
         """
         try:
-            rs = self.work_session \
-                .objects(user=user_id, task=task) \
-                .order_by('-start_time')
+            rs = self.work_session.objects(user=user_id, task=task).order_by("-start_time")
 
             if rs.count() > 0:
                 rs.first().delete()
             else:
-                msg = 'No session was found for {0} & {1}'.format(
-                    user_id, task.id)
+                msg = "No session was found for {0} & {1}.".format(user_id, task.id)
 
                 raise WorkSessionLookUpError(msg)
         except OperationError as e:
-            raise WorkSessionUpdateError(e)
+            raise WorkSessionUpdateError() from e

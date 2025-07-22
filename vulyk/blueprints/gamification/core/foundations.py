@@ -2,12 +2,10 @@
 """
 Foundations
 """
-from io import IOBase
-from typing import Dict
 
-__all__ = [
-    'Fund'
-]
+from io import IOBase
+
+__all__ = ["Fund"]
 
 
 class Fund:
@@ -15,33 +13,21 @@ class Fund:
     Outer representation of different foundations we should keep:
     donatable or not they are.
     """
-    __slots__ = [
-        'id',
-        'name',
-        'description',
-        'site',
-        'email',
-        'logo',
-        'donatable'
-    ]
 
-    def __init__(self,
-                 fund_id: str,
-                 name: str,
-                 description: str,
-                 site: str,
-                 email: str,
-                 logo: IOBase,
-                 donatable: bool) -> None:
-        # let's put it manually to use as an alias
-        """
-        :type fund_id: str
-        :type name: str
-        :type description: str
-        :type site: str
-        :type email: str
-        :type logo: IOBase
-        :type donatable: bool
+    __slots__ = ["description", "donatable", "email", "id", "logo", "name", "site"]
+
+    def __init__(
+        self, fund_id: str, name: str, description: str, site: str, email: str, logo: IOBase, *, donatable: bool
+    ) -> None:
+        """Initialize a Fund.
+
+        :param fund_id: Unique identifier for this fund
+        :param name: Display name of the fund
+        :param description: Detailed description
+        :param site: URL to the fund's website
+        :param email: Contact email address
+        :param logo: File-like object containing the fund's logo image
+        :param donatable: Whether users can donate to this fund
         """
         self.id = fund_id
         self.name = name
@@ -52,39 +38,38 @@ class Fund:
         self.logo = logo
         self.donatable = donatable
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str | bool]:
         """
-        Could be used as a source for JSON or any other representation format
+        Could be used as a source for JSON or any other representation format.
 
-        :return: Dict-ized object view
-        :rtype: dict
+        :return: Dictionary representation of the fund.
         """
         return {
-            'id': self.id,
-            'name': self.name,
-            'description': self.description,
-            'site': self.site,
-            'email': self.email,
-            'donatable': self.donatable
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "site": self.site,
+            "email": self.email,
+            "donatable": self.donatable,
         }
 
-    def __eq__(self, o: object) -> bool:
-        if isinstance(o, Fund):
-            return o.id == self.id and o.name == self.name
-        else:
-            return False
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Fund):
+            return other.id == self.id and other.name == self.name
+        return False
 
-    def __ne__(self, o: object) -> bool:
-        return not self == o
+    def __ne__(self, other: object) -> bool:
+        return not self == other
 
     def __str__(self) -> str:
-        return 'Fund({id}, {name}, {descr}, {site}, {email}, {donat})'.format(
+        return "Fund({id}, {name}, {descr}, {site}, {email}, {donat})".format(
             id=self.id,
             name=self.name,
             descr=self.description[:20],
             site=self.site,
             email=self.email,
-            donat=self.donatable)
+            donat=self.donatable,
+        )
 
     def __repr__(self) -> str:
         return str(self)

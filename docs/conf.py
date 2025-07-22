@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import datetime
-import sys
 import os
+import sys
 
 # Get the project root dir, which is the parent dir of this
 cwd = os.getcwd()

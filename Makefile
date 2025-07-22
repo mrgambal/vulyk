@@ -1,4 +1,5 @@
 .PHONY: clean-pyc clean-build docs clean
+LOGGING_LOCATION = /tmp/vulyk.log
 
 help:
 	@echo "clean - remove all build, test, coverage and Python artifacts"
@@ -32,18 +33,17 @@ clean-test:
 	rm -fr htmlcov/
 
 lint:
-	flake8 vulyk tests
+	uvx ruff check vulyk tests
+	uvx ruff format vulyk tests
 
 test:
-	python setup.py test
+	uv run -m unittest
 
 test-all:
 	tox
 
 coverage:
-	coverage run --source vulyk setup.py test
-	coverage report -m
-	coverage html
+	uv sync --dev && uv run coverage run -m unittest && coverage html
 	open htmlcov/index.html
 
 docs:
@@ -55,10 +55,8 @@ docs:
 	open docs/_build/html/index.html
 
 release: clean
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	uv publish
 
 dist: clean
-	python setup.py sdist
-	python setup.py bdist_wheel
+	uv build
 	ls -l dist
