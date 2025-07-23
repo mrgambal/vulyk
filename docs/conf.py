@@ -13,8 +13,8 @@ project_root = os.path.dirname(cwd)
 # version is used.
 sys.path.insert(0, project_root)
 # Build the documentation in an autochthonous manner.
-os.environ['LOGGING_LOCATION'] = '/tmp/vulyk.log'
-os.environ['mongodb_host'] = 'mongodb://localhost'
+os.environ["LOGGING_LOCATION"] = "/tmp/vulyk.log"
+os.environ["mongodb_host"] = "mongodb://localhost"
 
 import vulyk
 
@@ -22,23 +22,23 @@ import vulyk
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The encoding of source files.
-#source_encoding = 'utf-8-sig'
+# source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'Vulyk'
-copyright = '{0}, Dmytro Hambal'.format(datetime.date.today().year)
+project = "Vulyk"
+copyright = "{0}, Dmytro Hambal".format(datetime.date.today().year)
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -51,24 +51,24 @@ release = vulyk.__version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ["_build"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 
 # -- Options for HTML output -------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 # If true, "Created using Sphinx" is shown in the HTML footer.
 # Default is True.
 html_show_sphinx = False
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'vulykdoc'
+htmlhelp_basename = "vulykdoc"
 
 
 # -- Options for LaTeX output ------------------------------------------
@@ -78,18 +78,14 @@ latex_elements = {}
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
-latex_documents = [
-    ('index', 'vulyk.tex', 'Vulyk Documentation', 'Dmytro Hambal', 'manual')
-]
+latex_documents = [("index", "vulyk.tex", "Vulyk Documentation", "Dmytro Hambal", "manual")]
 
 
 # -- Options for manual page output ------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'vulyk', 'Vulyk Documentation', ['Dmytro Hambal'], 1)
-]
+man_pages = [("index", "vulyk", "Vulyk Documentation", ["Dmytro Hambal"], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------
@@ -98,11 +94,13 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'vulyk',
-     'Vulyk Documentation',
-     'Dmytro Hambal',
-     'vulyk',
-     'Flask/Mongo application to provide intuitive '
-     'web-interface for tasks distribution.',
-     'Miscellaneous'),
+    (
+        "index",
+        "vulyk",
+        "Vulyk Documentation",
+        "Dmytro Hambal",
+        "vulyk",
+        "Flask/Mongo application to provide intuitive web-interface for tasks distribution.",
+        "Miscellaneous",
+    ),
 ]

@@ -311,7 +311,7 @@ class AbstractTaskType(Generic[TAbstractTask, TAbstractAnswer]):
             # `distinct("id")` ensures we don't pick the same task multiple times
             # if the query somehow returned duplicates (shouldn't happen with ID).
             # `or []` handles the case where `distinct` returns None or empty list.
-            _id = random.choice(rs.distinct("id") or [])
+            _id = random.choice(rs.distinct("id") or [])  # noqa: S311
 
             try:
                 return rs.get(id=_id)
