@@ -53,12 +53,12 @@ class GamificationModule(VulykModule):
             app.admin.add_view(FundAdmin(FundModel))
 
             if self.config.get("badges"):
-                if not getattr(RuleAdmin, "form_overrides"):
+                if not getattr(RuleAdmin, "form_overrides"):  # noqa: B009
                     RuleAdmin.form_overrides = {}
 
                 RuleAdmin.form_overrides["badge"] = wtforms.fields.SelectField
 
-                if not getattr(RuleAdmin, "form_args"):
+                if not getattr(RuleAdmin, "form_args"):  # noqa: B009
                     RuleAdmin.form_args = {}
 
                 RuleAdmin.form_args["badge"] = {"label": "Pick badge image", "choices": self.config["badges"]}
@@ -164,7 +164,7 @@ def fund_logo(fund_id: str) -> flask.Response:
     return flask.send_file(fund.logo, mimetype="image/{}".format(fund.logo.format.lower()))
 
 
-@gamification.route("/events/unseen", methods=["GET"])
+@gamification.route("/events/unseen", methods=["GET"])  # noqa: RET503
 def unseen_events() -> flask.Response:
     """
     The list of yet unseen events we return for currently logged in user.
@@ -181,7 +181,7 @@ def unseen_events() -> flask.Response:
     flask.abort(utils.HTTPStatus.FORBIDDEN)
 
 
-@gamification.route("/events/mark_viewed", methods=["GET"])
+@gamification.route("/events/mark_viewed", methods=["GET"])  # noqa: RET503
 def mark_viewed() -> flask.Response:
     """
     Mark all events as viewed for currently logged in user.
@@ -197,7 +197,7 @@ def mark_viewed() -> flask.Response:
     flask.abort(utils.HTTPStatus.FORBIDDEN)
 
 
-@gamification.route("/events/all", methods=["GET"])
+@gamification.route("/events/all", methods=["GET"])  # noqa: RET503
 def all_events() -> flask.Response:
     """
     The list of all events we return for currently logged in user.
@@ -212,7 +212,7 @@ def all_events() -> flask.Response:
     flask.abort(utils.HTTPStatus.FORBIDDEN)
 
 
-@gamification.route("/users/me/state", methods=["GET"])
+@gamification.route("/users/me/state", methods=["GET"])  # noqa: RET503
 @gamification.route("/users/<string:user_id>/state", methods=["GET"])
 def users_state(user_id: str | None = None) -> flask.Response:
     """
