@@ -7,6 +7,10 @@ from vulyk.app import TASKS_TYPES
 from vulyk.models.tasks import AbstractTask, Batch
 
 
+def percent(done: int, total: int) -> float:
+    return (float(done) / (total or done or 1)) * 100
+
+
 def batch_completeness(batch_name: str, task_type: str) -> OrderedDict:
     """
     Gathers completeness stats on every batch using 2 metrics:
@@ -19,8 +23,8 @@ def batch_completeness(batch_name: str, task_type: str) -> OrderedDict:
     :returns: string ready to be displayed in CLI.
     """
     batches = OrderedDict()
-    rs = lambda batch: AbstractTask.objects(batch=batch)
-    percent = lambda done, total: (float(done) / (total or done or 1)) * 100
+    rs = AbstractTask.objects
+
     query = Q(id=batch_name) if batch_name else Q()
     query &= Q(task_type=task_type) if task_type else Q()
 

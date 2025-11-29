@@ -71,9 +71,10 @@ class User(Document, UserMixin):
 
         :return: True if user is eligible.
 
-        :raises: AssertionError - if no `task_type` specified
+        :raises: ValueError - if no `task_type` specified
         """
-        assert task_type, "Empty parameter `task_type` passed"
+        if not task_type:
+            raise ValueError("Empty parameter `task_type` passed")
 
         return self.admin or task_type in chain(*(g.allowed_types for g in self.groups))
 

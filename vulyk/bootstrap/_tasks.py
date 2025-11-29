@@ -93,6 +93,6 @@ def init_plugins(app: Flask) -> dict[str, AbstractTaskType]:
 
     app.jinja_loader = jinja2.ChoiceLoader([app.jinja_loader, jinja2.PrefixLoader(loaders)])
 
-    app._plugin_files_to_watch = files_to_watch
+    app._plugin_files_to_watch = files_to_watch  # noqa: SLF001
 
     return task_types

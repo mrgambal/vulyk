@@ -300,8 +300,8 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         self.assertEqual(events[1].level_given, 1)
 
         for ev in events:
-            self.assertIn(ev.points_given, [Decimal("2.5"), Decimal("25")])
-            self.assertIn(ev.coins, [Decimal("1.5"), Decimal("15")])
+            self.assertIn(ev.points_given, [Decimal("2.5"), Decimal(25)])
+            self.assertIn(ev.coins, [Decimal("1.5"), Decimal(15)])
             self.assertEqual(ev.achievements, [])
             self.assertEqual(ev.viewed, False)
 
@@ -372,16 +372,16 @@ class TestAllocationOfMoneyAndPoints(BaseTest):
         task_type_new.on_task_done(self.USER, task2.id, {"result": "result"})
 
         state = UserStateModel.get_or_create_by_user(user=self.USER)
-        self.assertEqual(state.points, Decimal("25"))
+        self.assertEqual(state.points, Decimal(25))
         self.assertEqual(state.level, 2)
         self.assertEqual(state.actual_coins, Decimal())
-        self.assertEqual(state.potential_coins, Decimal("15"))
+        self.assertEqual(state.potential_coins, Decimal(15))
 
         events = EventModel.objects.filter(user=self.USER)
         self.assertEqual(len(events), 1)
         ev = events[0]
-        self.assertEqual(ev.points_given, Decimal("25"))
-        self.assertEqual(ev.coins, Decimal("15"))
+        self.assertEqual(ev.points_given, Decimal(25))
+        self.assertEqual(ev.coins, Decimal(15))
         self.assertEqual(ev.achievements, [])
         self.assertEqual(ev.level_given, 2)
         self.assertEqual(ev.viewed, False)

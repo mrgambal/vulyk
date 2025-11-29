@@ -264,7 +264,7 @@ class TestTaskTypes(BaseTest):
             fake_datetime = datetime.now(timezone.utc) - timedelta(seconds=30 * (i + 1))
 
             with patch("vulyk.ext.worksession.datetime") as mock_date:
-                mock_date.now = lambda _: fake_datetime
+                mock_date.now = lambda _: fake_datetime  # noqa: B023
                 task_type.work_session_manager.start_work_session(task, user.id)
 
             task_type.on_task_done(user, task.id, {"result": "result"})
@@ -303,7 +303,7 @@ class TestTaskTypes(BaseTest):
             fake_datetime = datetime.now(timezone.utc) - timedelta(seconds=100 * (i + 1))
 
             with patch("vulyk.ext.worksession.datetime") as mock_date:
-                mock_date.now = lambda _: fake_datetime
+                mock_date.now = lambda _: fake_datetime  # noqa: B023
                 task_type.work_session_manager.start_work_session(task, user.id)
 
             task_type.record_activity(user.id, task.id, 50 * (i + 1))

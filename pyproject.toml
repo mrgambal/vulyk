@@ -39,7 +39,6 @@ dependencies = [
     "Flask-Collect-Invenio==1.4.0",
     "flask-login==0.6.3",
     "flask-mongoengine-3>1.0.0",
-    "flask-script==2.0.6",
     "flask-wtf~=1.2.0",
     "honcho>=0.5.0",
     "itsdangerous>=2.2",
@@ -52,7 +51,6 @@ dependencies = [
     "social-auth-app-flask<2.0.0",
     "social-auth-core==4.5.6",
     "prettytable~=3.16.0",
-    "webassets==2.0",
     "werkzeug>3.0",
 ]
 

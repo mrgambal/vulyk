@@ -15,7 +15,14 @@ from mongoengine.errors import InvalidQueryError, LookUpError, NotUniqueError, O
 
 from vulyk.ext.leaderboard import LeaderBoardManager
 from vulyk.ext.worksession import WorkSessionManager
-from vulyk.models.exc import TaskImportError, TaskNotFoundError, TaskSaveError, TaskSkipError, TaskValidationError
+from vulyk.models.exc import (
+    InitializationError,
+    TaskImportError,
+    TaskNotFoundError,
+    TaskSaveError,
+    TaskSkipError,
+    TaskValidationError,
+)
 from vulyk.models.stats import WorkSession
 from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
 from vulyk.models.user import User
@@ -76,34 +83,32 @@ class AbstractTaskType(Generic[TAbstractTask, TAbstractAnswer]):
 
         :param settings: Global application settings dictionary, passed during
                          plugin instantiation. Can be used by subclasses.
-        :raises AssertionError: If required attributes like `task_model`,
-                                `answer_model`, `type_name`, or `template`
-                                are not defined or have incorrect types.
+           :raises InitializationError: If required attributes like `task_model`,
+               `answer_model`, `type_name`, or `template` are not defined or have incorrect types.
         """
         self._logger = logging.getLogger("vulyk.app")
 
-        assert hasattr(self, "task_model") and issubclass(self.task_model, AbstractTask), (
-            "You should define task_model property"
-        )
-        assert hasattr(self, "answer_model") and issubclass(self.answer_model, AbstractAnswer), (
-            "You should define answer_model property"
-        )
+        if not (hasattr(self, "task_model") and issubclass(self.task_model, AbstractTask)):
+            raise InitializationError("You should define task_model property")
+        if not (hasattr(self, "answer_model") and issubclass(self.answer_model, AbstractAnswer)):
+            raise InitializationError("You should define answer_model property")
 
         if not hasattr(self, "_leaderboard_manager"):
             self._leaderboard_manager = LeaderBoardManager(self.type_name, self.answer_model, User)
         if not hasattr(self, "_work_session_manager"):
             self._work_session_manager = WorkSessionManager(WorkSession)
 
-        assert isinstance(self._work_session_manager, WorkSessionManager), (
-            "You should define _work_session_manager property"
-        )
-        assert isinstance(self._leaderboard_manager, LeaderBoardManager), (
-            "You should define _leaderboard_manager property"
-        )
+        if not isinstance(self._work_session_manager, WorkSessionManager):
+            raise InitializationError("You should define _work_session_manager property")
+        if not isinstance(self._leaderboard_manager, LeaderBoardManager):
+            raise InitializationError("You should define _leaderboard_manager property")
 
-        assert self.type_name, "You should define type_name (underscore)"
-        assert self.template, "You should define template"
-        assert isinstance(self._task_type_meta, dict), "Batch meta must of dict type"
+        if not self.type_name:
+            raise InitializationError("You should define type_name (underscore)")
+        if not self.template:
+            raise InitializationError("You should define template")
+        if not isinstance(self._task_type_meta, dict):
+            raise InitializationError("Batch meta must of dict type")
 
     @property
     def name(self) -> str:
@@ -157,19 +162,20 @@ class AbstractTaskType(Generic[TAbstractTask, TAbstractAnswer]):
                       the `task_data` for a single task.
         :param batch: An optional identifier for the batch these tasks belong to.
         :raise TaskImportError: If any task fails validation or database insertion.
-        :raise AssertionError: If `tasks` contains non-dict items.
+        :raise TaskImportError: If `tasks` contains non-dict items or task insertion fails.
         """
         errors = (AttributeError, TypeError, ValidationError, OperationError, AssertionError)
         bulk = []
 
         try:
             for task in tasks:
-                assert isinstance(task, dict)
+                if not isinstance(task, dict):
+                    raise TaskImportError("Each task must be a dict")
 
                 bulk.append(
                     self.task_model(
                         # Generate a unique ID based on the task data content hash
-                        id=sha1(json.dumps(task)).hexdigest()[:20],
+                        id=sha1(json.dumps(task)).hexdigest()[:20],  # noqa: S324
                         batch=batch,
                         task_type=self.type_name,
                         task_data=task,
