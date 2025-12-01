@@ -12,7 +12,13 @@ from unittest.mock import Mock, patch
 from bson import ObjectId
 
 from vulyk.ext.leaderboard import LeaderBoardManager
-from vulyk.models.exc import TaskImportError, TaskNotFoundError, TaskValidationError, WorkSessionLookUpError
+from vulyk.models.exc import (
+    InitializationError,
+    TaskImportError,
+    TaskNotFoundError,
+    TaskValidationError,
+    WorkSessionLookUpError,
+)
 from vulyk.models.stats import WorkSession
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
@@ -51,21 +57,21 @@ class TestTaskTypes(BaseTest):
         class NoTask(AbstractTaskType):
             task_model = Mock
 
-        self.assertRaises(AssertionError, lambda: NoTask({}))
+        self.assertRaises(InitializationError, lambda: NoTask({}))
 
     def test_init_answer_inheritance(self):
         class NoAnswer(AbstractTaskType):
             task_model = AbstractTask
             answer_model = Mock
 
-        self.assertRaises(AssertionError, lambda: NoAnswer({}))
+        self.assertRaises(InitializationError, lambda: NoAnswer({}))
 
     def test_init_type_name(self):
         class NoTypeName(AbstractTaskType):
             task_model = AbstractTask
             answer_model = AbstractAnswer
 
-        self.assertRaises(AssertionError, lambda: NoTypeName({}))
+        self.assertRaises(InitializationError, lambda: NoTypeName({}))
 
     def test_init_template_name(self):
         class NoTemplateName(AbstractTaskType):
@@ -73,7 +79,7 @@ class TestTaskTypes(BaseTest):
             answer_model = AbstractAnswer
             type_name = "FakeTaskType"
 
-        self.assertRaises(AssertionError, lambda: NoTemplateName({}))
+        self.assertRaises(InitializationError, lambda: NoTemplateName({}))
 
     @patch("mongoengine.queryset.base.BaseQuerySet.count", lambda *a: 22)
     def test_to_dict(self):

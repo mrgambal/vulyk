@@ -12,7 +12,7 @@ from typing import Any, ClassVar
 import bz2file
 import click
 
-from vulyk.cli import admin, batches, db
+from vulyk.cli import admin, batches, db, is_initialized, project_init
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
 from vulyk.models.user import Group, User
@@ -188,6 +188,55 @@ class TestBatches(BaseTest):
         batches.add_batch(exists, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
 
         self.assertRaises(click.BadParameter, lambda: batches.validate_batch(None, None, exists, self.DEFAULT_BATCH))
+
+
+class TestProjectInit(BaseTest):
+    def setUp(self) -> None:
+        super().setUp()
+        # Ensure a clean state before each test
+        Group.objects.delete()
+        User.objects.delete()
+
+    def tearDown(self) -> None:
+        # Ensure a clean state after each test
+        Group.objects.delete()
+        User.objects.delete()
+        super().tearDown()
+
+    def test_is_initialized_and_project_init_creates_group(self) -> None:
+        # Initially no default group => not initialized
+        self.assertFalse(is_initialized())
+
+        expected_allowed = ["foo", "bar"]
+        project_init(expected_allowed)
+
+        # Now the default group exists
+        self.assertTrue(is_initialized())
+        group = Group.objects.get(id="default")
+        self.assertEqual(set(group.allowed_types), set(expected_allowed))
+
+    def test_project_init_updates_group_and_attaches_users(self) -> None:
+        # Create default group with a single allowed type, create users
+        Group(id="default", description="default group", allowed_types=["old"]).save()
+
+        for i in range(3):
+            User(username=f"user{i}", email=f"user{i}@example.test").save()
+
+        # Ensure users were created and initially the group has only "old"
+        g = Group.objects.get(id="default")
+        self.assertEqual(set(g.allowed_types), {"old"})
+
+        # project_init should add a new allowed_type and attach the group to all users
+        project_init(["foo", "old"])
+
+        g = Group.objects.get(id="default")
+        self.assertEqual(set(g.allowed_types), {"old", "foo"})
+
+        users = User.objects()
+        self.assertTrue(len(users) >= 3)
+        for u in users:
+            # user.groups is a list of Group documents
+            self.assertTrue(any(group_ref.id == "default" for group_ref in u.groups))
 
 
 if __name__ == "__main__":

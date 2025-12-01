@@ -7,7 +7,7 @@ points. Achievements and levels are conditional things.
 
 Another type of events is donations to some funds. These ones must contain
 a link to a fund and negative amount of coins, along with zero points,
-no achievements (at least – for now) and no level changes.
+no achievements (at least - for now) and no level changes.
 """
 
 from collections.abc import Sequence
@@ -84,34 +84,37 @@ class Event:
 
         self._validate()
 
-    def _validate(self) -> None:
+    def _validate(self) -> None:  # noqa: C901
         """
         :raises: InvalidEventException
         """
         is_donate = self.coins < 0 and self.acceptor_fund is not None
         is_bonus = self.coins > 0 and self.answer is None
 
-        try:
-            assert self.user is not None, "User should be present."
+        if self.user is None:
+            raise InvalidEventException("User should be present.")
 
-            if is_donate:
-                assert self.points_given == 0, "No points are allowed for donate events"
-                assert len(self.achievements) == 0, "No badges are allowed for donate events"
-                assert self.level_given is None, "No levels are allowed for donate events"
-                assert self.viewed, "Viewed property shall be set to True for donate events"
-            else:
-                assert self.acceptor_fund is None, "No acceptor funds are allowed for task events"
-                assert self.coins >= 0, "No negative amount of coins are allowed for task events"
-                assert self.level_given is None or self.level_given > 0, (
-                    "New level must be greater than zero or be absent for task events"
-                )
-                assert self.points_given > 0, "Points amount must be positive for task events"
+        if is_donate:
+            if self.points_given != 0:
+                raise InvalidEventException("No points are allowed for donate events")
+            if len(self.achievements) != 0:
+                raise InvalidEventException("No badges are allowed for donate events")
+            if self.level_given is not None:
+                raise InvalidEventException("No levels are allowed for donate events")
+            if not self.viewed:
+                raise InvalidEventException("Viewed property shall be set to True for donate events")
+        else:
+            if self.acceptor_fund is not None:
+                raise InvalidEventException("No acceptor funds are allowed for task events")
+            if self.coins < 0:
+                raise InvalidEventException("No negative amount of coins are allowed for task events")
+            if not (self.level_given is None or self.level_given > 0):
+                raise InvalidEventException("New level must be greater than zero or be absent for task events")
+            if self.points_given <= 0:
+                raise InvalidEventException("Points amount must be positive for task events")
 
-                if not is_bonus:
-                    assert self.answer is not None, "Answer should be present for task events"
-
-        except AssertionError as e:
-            raise InvalidEventException(str(e)) from e
+            if not is_bonus and self.answer is None:
+                raise InvalidEventException("Answer should be present for task events")
 
     @classmethod
     def build(

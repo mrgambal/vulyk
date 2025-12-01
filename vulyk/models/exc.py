@@ -5,6 +5,7 @@ the DB.
 """
 
 __all__ = [
+    "InitializationError",
     "TaskImportError",
     "TaskNotFoundError",
     "TaskPermissionError",
@@ -46,3 +47,9 @@ class WorkSessionLookUpError(Exception):
 
 class WorkSessionUpdateError(Exception):
     pass
+
+
+class InitializationError(Exception):
+    """
+    Raised when application initialization or plugin configuration is invalid.
+    """

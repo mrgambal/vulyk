@@ -225,10 +225,7 @@ def users_state(user_id: str | None = None) -> flask.Response:
     """
     user: User | AnonymousUserMixin | None
 
-    if user_id is not None:
-        user = User.get_by_id(user_id)  # type: ignore
-    else:
-        user = flask.g.user
+    user = User.get_by_id(user_id) if user_id is not None else flask.g.user  # type: ignore[assignment]
 
     if isinstance(user, User):
         state = UserStateModel.get_or_create_by_user(user)

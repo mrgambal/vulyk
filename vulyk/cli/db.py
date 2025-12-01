@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import gzip
 from collections.abc import Generator
+from io import IOBase
 from typing import Any
 
 import bz2file as bz2
@@ -60,13 +61,10 @@ def _load_tasks_file(task_type: AbstractTaskType, path: str, batch: str) -> int:
     i = 0
     bunch_size = 100
 
-    def _safe_load(fl) -> Generator[dict[str, Any]]:
-        """
-        :rtype: __generator[dict]
-        """
-        l = lambda s: json.loads(s) if len(s.strip()) > 0 else {}
-
-        yield from filter(None, map(l, fl))
+    def _safe_load(fl: IOBase) -> Generator[dict[str, Any]]:
+        for line in fl:
+            if line.strip() and (json_line := json.loads(line)):
+                yield json_line
 
     try:
         with open_anything(path)(path, "rb") as f:

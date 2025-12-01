@@ -61,6 +61,6 @@ def init(app: Flask) -> None:
         app.logger.debug("Bundling files: %s%s", os.linesep, os.linesep.join(build_files))
 
     app.assets = assets
-    app._base_files_to_watch = files_to_watch
+    app._base_files_to_watch = files_to_watch  # noqa: SLF001
 
     app.logger.info("Base assets are collected successfully.")

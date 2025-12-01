@@ -81,7 +81,7 @@ class DonationsService:
                 return DonationResult.SUCCESS
 
             return DonationResult.BEGGAR
-        except (Exception, IOError):
+        except (Exception, IOError):  # noqa: BLE001
             return DonationResult.ERROR
 
 

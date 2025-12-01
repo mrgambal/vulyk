@@ -6,7 +6,7 @@ from typing import TypeVar, cast
 from bson import ObjectId
 from mongoengine.errors import OperationError
 
-from vulyk.models.exc import WorkSessionLookUpError, WorkSessionUpdateError
+from vulyk.models.exc import InitializationError, WorkSessionLookUpError, WorkSessionUpdateError
 from vulyk.models.stats import WorkSession
 from vulyk.models.tasks import AbstractAnswer, AbstractTask
 from vulyk.signals import on_task_done
@@ -42,7 +42,8 @@ class WorkSessionManager:
 
         :param work_session_model: The MongoEngine Document class for work sessions.
         """
-        assert issubclass(work_session_model, WorkSession), "You should define working session model properly"
+        if not issubclass(work_session_model, WorkSession):
+            raise InitializationError("You should define working session model properly")
 
         self._logger = logging.getLogger("vulyk.app")
 

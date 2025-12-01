@@ -106,7 +106,7 @@ DEFAULT_BATCH: str = "default"
 
 WARM_WELCOME: str = """
 <h3>Вас вітає Канцелярська сотня.</h3>
-"""
+"""  # noqa: RUF001
 
 SITE_LOGO: str = ENV("SITE_LOGO", "/static/images/logo.png")
 SITE_TITLE: str = ENV("SITE_TITLE", "Канцелярська сотня представляє!")

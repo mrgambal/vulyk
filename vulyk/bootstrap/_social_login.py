@@ -43,7 +43,7 @@ def init_social_login(app, db) -> None:
 
     @app.before_request
     def global_user() -> None:
-        g.user = login.current_user._get_current_object()
+        g.user = login.current_user._get_current_object()  # noqa: SLF001
 
     @app.context_processor
     def inject_user() -> dict[str, User | None]:

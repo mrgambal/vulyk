@@ -4,8 +4,10 @@ test_fund_models
 """
 
 import unittest
+from io import BytesIO
 
 import flask
+from PIL import Image, ImageChops
 
 from vulyk import utils
 from vulyk.blueprints.gamification import gamification
@@ -28,7 +30,12 @@ class TestFundModels(BaseTest):
         fund2 = FundModel.find_by_id(fund.id)
 
         self.assertEqual(fund, fund2, "Fund wasn't saved and restored")
-        self.assertEqual(FixtureFund.LOGO_BYTES, fund2.logo.read(), "Fund's logo wasn't saved and restored")
+        # ImageField generates thumbnails / re-encodes images during save; compare
+        # decoded pixel content instead of raw compressed bytes to be platform-agnostic
+        a = Image.open(BytesIO(FixtureFund.LOGO_BYTES)).convert("RGBA")
+        b = Image.open(BytesIO(fund2.logo.read())).convert("RGBA")
+        self.assertEqual(a.size, b.size)
+        self.assertIsNone(ImageChops.difference(a, b).getbbox(), "Fund's logo wasn't saved and restored")
 
     def test_logo_controller(self) -> None:
         app = flask.Flask("test")
@@ -40,7 +47,10 @@ class TestFundModels(BaseTest):
         resp = app.test_client().get("/gamification/funds/{id}/logo".format(id=fund.id))
         self.assertEqual(resp.mimetype, "image/png")
         self.assertEqual(resp.status_code, utils.HTTPStatus.OK)
-        self.assertEqual(resp.data, FixtureFund.LOGO_BYTES)
+        a = Image.open(BytesIO(FixtureFund.LOGO_BYTES)).convert("RGBA")
+        b = Image.open(BytesIO(resp.data)).convert("RGBA")
+        self.assertEqual(a.size, b.size)
+        self.assertIsNone(ImageChops.difference(a, b).getbbox(), "Returned logo doesn't match expected image")
 
     def test_fund_to_dict(self) -> None:
         fund = FixtureFund.get_fund()

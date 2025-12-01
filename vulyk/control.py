@@ -197,7 +197,6 @@ def project_init(allowed_types: list[str]) -> None:
 @cli.group("stats")
 def stats() -> None:
     """Commands to show some stats."""
-    pass
 
 
 @stats.command("batch")

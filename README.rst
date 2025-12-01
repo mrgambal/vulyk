@@ -156,3 +156,15 @@ And finally you should create run.py and put some stuff into it:
 Then open http://localhost:5000 and you are set!
 
 Easy, isn't it?! Well, we'll smooth some rough edges soon, we promise.
+
+Running tests and coverage
+--------------------------
+
+You can run the project's tests and generate coverage reports using the Makefile helper:
+
+.. code:: bash
+
+    make coverage
+
+The command will run the tests, create an HTML report in `htmlcov/index.html` and a machine-readable
+XML report `coverage.xml` (useful for CI systems and coverage services).
