@@ -23,19 +23,19 @@ def batch_completeness(batch_name: str, task_type: str) -> OrderedDict:
     :returns: string ready to be displayed in CLI.
     """
     batches = OrderedDict()
-    rs = AbstractTask.objects
 
     query = Q(id=batch_name) if batch_name else Q()
     query &= Q(task_type=task_type) if task_type else Q()
 
     for b in Batch.objects(query).order_by("id"):
+        rs = AbstractTask.objects(batch=b.id)
         batches[b.id] = {"total": 0, "flag": 0, "flag_percent": 0, "answers": 0, "answers_percent": 0, "breakdown": ""}
 
-        if len(rs(b.id)) > 0:
-            rs_task = TASKS_TYPES[rs(b.id).first().task_type]
+        if rs.count() > 0:
+            rs_task = TASKS_TYPES[rs.only("task_type").first().task_type]
 
-            answers = rs(b.id).filter(closed=False).sum("users_count")
-            answers_all = rs(b.id).sum("users_count")
+            answers = rs.filter(closed=False).sum("users_count")
+            answers_all = rs.sum("users_count")
             answers_mix = answers + (rs_task.redundancy * b.tasks_processed)
             answers_needed = b.tasks_count * rs_task.redundancy
 
