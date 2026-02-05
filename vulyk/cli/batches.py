@@ -7,7 +7,7 @@ from typing import Any
 import click
 
 from vulyk.models.task_types import AbstractTaskType
-from vulyk.models.tasks import AbstractTask, Batch
+from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
 
 
 def add_batch(
@@ -83,18 +83,28 @@ def validate_batch(ctx: click.Context, param: str, value: str, default_batch: st
     return value
 
 
-def remove_batch(batch_id: str) -> None:
+def remove_batch(batch_id: str, *, purge: bool = False) -> None:
     """
     Delete existing batch and all tasks belonging to it.
+    Optionally also removes related answers (reports) and work sessions.
 
     :param batch_id: Batch's symbolic code.
+    :param purge: If True, also delete answers and work sessions for the batch's tasks.
 
     :raise click.BadParameter: if wrong `batch_id` has been passed.
     """
+    from vulyk.models.stats import WorkSession
+
     try:
         batch = Batch.objects.get(id=batch_id)
     except Batch.DoesNotExist as e:
         raise click.BadParameter("No batch was found with id " + batch_id) from e
+
+    task_ids = AbstractTask.objects(batch=batch).scalar("id")
+
+    if purge and task_ids:
+        WorkSession.objects(task__in=task_ids).delete()
+        AbstractAnswer.objects(task__in=task_ids).delete()
 
     AbstractTask.objects(batch=batch).delete()
     batch.delete()
