@@ -87,6 +87,7 @@ class TestBatches(BaseTest):
     WRONG_TASK_TYPE = AnotherTaskType({})
 
     def tearDown(self) -> None:
+        AbstractTask.objects.delete()
         Batch.objects.delete()
 
         super().tearDown()
@@ -191,11 +192,23 @@ class TestBatches(BaseTest):
 
     def test_remove_batch(self) -> None:
         batch_name = "to_remove"
-        batches.add_batch(batch_name, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch(batch_name, 2, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batch = Batch.objects.get(id=batch_name)
+
+        for i in range(2):
+            AbstractTask(
+                id="task%s" % i,
+                task_type=self.TASK_TYPE.type_name,
+                batch=batch,
+                task_data={"data": "data"},
+            ).save()
+
         self.assertEqual(Batch.objects(id=batch_name).count(), 1)
+        self.assertEqual(AbstractTask.objects(batch=batch).count(), 2)
 
         batches.remove_batch(batch_name)
         self.assertEqual(Batch.objects(id=batch_name).count(), 0)
+        self.assertEqual(AbstractTask.objects(batch=batch_name).count(), 0)
 
     def test_remove_nonexistent_batch(self) -> None:
         self.assertRaises(click.BadParameter, lambda: batches.remove_batch("nonexistent"))
