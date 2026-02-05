@@ -83,6 +83,20 @@ def validate_batch(ctx: click.Context, param: str, value: str, default_batch: st
     return value
 
 
+def remove_batch(batch_id: str) -> None:
+    """
+    Delete existing batch.
+
+    :param batch_id: Batch's symbolic code.
+
+    :raise click.BadParameter: if wrong `batch_id` has been passed.
+    """
+    try:
+        Batch.objects.get(id=batch_id).delete()
+    except Batch.DoesNotExist as e:
+        raise click.BadParameter("No batch was found with id " + batch_id) from e
+
+
 def batches_list() -> list[str]:
     """
     :return: List of batches IDs to validate CLI input.

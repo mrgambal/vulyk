@@ -189,6 +189,17 @@ class TestBatches(BaseTest):
 
         self.assertRaises(click.BadParameter, lambda: batches.validate_batch(None, None, exists, self.DEFAULT_BATCH))
 
+    def test_remove_batch(self) -> None:
+        batch_name = "to_remove"
+        batches.add_batch(batch_name, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
+        self.assertEqual(Batch.objects(id=batch_name).count(), 1)
+
+        batches.remove_batch(batch_name)
+        self.assertEqual(Batch.objects(id=batch_name).count(), 0)
+
+    def test_remove_nonexistent_batch(self) -> None:
+        self.assertRaises(click.BadParameter, lambda: batches.remove_batch("nonexistent"))
+
 
 class TestProjectInit(BaseTest):
     def setUp(self) -> None:
