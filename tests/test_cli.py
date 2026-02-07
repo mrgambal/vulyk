@@ -13,7 +13,10 @@ from typing import Any, ClassVar
 import bz2file
 import click
 
+from click.testing import CliRunner
+
 from vulyk.cli import admin, batches, db, is_initialized, project_init
+from vulyk.control import batch_list, batch_remove, batches_group, cli
 from vulyk.models.stats import WorkSession
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
@@ -259,6 +262,39 @@ class TestBatches(BaseTest):
 
     def test_remove_nonexistent_batch(self) -> None:
         self.assertRaises(click.BadParameter, lambda: batches.remove_batch("nonexistent"))
+
+    def test_cli_batches_list(self) -> None:
+        batches.add_batch("batch_a", 5, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch("batch_b", 3, self.TASK_TYPE, self.DEFAULT_BATCH)
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["batches", "list"])
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("batch_a", result.output)
+        self.assertIn("batch_b", result.output)
+
+    def test_cli_batches_del(self) -> None:
+        batches.add_batch("cli_remove", 2, self.TASK_TYPE, self.DEFAULT_BATCH)
+        self.assertEqual(Batch.objects(id="cli_remove").count(), 1)
+
+        # Invoke callback directly since click.Choice is frozen at import time
+        batch_remove.callback(bid="cli_remove", purge=False)
+
+        self.assertEqual(Batch.objects(id="cli_remove").count(), 0)
+
+    def test_cli_batches_del_with_purge(self) -> None:
+        self._create_batch_with_data("cli_purge")
+
+        self.assertEqual(AbstractAnswer.objects(task_type=self.TASK_TYPE.type_name).count(), 2)
+        self.assertEqual(WorkSession.objects(task_type=self.TASK_TYPE.type_name).count(), 2)
+
+        batch_remove.callback(bid="cli_purge", purge=True)
+
+        self.assertEqual(Batch.objects(id="cli_purge").count(), 0)
+        self.assertEqual(AbstractTask.objects(batch="cli_purge").count(), 0)
+        self.assertEqual(AbstractAnswer.objects(task_type=self.TASK_TYPE.type_name).count(), 0)
+        self.assertEqual(WorkSession.objects(task_type=self.TASK_TYPE.type_name).count(), 0)
 
 
 class TestProjectInit(BaseTest):
