@@ -12,11 +12,10 @@ from typing import Any, ClassVar
 
 import bz2file
 import click
-
 from click.testing import CliRunner
 
 from vulyk.cli import admin, batches, db, is_initialized, project_init
-from vulyk.control import batch_list, batch_remove, batches_group, cli
+from vulyk.control import batch_remove, cli
 from vulyk.models.stats import WorkSession
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
