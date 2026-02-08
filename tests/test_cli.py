@@ -7,12 +7,16 @@ test_cli
 
 import gzip
 import unittest
+from datetime import datetime, timezone
 from typing import Any, ClassVar
 
 import bz2file
 import click
+from click.testing import CliRunner
 
 from vulyk.cli import admin, batches, db, is_initialized, project_init
+from vulyk.control import batch_remove, cli
+from vulyk.models.stats import WorkSession
 from vulyk.models.task_types import AbstractTaskType
 from vulyk.models.tasks import AbstractAnswer, AbstractTask, Batch
 from vulyk.models.user import Group, User
@@ -87,7 +91,12 @@ class TestBatches(BaseTest):
     WRONG_TASK_TYPE = AnotherTaskType({})
 
     def tearDown(self) -> None:
+        WorkSession.objects.delete()
+        AbstractAnswer.objects.delete()
+        AbstractTask.objects.delete()
         Batch.objects.delete()
+        User.objects.delete()
+        Group.objects.delete()
 
         super().tearDown()
 
@@ -188,6 +197,103 @@ class TestBatches(BaseTest):
         batches.add_batch(exists, 10, self.TASK_TYPE, self.DEFAULT_BATCH)
 
         self.assertRaises(click.BadParameter, lambda: batches.validate_batch(None, None, exists, self.DEFAULT_BATCH))
+
+    def _create_batch_with_data(self, batch_name: str) -> None:
+        """Helper: creates a batch with 2 tasks, 2 answers and 2 work sessions."""
+        batches.add_batch(batch_name, 2, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batch = Batch.objects.get(id=batch_name)
+
+        if not Group.objects(id="default"):
+            Group(id="default", description="test", allowed_types=[self.TASK_TYPE.type_name]).save()
+
+        user = User(username="testuser", email="testuser@email.com").save()
+
+        for i in range(2):
+            task = AbstractTask(
+                id="task%s" % i,
+                task_type=self.TASK_TYPE.type_name,
+                batch=batch,
+                task_data={"data": "data"},
+            ).save()
+
+            AbstractAnswer(
+                task=task,
+                created_by=user,
+                created_at=datetime.now(timezone.utc),
+                task_type=self.TASK_TYPE.type_name,
+                result={"result": "ok"},
+            ).save()
+
+            WorkSession(
+                user=user,
+                task=task,
+                task_type=self.TASK_TYPE.type_name,
+                start_time=datetime.now(timezone.utc),
+                end_time=datetime.now(timezone.utc),
+                activity=10,
+            ).save()
+
+    def test_remove_batch(self) -> None:
+        batch_name = "to_remove"
+        self._create_batch_with_data(batch_name)
+
+        self.assertEqual(Batch.objects(id=batch_name).count(), 1)
+        self.assertEqual(AbstractTask.objects(batch=batch_name).count(), 2)
+
+        batches.remove_batch(batch_name)
+
+        self.assertEqual(Batch.objects(id=batch_name).count(), 0)
+        self.assertEqual(AbstractTask.objects(batch=batch_name).count(), 0)
+
+    def test_remove_batch_with_purge(self) -> None:
+        batch_name = "to_purge"
+        self._create_batch_with_data(batch_name)
+
+        self.assertEqual(AbstractAnswer.objects(task_type=self.TASK_TYPE.type_name).count(), 2)
+        self.assertEqual(WorkSession.objects(task_type=self.TASK_TYPE.type_name).count(), 2)
+
+        batches.remove_batch(batch_name, purge=True)
+
+        self.assertEqual(Batch.objects(id=batch_name).count(), 0)
+        self.assertEqual(AbstractTask.objects(batch=batch_name).count(), 0)
+        self.assertEqual(AbstractAnswer.objects(task_type=self.TASK_TYPE.type_name).count(), 0)
+        self.assertEqual(WorkSession.objects(task_type=self.TASK_TYPE.type_name).count(), 0)
+
+    def test_remove_nonexistent_batch(self) -> None:
+        self.assertRaises(click.BadParameter, lambda: batches.remove_batch("nonexistent"))
+
+    def test_cli_batches_list(self) -> None:
+        batches.add_batch("batch_a", 5, self.TASK_TYPE, self.DEFAULT_BATCH)
+        batches.add_batch("batch_b", 3, self.TASK_TYPE, self.DEFAULT_BATCH)
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["batches", "list"])
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("batch_a", result.output)
+        self.assertIn("batch_b", result.output)
+
+    def test_cli_batches_del(self) -> None:
+        batches.add_batch("cli_remove", 2, self.TASK_TYPE, self.DEFAULT_BATCH)
+        self.assertEqual(Batch.objects(id="cli_remove").count(), 1)
+
+        # Invoke callback directly since click.Choice is frozen at import time
+        batch_remove.callback(bid="cli_remove", purge=False)
+
+        self.assertEqual(Batch.objects(id="cli_remove").count(), 0)
+
+    def test_cli_batches_del_with_purge(self) -> None:
+        self._create_batch_with_data("cli_purge")
+
+        self.assertEqual(AbstractAnswer.objects(task_type=self.TASK_TYPE.type_name).count(), 2)
+        self.assertEqual(WorkSession.objects(task_type=self.TASK_TYPE.type_name).count(), 2)
+
+        batch_remove.callback(bid="cli_purge", purge=True)
+
+        self.assertEqual(Batch.objects(id="cli_purge").count(), 0)
+        self.assertEqual(AbstractTask.objects(batch="cli_purge").count(), 0)
+        self.assertEqual(AbstractAnswer.objects(task_type=self.TASK_TYPE.type_name).count(), 0)
+        self.assertEqual(WorkSession.objects(task_type=self.TASK_TYPE.type_name).count(), 0)
 
 
 class TestProjectInit(BaseTest):

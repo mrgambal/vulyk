@@ -193,6 +193,37 @@ def project_init(allowed_types: list[str]) -> None:
 # endregion Bootstrapping
 
 
+# region Batches
+@cli.group("batches")
+def batches_group() -> None:
+    """Manage task batches."""
+
+
+@batches_group.command("list")
+def batch_list() -> None:
+    """List all batches."""
+    for b in _batches.batches_list():
+        click.echo(b)
+
+
+@batches_group.command("del")
+@click.option("--bid", prompt="Specify the batch to remove", type=click.Choice(_batches.batches_list()))
+@click.option("--purge", is_flag=True, default=False, help="Also delete answers (reports) and work sessions.")
+@click.option(
+    "--yes",
+    is_flag=True,
+    callback=abort_if_false,
+    expose_value=False,
+    prompt="Are you sure? This will delete the batch and ALL its tasks.",
+)
+def batch_remove(bid: str, *, purge: bool) -> None:
+    """Delete a batch and all its tasks."""
+    _batches.remove_batch(bid, purge=purge)
+
+
+# endregion Batches
+
+
 # region Stats
 @cli.group("stats")
 def stats() -> None:
