@@ -102,9 +102,16 @@ def load(task_type: str, path: str, meta: tuple[str, str], batch: str) -> None:
     "Passing __all__ will export all tasks of a given type",
 )
 @click.option("--export-all", "export_all", default=False, is_flag=True)
-def export(task_type: str, path: str, batch: str, *, export_all: bool) -> None:
+@click.option(
+    "--with-sessions",
+    "with_sessions",
+    default=False,
+    is_flag=True,
+    help="Include work session timing data (start/end times, duration, activity) in the export.",
+)
+def export(task_type: str, path: str, batch: str, *, export_all: bool, with_sessions: bool) -> None:
     """Exports answers to chosen tasks to json."""
-    _db.export_reports(TASKS_TYPES[task_type], path, batch, closed=not export_all)
+    _db.export_reports(TASKS_TYPES[task_type], path, batch, closed=not export_all, with_sessions=with_sessions)
 
 
 # endregion DB (export/import)

@@ -83,7 +83,9 @@ def _load_tasks_file(task_type: AbstractTaskType, path: str, batch: str) -> int:
     return i
 
 
-def export_reports(task_id: AbstractTaskType, path: str, batch: str, *, closed: bool) -> None:
+def export_reports(
+    task_id: AbstractTaskType, path: str, batch: str, *, closed: bool, with_sessions: bool = False
+) -> None:
     """
     Export reports for a given task type.
 
@@ -91,12 +93,13 @@ def export_reports(task_id: AbstractTaskType, path: str, batch: str, *, closed: 
     :param path: Path to export reports to.
     :param batch: Batch ID to export reports for.
     :param closed: Whether to export closed tasks or not.
+    :param with_sessions: Whether to include work session data in the export.
     """
     i = 0
 
     try:
         with open(path, "wb+") as f:
-            for report in task_id.export_reports(batch, closed=closed):
+            for report in task_id.export_reports(batch, closed=closed, with_sessions=with_sessions):
                 f.write(json.dumps(report) + b"\n")
                 i += 1
 

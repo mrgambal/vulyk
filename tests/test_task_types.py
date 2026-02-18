@@ -278,6 +278,175 @@ class TestTaskTypes(BaseTest):
 
         self.assertCountEqual(task_type.export_reports(batch=batch, closed=False), reports)
 
+    def test_export_reports_with_sessions(self):
+        """Session data (start, end, duration, activity) appears correctly."""
+        task_type = FakeType({})
+        user = User(username="user0", email="user0@email.com").save()
+        batch = Batch(id="default", task_type=task_type.type_name, tasks_count=1, tasks_processed=0).save()
+        task = task_type.task_model(
+            id="task0",
+            task_type=task_type.type_name,
+            batch=batch,
+            closed=True,
+            users_count=1,
+            users_processed=[user],
+            task_data={"data": "data"},
+        ).save()
+        answer = task_type.answer_model(
+            task=task,
+            created_by=user,
+            created_at=datetime.now(timezone.utc),
+            task_type=task_type.type_name,
+            result={"r": 1},
+        ).save()
+        start = datetime(2024, 1, 1, 10, 0, 0, tzinfo=timezone.utc)
+        end = datetime(2024, 1, 1, 10, 5, 0, tzinfo=timezone.utc)
+        WorkSession(
+            user=user,
+            task=task,
+            task_type=task_type.type_name,
+            answer=answer,
+            start_time=start,
+            end_time=end,
+            activity=120,
+        ).save()
+
+        results = list(task_type.export_reports(batch=batch, with_sessions=True))
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results[0]), 1)
+        session_data = results[0][0]["session"]
+        # MongoDB stores datetimes as naive UTC, so isoformat() lacks the +00:00 suffix
+        self.assertIn("2024-01-01T10:00:00", session_data["start_time"])
+        self.assertIn("2024-01-01T10:05:00", session_data["end_time"])
+        self.assertEqual(session_data["duration"], 300)
+        self.assertEqual(session_data["activity"], 120)
+
+    def test_export_reports_with_sessions_no_session(self):
+        """'session' key omitted when no session exists for an answer."""
+        task_type = FakeType({})
+        user = User(username="user0", email="user0@email.com").save()
+        batch = Batch(id="default", task_type=task_type.type_name, tasks_count=1, tasks_processed=0).save()
+        task = task_type.task_model(
+            id="task0",
+            task_type=task_type.type_name,
+            batch=batch,
+            closed=True,
+            users_count=1,
+            users_processed=[user],
+            task_data={"data": "data"},
+        ).save()
+        task_type.answer_model(
+            task=task,
+            created_by=user,
+            created_at=datetime.now(timezone.utc),
+            task_type=task_type.type_name,
+            result={"r": 1},
+        ).save()
+
+        results = list(task_type.export_reports(batch=batch, with_sessions=True))
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results[0]), 1)
+        self.assertNotIn("session", results[0][0])
+
+    def test_export_reports_without_sessions_flag_unchanged(self):
+        """Default behavior unchanged — no 'session' even when sessions exist in DB."""
+        task_type = FakeType({})
+        user = User(username="user0", email="user0@email.com").save()
+        batch = Batch(id="default", task_type=task_type.type_name, tasks_count=1, tasks_processed=0).save()
+        task = task_type.task_model(
+            id="task0",
+            task_type=task_type.type_name,
+            batch=batch,
+            closed=True,
+            users_count=1,
+            users_processed=[user],
+            task_data={"data": "data"},
+        ).save()
+        answer = task_type.answer_model(
+            task=task,
+            created_by=user,
+            created_at=datetime.now(timezone.utc),
+            task_type=task_type.type_name,
+            result={"r": 1},
+        ).save()
+        WorkSession(
+            user=user,
+            task=task,
+            task_type=task_type.type_name,
+            answer=answer,
+            start_time=datetime(2024, 1, 1, 10, 0, 0, tzinfo=timezone.utc),
+            end_time=datetime(2024, 1, 1, 10, 5, 0, tzinfo=timezone.utc),
+            activity=120,
+        ).save()
+
+        results = list(task_type.export_reports(batch=batch))
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results[0]), 1)
+        self.assertNotIn("session", results[0][0])
+
+    def test_export_reports_with_sessions_multiple_answers(self):
+        """Correct per-answer matching when task has multiple answers/sessions."""
+        task_type = FakeType({})
+        user1 = User(username="user0", email="user0@email.com").save()
+        user2 = User(username="user1", email="user1@email.com").save()
+        batch = Batch(id="default", task_type=task_type.type_name, tasks_count=1, tasks_processed=0).save()
+        task = task_type.task_model(
+            id="task0",
+            task_type=task_type.type_name,
+            batch=batch,
+            closed=True,
+            users_count=2,
+            users_processed=[user1, user2],
+            task_data={"data": "data"},
+        ).save()
+        answer1 = task_type.answer_model(
+            task=task,
+            created_by=user1,
+            created_at=datetime(2024, 1, 1, 10, 0, 0, tzinfo=timezone.utc),
+            task_type=task_type.type_name,
+            result={"r": 1},
+        ).save()
+        answer2 = task_type.answer_model(
+            task=task,
+            created_by=user2,
+            created_at=datetime(2024, 1, 1, 11, 0, 0, tzinfo=timezone.utc),
+            task_type=task_type.type_name,
+            result={"r": 2},
+        ).save()
+        start1 = datetime(2024, 1, 1, 10, 0, 0, tzinfo=timezone.utc)
+        end1 = datetime(2024, 1, 1, 10, 3, 0, tzinfo=timezone.utc)
+        start2 = datetime(2024, 1, 1, 11, 0, 0, tzinfo=timezone.utc)
+        end2 = datetime(2024, 1, 1, 11, 10, 0, tzinfo=timezone.utc)
+        WorkSession(
+            user=user1,
+            task=task,
+            task_type=task_type.type_name,
+            answer=answer1,
+            start_time=start1,
+            end_time=end1,
+            activity=60,
+        ).save()
+        WorkSession(
+            user=user2,
+            task=task,
+            task_type=task_type.type_name,
+            answer=answer2,
+            start_time=start2,
+            end_time=end2,
+            activity=300,
+        ).save()
+
+        results = list(task_type.export_reports(batch=batch, with_sessions=True))
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results[0]), 2)
+
+        # Build a map by answer result to check session matching
+        by_result = {r["answer"]["r"]: r for r in results[0]}
+        self.assertEqual(by_result[1]["session"]["duration"], 180)
+        self.assertEqual(by_result[1]["session"]["activity"], 60)
+        self.assertEqual(by_result[2]["session"]["duration"], 600)
+        self.assertEqual(by_result[2]["session"]["activity"], 300)
+
     # endregion Export reports
 
     # region Next task
