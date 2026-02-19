@@ -189,7 +189,7 @@ class AbstractTaskType(Generic[TAbstractTask, TAbstractAnswer]):
             raise TaskImportError("Can't load task.") from e
 
     def export_reports(
-        self, batch: str, *, closed: bool = True, qs: QuerySet | None = None
+        self, batch: str, *, closed: bool = True, with_sessions: bool = False, qs: QuerySet | None = None
     ) -> Generator[list[dict[str, Any]]]:
         """Exports task results (answers) for a given batch or query.
 
@@ -199,6 +199,10 @@ class AbstractTaskType(Generic[TAbstractTask, TAbstractAnswer]):
         :param batch: The ID of the batch to export results from. Use "__all__"
                       to export from all batches.
         :param closed: If True, export results only for tasks marked as closed.
+        :param with_sessions: If True, enrich each answer dict with a "session"
+                              key containing work session timing data (start_time,
+                              end_time, duration, activity). Omitted when no
+                              matching session exists for an answer.
         :param qs: An optional MongoEngine QuerySet to use for selecting tasks.
                    If None, a default query is constructed based on `batch` and
                    `closed` parameters.
@@ -217,7 +221,32 @@ class AbstractTaskType(Generic[TAbstractTask, TAbstractAnswer]):
             qs = self.task_model.objects(query)
 
         for task in qs:
-            yield [a.as_dict() for a in self.answer_model.objects(task=task)]
+            answers = list(self.answer_model.objects(task=task))
+
+            if with_sessions:
+                sessions = WorkSession.objects(task=task).no_dereference()
+                session_map: dict[ObjectId, WorkSession] = {
+                    getattr(s.answer, "id", s.answer): s for s in sessions if s.answer is not None
+                }
+
+                result = []
+                for a in answers:
+                    d = a.as_dict()
+                    if a.pk in session_map:
+                        ws = session_map[a.pk]
+                        duration = None
+                        if ws.start_time is not None and ws.end_time is not None:
+                            duration = int((ws.end_time - ws.start_time).total_seconds())
+                        d["session"] = {
+                            "start_time": ws.start_time.isoformat() if ws.start_time else None,
+                            "end_time": ws.end_time.isoformat() if ws.end_time else None,
+                            "duration": duration,
+                            "activity": ws.activity,
+                        }
+                    result.append(d)
+                yield result
+            else:
+                yield [a.as_dict() for a in answers]
 
     def get_leaders(self) -> list[tuple[ObjectId, int]]:
         """Retrieves the raw leaderboard data.
