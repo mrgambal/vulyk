@@ -1,4 +1,3 @@
-# coding=utf-8
 from blinker import signal
 
 __all__ = ["on_batch_done", "on_task_done"]

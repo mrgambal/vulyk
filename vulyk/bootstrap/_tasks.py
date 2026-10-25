@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Module contains code that performs plugins initialisation."""
 
 import os.path

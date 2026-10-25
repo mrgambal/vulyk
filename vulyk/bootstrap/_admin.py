@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import flask_admin as admin
 import flask_login as login
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Contains custom fields that extends mongoengine's fields.
 """

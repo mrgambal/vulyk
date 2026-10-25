@@ -9,14 +9,15 @@ Crowdsourcing platform for various tasks
 
 .. image:: https://codecov.io/github/mrgambal/vulyk/graph/badge.svg?token=hLG1y2FiEa 
         :target: https://codecov.io/github/mrgambal/vulyk
+
 License
 -------
 
--  Free software: BSD license
--  Documentation: https://vulyk.readthedocs.org.
+- Free software: BSD 3-Clause License
+- Documentation: https://vulyk.readthedocs.org.
 
-What is it?
------------
+Overview
+--------
 
 We have a lot of tasks that can only be done manually.
 Those includes digitizing of scanned assets declarations,
@@ -27,12 +28,12 @@ project. We don't use anything extraordinary: Flask, MongoDB, Bootstrap,
 jQuery etc (all trademarks are the property of their respective owners,
 don't forget that).
 
-How it's built
+How it is built
 --------------
 
-Vulyk itself is a platform that can be stuffed with various plugins (check `this <https://github.com/hotsyk/vulyk-tagging/>`__ `two <https://github.com/hotsyk/vulyk-declaration>`__ for example).
+Vulyk itself is a platform that can be stuffed with various plugins.
 
-Vulyk providing basic facilities to manage tasks, users, has simple but effective system of groups and permissions, also can load tasks in format of json lines and export results. For admin purposes we have a nice (not really) CLI tool that gives admin an access to users management, tasks management, results management, stats, etc.
+Vulyk is providing basic facilities to manage tasks, users, has simple but effective system of groups and permissions, also can load tasks in format of json lines and export results. For admin purposes we have a nice CLI tool that gives admin access to user management, task management, results management, stats, etc.
 
 Vulyk is also doing dirty job to collect assets for plugin, to provide registration/login via social networks for end users and has leaderboard.
 
@@ -44,14 +45,14 @@ What for?
 -  improve the current state of Ukrainian NLP by creating a simple and
    robust solution for various NLP tasks that require human input.
 -  process and manually verify existing results from
-   `PullEnti <http://pullenti.ru>`__ (by Konstantin Kuznetsov) and
    morphological analyzer (by Andriy Rysin, Mariana Romanyshyn, et al.).
 -  build tagged corpora of different kinds using manually processed
    results.
 -  for the sake of The Great Justice of course!
 
-But, God, how?
---------------
+
+What ships in the core repository
+---------------------------------
 
 We provide some kind of playground, where any interested (or
 procrastination-addicted) person could spend some time crunching different tasks.
@@ -59,112 +60,113 @@ Site will show you, mr. Solver, some tasks of a given type, which you'll need to
 
 Leaderboard is already in place!
 
-How could I participate?
-------------------------
+Some example task plugins live in separate repositories, for example
+`vulyk-tagging <https://github.com/dchaplinsky/vulyk-tagging/>`__ and
+`vulyk-declaration <https://github.com/dchaplinsky/vulyk-declaration>`__.
 
-You just need to contact me mr_hambal@outlook.com or `@dchaplinsky <http://github.com/dchaplinsky>`__ via
-chaplinsky.dmitry@gmail.com. One day we'll find one brave heart who'll
-create a list of issues so the process will be simplified. But not now...
+Local development
+-----------------
 
-Running it locally
-------------------
-You'll need MongoDB, Python 3.5+ and virtualenv and with little bit of instructions you'll be able to run the Beast (with two real plugins)!
+Prerequisites:
 
-First of all, check out all required components:
+- Python 3.10+
+- ``uv``
+- MongoDB available locally (the default settings expect ``localhost:27017``)
+- at least one compatible Vulyk task plugin
 
-.. code:: bash
-
-    mkdir vulyk
-    git clone https://github.com/mrgambal/vulyk.git
-    git clone https://github.com/hotsyk/vulyk-declaration.git
-    git clone https://github.com/hotsyk/vulyk-tagging.git
-
-Then create virtual environment and install all three of them there in editable mode (unfortunately we don't have any of them released on PyPI yet)
+Clone the repositories you need and install them into the same environment:
 
 .. code:: bash
 
-    mkdir sandbox
-    cd sandbox
-    uv sync --dev
-    uv pip install -e ../vulyk
-    uv pip install -e ../vulyk-declaration
-    uv pip install -e ../vulyk-tagging
+        git clone https://github.com/mrgambal/vulyk.git
+        git clone https://github.com/dchaplinsky/vulyk-declaration.git
+        git clone https://github.com/dchaplinsky/vulyk-tagging.git
 
+        cd vulyk
+        uv sync --dev
+        uv pip install -e ../vulyk-declaration
+        uv pip install -e ../vulyk-tagging
 
-Then let's set things up. Edit local_settings.py and add some stuff into it:
+Then create ``local_settings.py`` in the project root. Vulyk will import it
+after ``vulyk.settings``, so it is the easiest place to define local plugin and
+deployment settings.
+
+Minimal example:
 
 .. code:: python
 
-    # This one only works to log in via http://localhost:5000
-    SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
-    SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
 
-    # This one works for both, http://localhost:5000 and http://127.0.0.1:5000
-    SOCIAL_AUTH_TWITTER_KEY = ''
-    SOCIAL_AUTH_TWITTER_SECRET = ''
+        # This one works for both, http://localhost:5000 and http://127.0.0.1:5000
+        SOCIAL_AUTH_TWITTER_KEY = ''
+        SOCIAL_AUTH_TWITTER_SECRET = ''
 
-    # This one only works to log in via http://localhost:5000
-    SOCIAL_AUTH_FACEBOOK_KEY = ''
-    SOCIAL_AUTH_FACEBOOK_SECRET = ''
+        # This one only works to log in via http://localhost:5000
+        SOCIAL_AUTH_FACEBOOK_KEY = ''
+        SOCIAL_AUTH_FACEBOOK_SECRET = ''
 
-    # This one only works to log in via http://localhost:5000
-    SOCIAL_AUTH_VK_OAUTH2_KEY = ''
-    SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
+        MONGODB_SETTINGS = {
+                "DB": "vulyk",
+                "HOST": "localhost",
+                "PORT": 27017,
+        }
 
+        ENABLED_TASKS = {
+                "vulyk_declaration": "DeclarationTaskType",
+                "vulyk_tagging": "TaggingTaskType",
+        }
 
-    MONGODB_SETTINGS = {
-        'DB': 'vulyk',
-    }
+        ENABLED_BLUEPRINTS = [
+                {
+                        "path": "vulyk.blueprints.gamification.gamification",
+                        "config": {},
+                        "url_prefix": "gamification",
+                }
+        ]
 
-    ENABLED_TASKS = {
-        'vulyk_declaration': 'DeclarationTaskType',
-        'vulyk_tagging': 'TaggingTaskType',
-    }
+Core settings such as ``SECRET_KEY`` and the MongoDB connection may also come
+from environment variables because ``vulyk.settings`` reads from ``os.environ``.
 
-You'll need to register you localhost app in one of social networks (and fill corresponding credentials in local_settings.py!) to make it work locally.
+If you want to exercise the full browser login flow locally, configure at least
+one supported social-auth provider in ``local_settings.py`` or your shell
+environment.
 
-Then you should be able to init the app using CLI, load some tasks and run it locally.
+Bootstrapping and running
+-------------------------
 
-.. code:: bash
-
-    cp `which manage.py` .  # FUgly, I know!
-    uv run ./manage.py  init declaration_task tagging_task
-
-That'll create default user group and give users of this group an access to two task types that we've installed before.
-
-Then:
-
-.. code:: bash
-
-    uv run ./manage.py db load declaration_task --batch 01_declaration decl_tasks.json
-    uv run ./manage.py db load tagging_task --batch 01_tagging tagging_tasks.json
-
-And finally you should create run.py and put some stuff into it:
-
-.. code:: python
-
-    from vulyk.app import app
-
-    if __name__ == '__main__':
-        app.run()
-
+Initialize the default group with the task types you want users to access:
 
 .. code:: bash
 
-    uv run run.py
+        uv run manage.py init declaration_task tagging_task
 
-Then open http://localhost:5000 and you are set!
-
-Easy, isn't it?! Well, we'll smooth some rough edges soon, we promise.
-
-Running tests and coverage
---------------------------
-
-You can run the project's tests and generate coverage reports using the Makefile helper:
+Load task data from JSON Lines, ``.gz``, or ``.bz2`` files:
 
 .. code:: bash
 
-    make coverage
+        uv run manage.py db load declaration_task --batch 01_declaration decl_tasks.jsonl
+        uv run manage.py db load tagging_task --batch 01_tagging tagging_tasks.jsonl
 
-The command will run the tests, create an HTML report in `htmlcov/index.html` and a machine-readable
-XML report `coverage.xml` (useful for CI systems and coverage services).
+Run the application:
+
+.. code:: bash
+
+        uv run manage.py run
+
+The web UI will be available at ``http://localhost:5000`` by default.
+
+Testing and documentation
+-------------------------
+
+The test suite uses ``unittest`` and expects MongoDB on ``localhost:27017``.
+Tests override the database name to ``vulyk_test``.
+
+.. code:: bash
+
+        uv run -m unittest
+        make coverage
+        make docs
+
+``make coverage`` generates ``htmlcov/index.html`` and ``coverage.xml``.
+``make docs`` regenerates the Sphinx site under ``docs/_build/html``.
+
+For plugin authoring details, see ``docs/plugins.rst``.

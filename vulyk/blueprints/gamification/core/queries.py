@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 """
 The factory of achievements. Classes below allow us to query data source we use
 as a source of truth.
 """
 
+from collections.abc import Iterator
 from datetime import datetime, timedelta, timezone
 from typing import Any, NamedTuple
 
@@ -43,7 +43,7 @@ class MongoRuleQueryBuilder(RuleQueryBuilder):
 
     __slots__ = []
 
-    _Pair = NamedTuple("Pair", [("key", str), ("clause", dict[str, Any])])
+    _Pair = NamedTuple("_Pair", [("key", str), ("clause", dict[str, Any])])
 
     def __init__(self, rule: Rule) -> None:
         """
@@ -145,7 +145,7 @@ class MongoRuleExecutor:
         :return: True if user statistics comply with the rule
         """
         query = MongoRuleQueryBuilder(rule).build_for(user_id)
-        cursor = collection.aggregate(*query)
+        cursor: Iterator[dict[str, int]] = collection.aggregate(*query)
 
         try:
             record = next(cursor)

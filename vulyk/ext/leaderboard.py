@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from collections import defaultdict
 from operator import itemgetter
 from typing import TYPE_CHECKING

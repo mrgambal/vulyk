@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from typing import Any, ClassVar
 
 from vulyk.models.task_types import AbstractTaskType

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Every project must have a package called `utils`."""
 
 import os

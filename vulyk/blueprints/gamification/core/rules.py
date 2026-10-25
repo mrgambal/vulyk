@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Classes within the package are supposed to be intermittent containers between
 JSON sources and final queries. Everything that has anything to do with images,

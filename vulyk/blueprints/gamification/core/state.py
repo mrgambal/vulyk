@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The package contains user state model and everything that will belong to
 this part of domain.

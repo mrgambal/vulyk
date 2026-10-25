@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 from typing import Any, ClassVar, Iterator, List
 
 from flask_mongoengine.documents import Document
 from mongoengine import BooleanField, IntField, Q, StringField
+from typing_extensions import Self
 
 from ..core.rules import ProjectRule, Rule
 
@@ -113,7 +113,7 @@ class RuleModel(Document):
     }
 
     @classmethod
-    def from_rule(cls, rule: Rule):
+    def from_rule(cls, rule: Rule) -> Self:
         """
         Rule to DB-specific model converter.
 

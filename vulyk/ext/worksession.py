@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import logging
 from datetime import datetime, timezone
 from typing import TypeVar, cast
@@ -91,10 +90,9 @@ class WorkSessionManager:
         :param user_id: The ID of the user whose activity is being recorded.
         :param seconds: The duration of the recent activity in seconds.
 
-        :raises:
-            WorkSessionLookUpError: If no matching session is found.
-            WorkSessionUpdateError: If the provided activity duration is invalid
-                                     or the database update fails.
+        :raises WorkSessionLookUpError: If no matching session is found.
+        :raises WorkSessionUpdateError: If the provided activity duration is
+            invalid or the database update fails.
         """
         try:
             session: WorkSession = self.work_session.objects.get(user=user_id, task=task)
