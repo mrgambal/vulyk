@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Module contains all models directly related to the main entity - tasks."""
 
 from typing import Any, ClassVar, NamedTuple
@@ -53,7 +52,7 @@ class Batch(Document):
         :return: Aggregate which represents complex effect of the method.
         """
         num_changed = 0
-        batch = cls.objects.get(id=batch_id)  # type: Batch
+        batch = cls.objects.get(id=batch_id)
         processed = batch.tasks_processed + 1
 
         if processed > batch.tasks_count:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Module contains all exception classes could be raised during work with
 the DB.

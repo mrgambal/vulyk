@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from flask import Flask
 from werkzeug.utils import import_string
 

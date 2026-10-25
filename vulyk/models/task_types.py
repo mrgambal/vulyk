@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Defines the core `AbstractTaskType` class, representing a Vulyk task type plugin."""
 
 import logging

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Contains all DB models related to game events.
 """
@@ -9,6 +8,7 @@ from typing import Any, ClassVar
 
 from flask_mongoengine.documents import Document
 from mongoengine import BooleanField, DecimalField, IntField, ListField, Q, ReferenceField
+from typing_extensions import Self
 
 from vulyk.models.tasks import AbstractAnswer, Batch
 from vulyk.models.user import User
@@ -65,7 +65,7 @@ class EventModel(Document):
         )
 
     @classmethod
-    def from_event(cls, event: Event):
+    def from_event(cls, event: Event) -> Self:
         """
         Event to DB-specific model converter.
 

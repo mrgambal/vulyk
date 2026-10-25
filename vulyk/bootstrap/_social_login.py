@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Module contains stuff related to interoperability with PSA."""
 
 import datetime
@@ -8,9 +7,9 @@ import flask_login as login
 from flask import g
 from social_flask.routes import social_auth
 from social_flask.template_filters import backends
-from social_flask_mongoengine.models import init_social
 
 from vulyk.models.user import User
+from vulyk.social_storage import init_social
 
 __all__ = ["init_social_login"]
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Services module
 """
@@ -6,7 +5,6 @@ Services module
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import Optional
 
 from vulyk.blueprints.gamification.core.events import DonateEvent
 from vulyk.blueprints.gamification.core.state import UserState
@@ -187,13 +185,12 @@ class StatsService:
         return EventModel.amount_of_money_earned(None)
 
     @classmethod
-    def state_of_user(cls, user: User) -> Optional[UserState]:
+    def state_of_user(cls, user: User) -> UserState | None:
         """
         Return current state of given user.
 
-        :return: Object which holds aggregated values
-        on user current state for the registered user
-        and None otherwise.
+        :return: Object that holds aggregated values on the current state for
+            the registered user, or ``None`` for anonymous users.
         """
 
         if user.is_anonymous:

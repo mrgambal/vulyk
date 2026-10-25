@@ -1,15 +1,15 @@
-# -*- coding: utf-8 -*-
 from typing import ClassVar
 
 import flask_login as login
 import wtforms
 from flask_admin.contrib.mongoengine import ModelView
+from markupsafe import Markup
 
 __all__ = ["AuthModelView"]
 
 
 class CKTextAreaWidget(wtforms.widgets.TextArea):
-    def __call__(self, field, **kwargs):
+    def __call__(self, field, **kwargs) -> Markup:
         if kwargs.get("class"):
             kwargs["class"] += " ckeditor"
         else:
@@ -17,11 +17,11 @@ class CKTextAreaWidget(wtforms.widgets.TextArea):
         return super(CKTextAreaWidget, self).__call__(field, **kwargs)
 
 
-class CKTextAreaField(wtforms.fields.TextAreaField):
+class CKTextAreaField(wtforms.TextAreaField):
     widget = CKTextAreaWidget()
 
 
-class RequiredBooleanField(wtforms.fields.SelectField):
+class RequiredBooleanField(wtforms.SelectField):
     # Fucking wtforms/flask-admin has a flaw related
     # to boolean fields with required=True in the model
     # Ultimatelly false values wouldn't pass validation of the form

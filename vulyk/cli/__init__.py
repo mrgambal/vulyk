@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The package consists of modules hat provide support for different aspects of
 project's CLI.

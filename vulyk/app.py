@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Die Hauptstadt of our little project. Just a usual Flask application."""
 
 import flask
@@ -158,9 +157,11 @@ def done(type_name: str, task_id: str) -> Response:
         return NO_TASKS
 
     try:
-        task_type.on_task_done(user, task_id, json.loads(flask.request.form.get("result")))
+        task_type.on_task_done(user, task_id, json.loads(flask.request.form["result"]))
     except TaskNotFoundError:
         return NO_TASKS
+    except KeyError as e:
+        return utils.json_response({"error": str(e)}, status=utils.HTTPStatus.BAD_REQUEST)
 
     return utils.json_response({"done": True})
 

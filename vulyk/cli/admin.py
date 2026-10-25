@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Package contains CLI tools implementation related to admins"""
 
 from click import echo

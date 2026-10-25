@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Parsers for converting raw data from external sources into structured objects.
 

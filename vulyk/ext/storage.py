@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Copy files from all static folders to root folder."""
 
 import os

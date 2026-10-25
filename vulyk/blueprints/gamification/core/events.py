@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Here go all types of events to happen during the project's lifecycle.
 
@@ -129,7 +128,7 @@ class Event:
         level_given: int | None,
         *,
         viewed: bool,
-    ) -> "Event":
+    ) -> "DonateEvent | NoAchievementsEvent | AchievementsEvent | LevelEvent | AchievementsLevelEvent":
         # validation stage
         ev = cls(
             timestamp=timestamp,

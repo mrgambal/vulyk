@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Module contains all models used to keep some metadata we could use to perform
 any kind of analysis.

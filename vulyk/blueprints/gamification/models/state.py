@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Contains all DB models related to aggregated user state within the game
 """

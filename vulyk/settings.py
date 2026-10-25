@@ -1,4 +1,3 @@
-# -*- coding=utf-8 -*-
 import logging
 import os
 from typing import Any
@@ -27,7 +26,7 @@ LOGGING_FORMAT: str = ENV("LOGGING_FORMAT", "%(asctime)s - %(name)s - %(levelnam
 LOGGING_LEVEL: int = logging.DEBUG if DEBUG else logging.INFO
 LOGGING_MAX_FILE_BYTES: int = int(ENV("LOGGING_MAX_FILE_BYTES", 10 * 1024 * 1024))
 
-SOCIAL_AUTH_STORAGE: str = ENV("SOCIAL_AUTH_STORAGE", "social_flask_mongoengine.models.FlaskStorage")
+SOCIAL_AUTH_STORAGE: str = ENV("SOCIAL_AUTH_STORAGE", "vulyk.social_storage.FlaskStorage")
 SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL: bool = ENV("SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL", default=True) in (
     "true",
     "t",

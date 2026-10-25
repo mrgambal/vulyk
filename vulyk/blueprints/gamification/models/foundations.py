@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Contains all DB models related to foundations we donate or we rely on
 """

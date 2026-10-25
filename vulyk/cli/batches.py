@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Package contains CLI tools related to managing batches of tasks."""
 
 from copy import deepcopy

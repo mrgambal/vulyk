@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The core of gamification sub-project.
 """
@@ -105,9 +104,9 @@ def badges(project: str | None = None, strictness: str | None = None) -> flask.R
 
     if project is not None:
         if strictness == "strict":
-            filtering = StrictProjectRules(project)  # type: ignore[override]
+            filtering = StrictProjectRules(project)  # type: ignore[assignment]
         elif strictness == "weak":
-            filtering = ProjectAndFreeRules(project)  # type: ignore[override]
+            filtering = ProjectAndFreeRules(project)  # type: ignore[assignment]
         else:
             flask.abort(utils.HTTPStatus.NOT_FOUND)
 

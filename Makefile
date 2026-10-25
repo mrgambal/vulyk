@@ -2,6 +2,8 @@
 LOGGING_LOCATION = /tmp/vulyk.log
 
 help:
+	@echo "Makefile commands:"
+	@echo "dev - set up development environment with uv"
 	@echo "clean - remove all build, test, coverage and Python artifacts"
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
@@ -13,6 +15,10 @@ help:
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
 	@echo "dist - package"
+
+dev:
+	uv sync --all-groups --compile-bytecode
+	uv pip install -e .
 
 clean: clean-build clean-pyc clean-test
 

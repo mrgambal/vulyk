@@ -2,77 +2,107 @@
 Usage
 =====
 
-To use Vulyk in a project::
+Running the application
+-----------------------
+
+The main entry points are:
+
+- ``manage.py`` – convenience wrapper for the Click CLI;
+- ``vulyk.control:cli`` – the underlying management commands;
+- ``vulyk.app:app`` – the bootstrapped Flask application.
+
+The simplest local run command is:
+
+.. code-block:: bash
+
+    uv run manage.py run
+
+You can also expose the Flask app directly from Python if another process is
+embedding Vulyk:
+
+.. code-block:: python
 
     from vulyk.app import app
 
-	if __name__ == '__main__':
-	    app.config.from_object('local_settings')
-	    app.run(host='0.0.0.0', port=5000)
+Social-auth routes are registered during bootstrap. To test the full browser
+login flow locally, configure at least one provider supported by
+``vulyk.settings``.
 
-As long as we use ``python-social-auth`` in vulyk you have to specify 
-credentials for some auth providers supported::
+Task configuration
+------------------
 
-	-*- coding: utf8 -*-
-	SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '<your key here>'
-	SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '<your secret here>'
+Task plugins are enabled through ``ENABLED_TASKS`` in ``local_settings.py``.
+Each mapping entry has the form ``{"package_name": "TaskTypeClassName"}``.
 
-	SOCIAL_AUTH_TWITTER_KEY = '<your key here>'
-	SOCIAL_AUTH_TWITTER_SECRET = '<your secret here>'
+Example:
 
-	SOCIAL_AUTH_FACEBOOK_KEY = '<your key here>'
-	SOCIAL_AUTH_FACEBOOK_SECRET = '<your secret here>'
+.. code-block:: python
 
-	SOCIAL_AUTH_VK_OAUTH2_KEY = '<your key here>'
+    ENABLED_TASKS = {
+        "vulyk_declaration": "DeclarationTaskType",
+        "vulyk_tagging": "TaggingTaskType",
+    }
 
-Needless to say that your settings must contain a dict of plugins (task types) 
-you allow::
+Optional blueprints are configured through ``ENABLED_BLUEPRINTS``. The built-in
+gamification blueprint is enabled by default in ``vulyk.settings``.
 
-	ENABLED_TASKS = {
-	    "vulyk_declaration": "DeclarationTaskType"
-	}
+Data loading
+------------
 
-Two more options may be put in in case if want to use Flask-Collect alongside 
-with Flask-Assets capabilities to get all your static files collected in single
-directory::
+Before users can work on tasks, initialize the default group with the task
+types you want to expose:
 
-	# path to the directory you want to get static collected in
-	COLLECT_STATIC_ROOT = "/var/lib/www-data/vulyk-static"
-	# our own Storage for Flask-Collect. Allows collecting files from plugin
-	# subfolders.
-	COLLECT_STORAGE = 'vulyk.ext.storage'
+.. code-block:: bash
 
+    uv run manage.py init declaration_task tagging_task
 
-Import data
------------
+Load tasks from JSON Lines data. Plain text, ``.gz``, and ``.bz2`` inputs are
+supported.
 
-Data loading that's been created to add some life to your plugin should be
-performed via embedded CLI tool.
-To plug CLI into an application I create file ``control.py`` with similar content::
+.. code-block:: bash
 
-	#!/usr/bin/env python
-	from vulyk.control import cli
+    uv run manage.py db load declaration_task --batch 01_declaration decl_tasks.jsonl
+    uv run manage.py db load tagging_task --batch 01_tagging tagging_tasks.jsonl
 
-	if __name__ == '__main__':
-	    cli()
+When a batch is created, Vulyk stores batch-level metadata and tracks progress
+through ``tasks_count`` and ``tasks_processed``.
 
-Firstly we need to initiate some bootstrap data::
+Task lifecycle
+--------------
 
-	$ chmod +x control.py
-	$ ./control.py  init <task_type_1> <task_type_2>
+For each enabled task type, the core workflow is:
 
-Having that done we're able to load tasks from datafiles (also supports gzip 
-and bz2 archives with data). Datafile should contain a bunch of valid 
-JSON-objects with arbitary content with line-separators in between.
-Loading process may be initiated by calling::
+1. ``get_next()`` finds an open task the current user has not processed yet,
+   preferring open batches and avoiding skipped tasks until nothing else is
+   available.
+2. Starting a task opens or refreshes a ``WorkSession``.
+3. ``on_task_done()`` stores an answer, updates the task and user counters,
+   closes the work session, and advances the parent batch if the task closed.
+4. ``skip_task()`` records the skip and removes the active work session.
 
-	./control.py db load <task_type> --batch "<batch_name>" <name or wildcard>.js
-	# or
-	./control.py db load <task_type> --batch "<batch_name>" <name or wildcard>.bz2
-	# or
-	./control.py db load <task_type> --batch "<batch_name>" <name or wildcard>.gz
+Operational commands
+--------------------
 
-Task type – is an internal name of type that will be assigned to your tasks.
-Batch describes just a category of tasks you may want to be in there to 
-simplify management and stats collecting (optional). You could omit batch name,
-thus all tasks you load will get 'default' batch specified in settings.
+Useful CLI commands include:
+
+.. code-block:: bash
+
+    uv run manage.py group list
+    uv run manage.py group add
+    uv run manage.py batches list
+    uv run manage.py stats batch
+    uv run manage.py db export declaration_task reports.jsonl --with-sessions
+
+``db export --with-sessions`` enriches exported answers with work-session start,
+end, duration, and activity fields when matching sessions exist.
+
+Admin and blueprints
+--------------------
+
+Set ``ENABLE_ADMIN = True`` to register the admin UI. When enabled, the built-in
+gamification module can also contribute admin views and routes under the
+configured ``url_prefix``.
+
+If static assets are collected into a shared directory, Vulyk can resolve
+plugin files from ``COLLECT_STATIC_ROOT`` using the
+``COLLECT_PLUGIN_DIR_PREFIX`` naming convention.
